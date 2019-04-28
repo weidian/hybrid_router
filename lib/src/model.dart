@@ -37,7 +37,7 @@ enum HybridPushType { Flutter, Native }
 
 /// 路由页面构造方法
 typedef HybridRouteFactory = Route<T> Function<T extends Object>(
-    RouteSettings settings);
+    RouteSettings settings, Object arguments);
 
 typedef HybridWidgetBuilder = Widget Function(BuildContext context, Object args);
 

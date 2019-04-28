@@ -53,7 +53,7 @@ class _ExampleBody extends StatelessWidget {
               style: TextStyle(color: Colors.white),
             ),
             onTap: () async {
-              String message = await Navigator.of(context).pushNamed("example",
+              String message = await HybridNavigator.of(context).pushNamed("example",
                   arguments: "Jump From Flutter");
               Scaffold.of(context).showSnackBar(
                   SnackBar(content: Text(message ?? "No result found")));

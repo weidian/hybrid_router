@@ -14,7 +14,7 @@ void main() {
           );
         }
       },
-      unknownRouteBuilder: <T>(RouteSettings settings) {
+      unknownRouteBuilder: <T>(RouteSettings settings, Object arguments) {
         return MaterialPageRoute<T>(
           builder: (context) {
             return PageNotFound();

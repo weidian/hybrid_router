@@ -138,10 +138,10 @@ class HybridNavigator extends Navigator {
         if (initRoute != null) {
           return initRoute;
         } else {
-          settings = settings.copyWith(arguments: initRouteArgs);
+          settings = settings.copyWith();
         }
       }
-      return builder(settings);
+      return builder(settings, settings.isInitialRoute ? initRouteArgs : null);
     };
   }
 }
@@ -268,11 +268,11 @@ class HybridNavigatorState extends NavigatorState {
     bool allowNull = false,
   }) {
     Route<T> route = widget.generateBuilder<T>(
-        RouteSettings(name: routeName, isInitialRoute: false, arguments: args));
+        RouteSettings(name: routeName, isInitialRoute: false), args);
 
     if (route == null && widget.unknownBuilder != null) {
       route = widget.unknownBuilder(RouteSettings(
-          name: routeName, isInitialRoute: false, arguments: args));
+          name: routeName, isInitialRoute: false), args);
     }
 
     if (route == null && !allowNull) {
