@@ -8,7 +8,7 @@
 * 支持原生的 Flutter 跳转方式（不借助 native 容器跳转）
 
 # Flutter SDK 要求
-master 分支需要 `v1.3.0` 以上，`v1.2.2` 无法工作（flutter engine android 部分有 bug）。如果你是使用 `v1.0.0` 版本的，请切换到 **support/engine_1.0.0** 分支，此分支下默认的 `pushNamed` 无法传递参数，不过可以使用混合栈的 `HybridNavigator`
+master 分支需要 `v1.3.0` 以上，`v1.2.2` 无法工作（flutter engine android 部分有 bug）。如果你是使用 `v1.0.0` 版本的，请切换到 **support/v1.0.0** 分支，此分支下默认的 `pushNamed` 无法传递参数，不过可以使用混合栈的 `HybridNavigator`
 
 # Dart 集成
 ## 初始化
