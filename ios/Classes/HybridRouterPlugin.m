@@ -114,7 +114,7 @@
 
 #pragma mark - open flutter page
 - (void)openFlutterPage:(NSDictionary *)arguments result:(FlutterResult)result {
-    [WDFlutterURLRouter openFlutterPage:arguments[@"pageName"] params:arguments result:result];
+    [WDFlutterURLRouter openFlutterPage:arguments[@"pageName"] params:arguments[@"args"] result:result];
 }
 
 #pragma mark - open native page

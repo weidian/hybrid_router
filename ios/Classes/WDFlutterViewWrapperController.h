@@ -51,7 +51,7 @@
 
 @property (nonatomic, copy) NSString *nativePageId;
 
-@property (nonatomic, strong) NSDictionary *args;
+@property (nonatomic, strong) id args;
 
 @property (nonatomic, copy) NSString *pageName;
 

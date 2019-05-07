@@ -31,7 +31,7 @@
 }
 
 - (void)openNativePage:(NSString *)page params:(NSDictionary *)params {
-    
+    [(UINavigationController *)[self flutterCurrentController] pushViewController:[[DemoViewController alloc] init] animated:YES];
 }
 
 @end

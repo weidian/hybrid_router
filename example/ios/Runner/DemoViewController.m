@@ -31,13 +31,13 @@
     [btn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [btn setCenter:self.view.center];
     [btn addTarget:self action:@selector(onJumpFlutterPressed) forControlEvents:UIControlEventTouchUpInside];
-    [WDFStackManager openFlutterPage:@"example" params:@{} result:^(NSDictionary* data) {
-        NSLog(@"%@", data[@"data"]);
-    }];
+//    [WDFStackManager openFlutterPage:@"example" params:@{} result:^(NSDictionary* data) {
+//        NSLog(@"%@", data[@"data"]);
+//    }];
 }
 
 - (void)onJumpFlutterPressed {
-    [WDFStackManager openFlutterPage:@"example" params:@{} result:^(NSDictionary* data) {
+    [WDFStackManager openFlutterPage:@"example" params:@"EXAMPLE" result:^(NSDictionary* data) {
         NSLog(@"%@", data[@"data"]);
     }];
 }

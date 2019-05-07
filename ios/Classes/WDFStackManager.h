@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param params 传给页面的参数
  @param result 页面返回时的回调
  */
-+ (void)openFlutterPage:(NSString *)page params:(NSDictionary *)params result:(void (^)(id))result;
++ (void)openFlutterPage:(NSString *)page params:(id)params result:(void (^)(id))result;
 
 @end
 

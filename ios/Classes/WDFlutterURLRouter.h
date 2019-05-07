@@ -51,7 +51,7 @@ typedef void(^FlutterToNativeCallback)(NSDictionary *dic);
  @param page native的页面名
  @param params 页面参数
  */
-- (void)openNativePage:(NSString *)page params:(NSDictionary *)params;
+- (void)openNativePage:(NSString *)page params:(id)params;
 
 @optional
 
@@ -71,9 +71,9 @@ typedef void(^FlutterToNativeCallback)(NSDictionary *dic);
 
 + (instancetype)sharedInstance;
 
-+ (void)openFlutterPage:(NSString *)page params:(NSDictionary *)params result:(FlutterResult)result;
++ (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result;
 
-+ (void)openNativePage:(NSString *)page params:(NSDictionary *)params;
++ (void)openNativePage:(NSString *)page params:(id)params;
 
 + (void)beforeNativePagePop:(NSString *)pageId result:(id)result;
 
