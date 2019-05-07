@@ -83,17 +83,17 @@ static long long fTag = 0;
     return nil;
 }
 
-- (void)openNativePage:(NSString *)page params:(NSDictionary *)paramsDic {
+- (void)openNativePage:(NSString *)page params:(id)paramsDic {
     if ([self.delegate respondsToSelector:@selector(openNativePage:params:)]) {
         [self.delegate openNativePage:page params:paramsDic];
     }
 }
 
-- (void)openFlutterPage:(NSString *)page params:(NSDictionary *)params result:(FlutterResult)result {
+- (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result {
     WDFlutterRouteOptions *options = [WDFlutterRouteOptions new];
     options.pageName = page;
     options.nativePageId = [NSNumber numberWithLongLong:fTag].stringValue;
-    options.args = params[@"args"];
+    options.args = params;
     options.resultBlock = result;
     
     //Push
@@ -120,11 +120,11 @@ static long long fTag = 0;
     fTag++;
 }
 
-+ (void)openNativePage:(NSString *)page params:(NSDictionary *)params {
++ (void)openNativePage:(NSString *)page params:(id)params {
     [[WDFlutterURLRouter sharedInstance] openNativePage:page params:params];
 }
 
-+ (void)openFlutterPage:(NSString *)page params:(NSDictionary *)params result:(FlutterResult)result {
++ (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result {
     [[WDFlutterURLRouter sharedInstance] openFlutterPage:page params:params result:result];
 }
 

@@ -37,7 +37,7 @@
     [WDFlutterURLRouter sharedInstance].delegate = delegate;
 }
 
-+ (void)openFlutterPage:(NSString *)page params:(NSDictionary *)params result:(void (^)(id))result {
++ (void)openFlutterPage:(NSString *)page params:(id)params result:(void (^)(id))result {
     [WDFlutterURLRouter openFlutterPage:page params:params result:result];
 }
 
