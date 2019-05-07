@@ -178,3 +178,6 @@ FlutterWrapActivity.start(MainActivity.this, new FlutterRouteOptions.Builder("ex
  */
 + (void)openFlutterPage:(NSString *)page params:(NSDictionary *)params result:(void (^)(id))result;
 ```
+
+# License
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
