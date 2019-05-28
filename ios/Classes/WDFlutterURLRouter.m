@@ -32,6 +32,7 @@
 #import "WDFlutterViewWrapperController.h"
 #import "WDFlutterViewController.h"
 #import "HybridRouterPlugin.h"
+#import "WDFlutterPluginRigstrant.h"
 
 static long long fTag = 0;
 
@@ -64,6 +65,9 @@ static long long fTag = 0;
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
     [NSClassFromString(@"GeneratedPluginRegistrant") performSelector:NSSelectorFromString(@"registerWithRegistry:") withObject:flutterVC];
 #pragma clang diagnostic pop
+    
+    [WDFlutterPluginRigstrant registerWithRegistry:flutterVC];
+
     _isFlutterWarmedup = true;
 }
     
