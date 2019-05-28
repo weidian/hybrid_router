@@ -313,7 +313,7 @@ public class FlutterWrapActivity extends AppCompatActivity implements PluginRegi
         }
         // init flutter
         try {
-            FlutterMain.startInitialization(getApplicationContext());
+            initFlutterEngine();
             attachFlutter();
             delegate.onCreate(savedInstanceState);
         } catch (Throwable t) {
@@ -533,6 +533,14 @@ public class FlutterWrapActivity extends AppCompatActivity implements PluginRegi
                 }
             }
         }
+    }
+
+    /**
+     * 初始化 flutter engine 代码
+     */
+    protected void initFlutterEngine() {
+        FlutterMain.startInitialization(getApplicationContext());
+        FlutterMain.ensureInitializationComplete(getApplicationContext(), null);
     }
 
     /**
