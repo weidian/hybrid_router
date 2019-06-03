@@ -94,18 +94,28 @@
 - (void)onFlutterRouteEvent:(NSDictionary *)arguments {
     NSString *nativePageId = arguments[@"nativePageId"];
     NSNumber *eventId = arguments[@"eventId"];
+    NSString *name = arguments[@"name"];
     switch (eventId.integerValue) {
         case WDFFlutterRouteEventOnPush:
             [WDFlutterURLRouter onFlutterPagePushed:nativePageId];
+            [WDFlutterURLRouter onFlutterPageShow:nativePageId name:name];
+            break;
+        case WDFFlutterRouteEventOnResume:
+            [WDFlutterURLRouter onFlutterPageShow:nativePageId name:name];
+            break;
+        case WDFFlutterRouteEventOnPause:
+            [WDFlutterURLRouter onFlutterPageHide:nativePageId name:name];
             break;
         case WDFFlutterRouteEventOnReplace:
             //do nothing
             break;
         case WDFFlutterRouteEventOnPop:
             [WDFlutterURLRouter onFlutterPageRemoved:nativePageId];
+            [WDFlutterURLRouter onFlutterPageHide:nativePageId name:name];
             break;
         case WDFFlutterRouteEventOnRemove:
             [WDFlutterURLRouter onFlutterPageRemoved:nativePageId];
+            [WDFlutterURLRouter onFlutterPageHide:nativePageId name:name];
             break;
         default:
             break;

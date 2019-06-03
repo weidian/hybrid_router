@@ -34,6 +34,8 @@ typedef NS_ENUM(NSInteger, WDFNativeRouteEvent) {
 
 typedef NS_ENUM(NSInteger, WDFFlutterRouteEvent) {
     WDFFlutterRouteEventOnPush = 0,
+    WDFFlutterRouteEventOnResume,
+    WDFFlutterRouteEventOnPause,
     WDFFlutterRouteEventOnReplace,
     WDFFlutterRouteEventOnPop,
     WDFFlutterRouteEventOnRemove

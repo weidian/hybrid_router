@@ -167,6 +167,18 @@ static long long fTag = 0;
     }
 }
 
++ (void)onFlutterPageShow:(NSString *)pageId name:(NSString *)name {
+    if ([WDFlutterURLRouter.sharedInstance.delegate respondsToSelector:@selector(flutterViewDidAppear:name:)]) {
+        [WDFlutterURLRouter.sharedInstance.delegate flutterViewDidAppear:[self getFlutterController:pageId] name:name];
+    }
+}
+
++ (void)onFlutterPageHide:(NSString *)pageId name:(NSString *)name {
+    if ([WDFlutterURLRouter.sharedInstance.delegate respondsToSelector:@selector(flutterViewDidDisappear:name:)]) {
+        [WDFlutterURLRouter.sharedInstance.delegate flutterViewDidDisappear:[self getFlutterController:pageId] name:name];
+    }
+}
+
 #pragma mark - internal function
 + (void)removePage:(NSString *)pageId result:(id)result {
     WDFlutterViewWrapperController *controller = [self getFlutterController:pageId];
