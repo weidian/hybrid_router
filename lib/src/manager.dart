@@ -302,8 +302,7 @@ class HybridRouterManager extends NavigatorObserver {
       // 只有 pop native container 的时候，下一个 native container 才会 resume
       if (preNativePageId != null) {
         HybridPlugin.singleton.onNativeRouteEvent(
-            event: NativeRouteEvent.onResume,
-            nativePageId: preNativePageId);
+            event: NativeRouteEvent.onResume, nativePageId: preNativePageId);
       }
     }
     _repairFrameSchedule();
@@ -316,8 +315,7 @@ class HybridRouterManager extends NavigatorObserver {
       String preNativePageId = _findNativePageIdBelow(route);
       // 打开的新的 native 容器页面，需要通知 create 事件
       HybridPlugin.singleton.onNativeRouteEvent(
-          event: NativeRouteEvent.onCreate,
-          nativePageId: route.nativePageId);
+          event: NativeRouteEvent.onCreate, nativePageId: route.nativePageId);
       // 打开的新页面是 native container 的时候，前一个 native container 处于暂停状态
       if (preNativePageId != null) {
         HybridPlugin.singleton.onNativeRouteEvent(
@@ -334,13 +332,11 @@ class HybridRouterManager extends NavigatorObserver {
     if (route is _HybridKeyRoute<dynamic>) {
       // native 容器结束的时候，从 route 中获取页面返回的结果
       HybridPlugin.singleton.onNativeRouteEvent(
-          event: NativeRouteEvent.onDestroy,
-          nativePageId: route.nativePageId);
+          event: NativeRouteEvent.onDestroy, nativePageId: route.nativePageId);
       // 只有移除前一个 native container，下一个 native container 才会显示
       if (preNativePageId != null) {
         HybridPlugin.singleton.onNativeRouteEvent(
-            event: NativeRouteEvent.onResume,
-            nativePageId: preNativePageId);
+            event: NativeRouteEvent.onResume, nativePageId: preNativePageId);
       }
     }
   }
@@ -497,17 +493,18 @@ class _HybridKeyRoute<T> extends MaterialPageRoute<T> {
 class _ChildNavigatorObserver extends NavigatorObserver {
   final HybridRouterManager _manager;
   final String _nativePageId;
+  final List<Route<dynamic>> _history = [];
 
   _ChildNavigatorObserver(this._manager, this._nativePageId);
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic> previousRoute) {
     super.didPop(route, previousRoute);
+    _history.removeLast();
     HybridPlugin.singleton.onFlutterRouteEvent(
         nativePageId: _nativePageId,
         event: FlutterRouteEvent.onPop,
-        name:route.settings.name
-    );
+        name: route.settings.name);
     _manager.observers?.forEach((o) {
       try {
         o.didPop(route, previousRoute);
@@ -515,23 +512,22 @@ class _ChildNavigatorObserver extends NavigatorObserver {
         FlutterError.onError(e);
       }
     });
-    if(previousRoute != null) {
+    if (previousRoute != null) {
       HybridPlugin.singleton.onFlutterRouteEvent(
           nativePageId: _nativePageId,
           event: FlutterRouteEvent.onResume,
-          name:previousRoute.settings.name
-      );
+          name: previousRoute.settings.name);
     }
   }
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic> previousRoute) {
     super.didPush(route, previousRoute);
+    _history.add(route);
     HybridPlugin.singleton.onFlutterRouteEvent(
         nativePageId: _nativePageId,
         event: FlutterRouteEvent.onPush,
-        name:route.settings.name
-    );
+        name: route.settings.name);
     _manager.observers?.forEach((o) {
       try {
         o.didPush(route, previousRoute);
@@ -539,23 +535,22 @@ class _ChildNavigatorObserver extends NavigatorObserver {
         FlutterError.onError(e);
       }
     });
-    if(previousRoute != null) {
+    if (previousRoute != null) {
       HybridPlugin.singleton.onFlutterRouteEvent(
           nativePageId: _nativePageId,
           event: FlutterRouteEvent.onPause,
-          name:previousRoute.settings.name
-      );
+          name: previousRoute.settings.name);
     }
   }
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic> previousRoute) {
     super.didRemove(route, previousRoute);
+    _history.remove(route);
     HybridPlugin.singleton.onFlutterRouteEvent(
         nativePageId: _nativePageId,
         event: FlutterRouteEvent.onRemove,
-        name:route.settings.name
-    );
+        name: route.settings.name);
     _manager.observers?.forEach((o) {
       try {
         o.didRemove(route, previousRoute);
@@ -564,24 +559,24 @@ class _ChildNavigatorObserver extends NavigatorObserver {
       }
     });
 
-    HybridNavigatorState navigatorState = route.navigator;
-    if(navigatorState.routeHistoryCopy.last == route && previousRoute != null) {
+    if (_history.isNotEmpty && _history.last == previousRoute) {
       HybridPlugin.singleton.onFlutterRouteEvent(
           nativePageId: _nativePageId,
           event: FlutterRouteEvent.onResume,
-          name:previousRoute.settings.name
-      );
+          name: previousRoute.settings.name);
     }
   }
 
   @override
   void didReplace({Route<dynamic> newRoute, Route<dynamic> oldRoute}) {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    int index = _history.indexOf(oldRoute);
+    assert(index >= 0);
+    _history[index] = newRoute;
     HybridPlugin.singleton.onFlutterRouteEvent(
         nativePageId: _nativePageId,
         event: FlutterRouteEvent.onReplace,
-        name:newRoute.settings.name
-    );
+        name: newRoute.settings.name);
     _manager.observers?.forEach((o) {
       try {
         o.didReplace(newRoute: newRoute, oldRoute: oldRoute);
