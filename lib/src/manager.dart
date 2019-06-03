@@ -505,7 +505,9 @@ class _ChildNavigatorObserver extends NavigatorObserver {
     super.didPop(route, previousRoute);
     HybridPlugin.singleton.onFlutterRouteEvent(
         nativePageId: _nativePageId,
-        event: FlutterRouteEvent.onPop,);
+        event: FlutterRouteEvent.onPop,
+        name:route.settings.name
+    );
     _manager.observers?.forEach((o) {
       try {
         o.didPop(route, previousRoute);
@@ -513,6 +515,13 @@ class _ChildNavigatorObserver extends NavigatorObserver {
         FlutterError.onError(e);
       }
     });
+    if(previousRoute != null) {
+      HybridPlugin.singleton.onFlutterRouteEvent(
+          nativePageId: _nativePageId,
+          event: FlutterRouteEvent.onResume,
+          name:previousRoute.settings.name
+      );
+    }
   }
 
   @override
@@ -520,7 +529,9 @@ class _ChildNavigatorObserver extends NavigatorObserver {
     super.didPush(route, previousRoute);
     HybridPlugin.singleton.onFlutterRouteEvent(
         nativePageId: _nativePageId,
-        event: FlutterRouteEvent.onPush,);
+        event: FlutterRouteEvent.onPush,
+        name:route.settings.name
+    );
     _manager.observers?.forEach((o) {
       try {
         o.didPush(route, previousRoute);
@@ -528,6 +539,13 @@ class _ChildNavigatorObserver extends NavigatorObserver {
         FlutterError.onError(e);
       }
     });
+    if(previousRoute != null) {
+      HybridPlugin.singleton.onFlutterRouteEvent(
+          nativePageId: _nativePageId,
+          event: FlutterRouteEvent.onPause,
+          name:previousRoute.settings.name
+      );
+    }
   }
 
   @override
@@ -535,7 +553,9 @@ class _ChildNavigatorObserver extends NavigatorObserver {
     super.didRemove(route, previousRoute);
     HybridPlugin.singleton.onFlutterRouteEvent(
         nativePageId: _nativePageId,
-        event: FlutterRouteEvent.onRemove,);
+        event: FlutterRouteEvent.onRemove,
+        name:route.settings.name
+    );
     _manager.observers?.forEach((o) {
       try {
         o.didRemove(route, previousRoute);
@@ -543,6 +563,15 @@ class _ChildNavigatorObserver extends NavigatorObserver {
         FlutterError.onError(e);
       }
     });
+
+    HybridNavigatorState navigatorState = route.navigator;
+    if(navigatorState.routeHistoryCopy.last == route && previousRoute != null) {
+      HybridPlugin.singleton.onFlutterRouteEvent(
+          nativePageId: _nativePageId,
+          event: FlutterRouteEvent.onResume,
+          name:previousRoute.settings.name
+      );
+    }
   }
 
   @override
@@ -550,7 +579,9 @@ class _ChildNavigatorObserver extends NavigatorObserver {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
     HybridPlugin.singleton.onFlutterRouteEvent(
         nativePageId: _nativePageId,
-        event: FlutterRouteEvent.onReplace,);
+        event: FlutterRouteEvent.onReplace,
+        name:newRoute.settings.name
+    );
     _manager.observers?.forEach((o) {
       try {
         o.didReplace(newRoute: newRoute, oldRoute: oldRoute);

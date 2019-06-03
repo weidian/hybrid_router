@@ -64,7 +64,7 @@ enum NativeRouteEvent {
   beforeDestroy,
 
   /// 当前 native 容器对应的 route 被弹出 root 堆栈
-  onDestroy,
+  onDestroy
 }
 
 /// Native 接收到的 flutter page 事件
@@ -72,14 +72,20 @@ enum FlutterRouteEvent {
   /// flutter route push 事件
   onPush,
 
+  /// flutter route resume 事件
+  onResume,
+  
+  /// flutter route pause 事件
+  onPause,
+  
   /// flutter route replace 事件
   onReplace,
 
   /// flutter route pop 事件
   onPop,
-
+  
   /// flutter route remove 事件
-  onRemove,
+  onRemove
 }
 
 class HybridPlugin {
@@ -112,12 +118,14 @@ class HybridPlugin {
   /// [event] 事件详情
   Future<void> onFlutterRouteEvent(
       {@required String nativePageId,
-      @required FlutterRouteEvent event}) {
+      @required FlutterRouteEvent event,
+        @required String name}) {
     assert(nativePageId != null && event != null);
     print('onFlutterRouteEvent: ($nativePageId): $event');
     return _channel.invokeMethod("onFlutterRouteEvent", {
       "eventId": event.index,
       "nativePageId": nativePageId,
+      "name": name
     });
   }
 
