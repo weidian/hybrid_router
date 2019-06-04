@@ -524,6 +524,14 @@ class _ChildNavigatorObserver extends NavigatorObserver {
   void didPush(Route<dynamic> route, Route<dynamic> previousRoute) {
     super.didPush(route, previousRoute);
     _history.add(route);
+
+    if (previousRoute != null) {
+      HybridPlugin.singleton.onFlutterRouteEvent(
+          nativePageId: _nativePageId,
+          event: FlutterRouteEvent.onPause,
+          name: previousRoute.settings.name);
+    }
+
     HybridPlugin.singleton.onFlutterRouteEvent(
         nativePageId: _nativePageId,
         event: FlutterRouteEvent.onPush,
@@ -535,12 +543,6 @@ class _ChildNavigatorObserver extends NavigatorObserver {
         FlutterError.onError(e);
       }
     });
-    if (previousRoute != null) {
-      HybridPlugin.singleton.onFlutterRouteEvent(
-          nativePageId: _nativePageId,
-          event: FlutterRouteEvent.onPause,
-          name: previousRoute.settings.name);
-    }
   }
 
   @override
