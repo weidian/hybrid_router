@@ -67,6 +67,8 @@ typedef void(^FlutterToNativeCallback)(NSDictionary *dic);
 
 - (void)flutterViewDidDisappear:(UIViewController *)viewController name:(NSString *)name;
 
+- (void)flutterViewDidRemove:(UIViewController *)viewController name:(NSString *)name;
+
 @end
 
 @interface WDFlutterURLRouter : NSObject
@@ -85,12 +87,12 @@ typedef void(^FlutterToNativeCallback)(NSDictionary *dic);
 
 + (void)onNativePageReady:(NSString *)pageId;
 
-+ (void)onFlutterPagePushed:(NSString *)pageId;
++ (void)onFlutterPagePushed:(NSString *)pageId name:(NSString *)name;
 
-+ (void)onFlutterPageRemoved:(NSString *)pageId;
++ (void)onFlutterPageRemoved:(NSString *)pageId name:(NSString *)name;
 
-+ (void)onFlutterPageShow:(NSString *)pageId name:(NSString *)name;
++ (void)onFlutterPageResume:(NSString *)pageId name:(NSString *)name;
 
-+ (void)onFlutterPageHide:(NSString *)pageId name:(NSString *)name;
++ (void)onFlutterPagePause:(NSString *)pageId name:(NSString *)name;
 
 @end

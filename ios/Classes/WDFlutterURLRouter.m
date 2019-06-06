@@ -153,27 +153,33 @@ static long long fTag = 0;
     //理论上需要根据这个回调，控制截屏消失的时间
 }
 
-+ (void)onFlutterPagePushed:(NSString *)pageId {
++ (void)onFlutterPagePushed:(NSString *)pageId name:(NSString *)name {
     WDFlutterViewWrapperController *flutterVC = [self getFlutterController:pageId];
     if (flutterVC) {
         [flutterVC flutterPagePushed];
     }
-}
-
-+ (void)onFlutterPageRemoved:(NSString *)pageId {
-    WDFlutterViewWrapperController *flutterVC = [self getFlutterController:pageId];
-    if (flutterVC) {
-        [flutterVC flutterPageRemoved];
-    }
-}
-
-+ (void)onFlutterPageShow:(NSString *)pageId name:(NSString *)name {
     if ([WDFlutterURLRouter.sharedInstance.delegate respondsToSelector:@selector(flutterViewDidAppear:name:)]) {
         [WDFlutterURLRouter.sharedInstance.delegate flutterViewDidAppear:[self getFlutterController:pageId] name:name];
     }
 }
 
-+ (void)onFlutterPageHide:(NSString *)pageId name:(NSString *)name {
++ (void)onFlutterPageRemoved:(NSString *)pageId name:(NSString *)name {
+    WDFlutterViewWrapperController *flutterVC = [self getFlutterController:pageId];
+    if (flutterVC) {
+        [flutterVC flutterPageRemoved];
+    }
+    if ([WDFlutterURLRouter.sharedInstance.delegate respondsToSelector:@selector(flutterViewDidRemove:name:)]) {
+        [WDFlutterURLRouter.sharedInstance.delegate flutterViewDidRemove:[self getFlutterController:pageId] name:name];
+    }
+}
+
++ (void)onFlutterPageResume:(NSString *)pageId name:(NSString *)name {
+    if ([WDFlutterURLRouter.sharedInstance.delegate respondsToSelector:@selector(flutterViewDidAppear:name:)]) {
+        [WDFlutterURLRouter.sharedInstance.delegate flutterViewDidAppear:[self getFlutterController:pageId] name:name];
+    }
+}
+
++ (void)onFlutterPagePause:(NSString *)pageId name:(NSString *)name {
     if ([WDFlutterURLRouter.sharedInstance.delegate respondsToSelector:@selector(flutterViewDidDisappear:name:)]) {
         [WDFlutterURLRouter.sharedInstance.delegate flutterViewDidDisappear:[self getFlutterController:pageId] name:name];
     }
