@@ -125,7 +125,7 @@ class HybridPlugin {
     return _channel.invokeMethod("onFlutterRouteEvent", {
       "eventId": event.index,
       "nativePageId": nativePageId,
-      "name": name
+      "name": name ?? ''
     });
   }
 
