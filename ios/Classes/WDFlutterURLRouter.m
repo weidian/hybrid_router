@@ -38,6 +38,8 @@ static long long fTag = 0;
 
 @implementation WDFlutterURLRouter {
     bool _isFlutterWarmedup;
+    CFAbsoluteTime _startTime;
+    NSString *_page;
 }
     
 + (instancetype)sharedInstance {
@@ -94,6 +96,9 @@ static long long fTag = 0;
 }
 
 - (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result {
+    _startTime = CFAbsoluteTimeGetCurrent();
+    _page = page;
+    
     WDFlutterRouteOptions *options = [WDFlutterRouteOptions new];
     options.pageName = page;
     options.nativePageId = [NSNumber numberWithLongLong:fTag].stringValue;
@@ -122,6 +127,14 @@ static long long fTag = 0;
     [nav pushViewController:viewController animated:YES];
     
     fTag++;
+}
+
+- (void)onFlutterViewRender {
+    CFAbsoluteTime endTime = CFAbsoluteTimeGetCurrent();
+    CFAbsoluteTime renderTime = endTime - _startTime;
+    if ([[WDFlutterURLRouter sharedInstance].delegate respondsToSelector:@selector(flutterViewDidRender:time:)]) {
+        [[WDFlutterURLRouter sharedInstance].delegate flutterViewDidRender:_page time:renderTime];
+    }
 }
 
 + (void)openNativePage:(NSString *)page params:(id)params {
@@ -183,6 +196,10 @@ static long long fTag = 0;
     if ([WDFlutterURLRouter.sharedInstance.delegate respondsToSelector:@selector(flutterViewDidDisappear:name:)]) {
         [WDFlutterURLRouter.sharedInstance.delegate flutterViewDidDisappear:[self getFlutterController:pageId] name:name];
     }
+}
+
++ (void)onFlutterViewRender {
+    [[WDFlutterURLRouter sharedInstance] onFlutterViewRender];
 }
 
 #pragma mark - internal function
