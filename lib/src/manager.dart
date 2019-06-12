@@ -26,6 +26,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:hybrid_router/src/back_pressed.dart';
 
 import 'hybrid_plugin.dart';
 import 'model.dart';
@@ -129,13 +130,17 @@ class HybridRouterManager extends NavigatorObserver {
   }
 
   /// native android 按了返回键
-  bool onBackPressed() {
+  Future<bool> onBackPressed() async {
     _checkObservable();
     // 获取 root navigator 最后一个 route
     Route<dynamic> route =
         _navigatorHistory.isEmpty ? null : _navigatorHistory.last;
     // 如果此 route 是 _HybridKeyRoute，表示返回键需要应用到内部
     if (route is _HybridKeyRoute) {
+      // 这里把返回键处理拦截到儿子
+      if (await route.emmiter.emmit()) {
+        return true;
+      }
       Key key = route.hybridNavigator?.key;
 
       /// 通过 key 来获取 state
@@ -446,6 +451,8 @@ class _HybridKeyRoute<T> extends MaterialPageRoute<T> {
 
   final HybridNavigator hybridNavigator;
 
+  final BackPressedEmmiter emmiter = BackPressedEmmiter();
+
   _HybridKeyRoute(
       {@required this.nativePageId,
       @required this.hybridNavigator,
@@ -472,6 +479,18 @@ class _HybridKeyRoute<T> extends MaterialPageRoute<T> {
   @override
   bool get hasScopedWillPopCallback {
     return true;
+  }
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation) {
+    Widget child = super.buildPage(context, animation, secondaryAnimation);
+    // 加上 back pressed 处理
+    child = BackPressed(
+      child: child,
+      emmiter: emmiter,
+    );
+    return child;
   }
 
   @override
@@ -580,10 +599,7 @@ class _ChildNavigatorObserver extends NavigatorObserver {
         nativePageId: _nativePageId,
         event: FlutterRouteEvent.onReplace,
         name: newRoute.settings.name,
-        extra: {
-          "oldRouteName": oldRoute.settings.name,
-          "isTop": isTop
-        });
+        extra: {"oldRouteName": oldRoute.settings.name, "isTop": isTop});
     _manager.observers?.forEach((o) {
       try {
         o.didReplace(newRoute: newRoute, oldRoute: oldRoute);

@@ -235,7 +235,7 @@ class HybridPlugin {
 
           /// 这里重写了 onBackPressed 是防止出现黑屏无法返回退出的情况
           /// 仅 android 才有
-          return HybridRouterManager.singleton.onBackPressed();
+          return await HybridRouterManager.singleton.onBackPressed();
         case "onNativePageFinished":
           Map args = call.arguments;
           assert(args != null);
