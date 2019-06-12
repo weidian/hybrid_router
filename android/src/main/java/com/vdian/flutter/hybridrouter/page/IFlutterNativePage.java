@@ -116,7 +116,6 @@ public interface IFlutterNativePage {
      */
     int generateRequestCodeByCallback(@NonNull IPageResultCallback callback);
 
-
     /**
      * 打开一个第三方页面
      * @param intent
@@ -129,4 +128,11 @@ public interface IFlutterNativePage {
      * @return
      */
     Context getContext();
+
+    /**
+     * flutter route 事件
+     * @param name
+     * @param eventId
+     */
+    void onFlutterRouteEvent(String name, int eventId, Map extra);
 }

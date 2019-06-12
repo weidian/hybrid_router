@@ -229,6 +229,9 @@ public class FlutterWrapActivity extends AppCompatActivity implements PluginRegi
     }
 
     @Override
+    public void onFlutterRouteEvent(String name, int eventId, Map extra) { }
+
+    @Override
     public FlutterView createFlutterView(Context context) {
         FlutterNativeView flutterNativeView = createFlutterNativeView();
         return new FlutterView(this, null, flutterNativeView);

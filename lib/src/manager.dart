@@ -573,12 +573,17 @@ class _ChildNavigatorObserver extends NavigatorObserver {
   void didReplace({Route<dynamic> newRoute, Route<dynamic> oldRoute}) {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
     int index = _history.indexOf(oldRoute);
+    bool isTop = index == _history.length - 1;
     assert(index >= 0);
     _history[index] = newRoute;
     HybridPlugin.singleton.onFlutterRouteEvent(
         nativePageId: _nativePageId,
         event: FlutterRouteEvent.onReplace,
-        name: newRoute.settings.name);
+        name: newRoute.settings.name,
+        extra: {
+          "oldRouteName": oldRoute.settings.name,
+          "isTop": isTop
+        });
     _manager.observers?.forEach((o) {
       try {
         o.didReplace(newRoute: newRoute, oldRoute: oldRoute);

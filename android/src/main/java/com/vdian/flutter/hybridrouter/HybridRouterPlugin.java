@@ -43,6 +43,16 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
  */
 public class HybridRouterPlugin extends SafeMethodCallHandler {
 
+    // flutter route 事件
+    // pop /remove 在 resume 前
+    // push 在 pause 后
+    public static final int FLUTTER_ON_PUSH = 0;
+    public static final int FLUTTER_ON_RESUME = 1;
+    public static final int FLUTTER_ON_PAUSE = 2;
+    public static final int FLUTTER_ON_REPLACE = 3;
+    public static final int FLUTTER_ON_POP = 4;
+    public static final int FLUTTER_ON_REMOVE = 5;
+
     private static final int ON_CREATE = 0;
     private static final int ON_PAUSE = 1;
     private static final int ON_RESUME = 2;
@@ -209,6 +219,15 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
                 break;
             }
             case "onFlutterRouteEvent": {
+                HashMap<String, Object> args = call.arguments();
+                String nativePageId = (String) args.get("nativePageId");
+                String name = (String) args.get("name");
+                Map extra = (Map) args.get("extra");
+                int eventId = (int) args.get("eventId");
+                IFlutterNativePage nativePage = FlutterStackManager.getInstance().getNativePageById(nativePageId);
+                if (nativePage != null) {
+                    nativePage.onFlutterRouteEvent(name, eventId, extra);
+                }
                 result.success(null);
                 break;
             }

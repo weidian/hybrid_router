@@ -68,22 +68,24 @@ enum NativeRouteEvent {
 }
 
 /// Native 接收到的 flutter page 事件
+/// pop /remove 在 resume 前
+/// push 在 pause 后
 enum FlutterRouteEvent {
   /// flutter route push 事件
   onPush,
 
   /// flutter route resume 事件
   onResume,
-  
+
   /// flutter route pause 事件
   onPause,
-  
+
   /// flutter route replace 事件
   onReplace,
 
   /// flutter route pop 事件
   onPop,
-  
+
   /// flutter route remove 事件
   onRemove
 }
@@ -119,13 +121,15 @@ class HybridPlugin {
   Future<void> onFlutterRouteEvent(
       {@required String nativePageId,
       @required FlutterRouteEvent event,
-        @required String name}) {
+      @required String name,
+      Map extra}) {
     assert(nativePageId != null && event != null);
     print('onFlutterRouteEvent: ($nativePageId): $event');
     return _channel.invokeMethod("onFlutterRouteEvent", {
       "eventId": event.index,
       "nativePageId": nativePageId,
-      "name": name ?? ''
+      "name": name ?? '',
+      "extra": extra
     });
   }
 
