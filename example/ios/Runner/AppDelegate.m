@@ -25,7 +25,7 @@
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
-#pragma mark - XURLRouterDelegate
+#pragma mark - WDFlutterURLRouterDelegate
 - (UIViewController *)flutterCurrentController {
     return [UIApplication sharedApplication].delegate.window.rootViewController;
 }

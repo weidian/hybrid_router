@@ -30,6 +30,7 @@
 #import "WDFlutterViewWrapperController.h"
 #import "WDFlutterViewController.h"
 #import "HybridRouterPlugin.h"
+#import "WDFlutterURLRouter.h"
 
 @interface WDFlutterViewWrapperController ()
 
@@ -41,7 +42,6 @@
 
 @implementation WDFlutterViewWrapperController {
     BOOL _isFirstOpen;
-    
     int _flutterPageCount;
 }
 
@@ -211,6 +211,10 @@
     }
 }
 
+- (void)flutterViewDidRender {
+    [WDFlutterURLRouter onFlutterViewRender];
+}
+
 + (WDFlutterViewController *)flutterVC {
     static dispatch_once_t onceToken;
     static WDFlutterViewController *flutterVC;
@@ -218,6 +222,11 @@
     dispatch_once(&onceToken, ^{
         printf("init flutter engine");
         flutterVC = [[WDFlutterViewController alloc] initWithProject:nil nibName:nil bundle:nil];
+        [flutterVC setFlutterViewDidRenderCallback:^{
+            if (flutterVC.parentViewController) {
+                [(WDFlutterViewWrapperController *)flutterVC.parentViewController flutterViewDidRender];
+            }
+        }];
     });
     return flutterVC;
 }
