@@ -95,16 +95,14 @@ mixin OnBackPressedMixin<T extends StatefulWidget> on State<T> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_pressedState != null) {
-      _pressedState.removeBackPressedCallback(onBackPressed);
-    }
+    _pressedState?.removeBackPressedCallback(onBackPressed);
     _pressedState = BackPressed.of(context);
     _pressedState.addBackPressedCallback(onBackPressed);
   }
 
   @override
   void dispose() {
-    _pressedState?.removeBackPressedCallback(onBackPressed);
+    _pressedState.removeBackPressedCallback(onBackPressed);
     super.dispose();
   }
 
