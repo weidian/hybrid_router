@@ -89,6 +89,9 @@ class BackPressedState extends State<BackPressed> {
 
 /// 方便编写代码的 mixin
 mixin OnBackPressedMixin<T extends StatefulWidget> on State<T> {
+
+  BackPressedState _pressedState;
+
   @override
   void initState() {
     super.initState();
@@ -96,9 +99,15 @@ mixin OnBackPressedMixin<T extends StatefulWidget> on State<T> {
   }
 
   @override
+  void deactivate() {
+    _pressedState = BackPressed.of(context);
+    super.deactivate();
+  }
+
+  @override
   void dispose() {
+    _pressedState?.removeBackPressedCallback(onBackPressed);
     super.dispose();
-    BackPressed.of(context).removeBackPressedCallback(onBackPressed);
   }
 
   Future<bool> onBackPressed();
