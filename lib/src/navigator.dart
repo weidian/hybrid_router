@@ -52,50 +52,38 @@ import 'model.dart';
 class HybridNavigator extends Navigator {
   /// 获取页面默认打开方式
   static HybridPushType get defaultPushType {
-    if (HybridRouterManager.isInit()) {
-      return HybridRouterManager.singleton.defaultPushType;
+    if (NativeContainerManager.isInit()) {
+      return NativeContainerManager.state.widget.defaultPushType;
     }
     return HybridPushType.Native;
   }
 
-  /// 初始化混合栈路由
-  /// [routes] 路由信息
-  /// [defaultPushType] 默认的打开类型
-  /// [unknownRouteBuilder] 未知路由构建器
-  static NavigatorObserver init(
+  static NativeContainerManager init(
       {@required Map<String, HybridWidgetBuilder> routes,
-      HybridPushType defaultPushType = HybridPushType.Native,
-      List<HybridNavigatorObserver> observers =
-          const <HybridNavigatorObserver>[],
+      WidgetBuilder backgroundBuilder,
+      HybridPushType defaultPushType,
+      List<NativeContainerObserver> containerObserver = const [],
+      List<HybridNavigatorObserver> pageObserver = const [],
       HybridRouteFactory unknownRouteBuilder}) {
-    HybridRouterManager.init(
-        routes: routes,
-        observers: observers,
-        unknownRouteBuilder: unknownRouteBuilder,
-        defaultPushType: defaultPushType);
-    return HybridRouterManager.singleton;
+    return NativeContainerManager(
+      routes: routes,
+      defaultPushType: defaultPushType,
+      containerObserver: containerObserver,
+      pageObserver: pageObserver,
+      backgroundBuilder: backgroundBuilder,
+      unknownRouteBuilder: unknownRouteBuilder,
+    );
   }
 
   /// 通过此 context 获取到对应的 native page id
-  static String getNativePageIdByContext(BuildContext context) {
-    return HybridRouterManager.singleton.getNativePageIdByContext(context);
-  }
+  static String getNativePageIdByContext(BuildContext context) {}
 
   /// 通过此 route 获取到对应的 native page id
   /// 此 route 可以是混合栈容器内的 route，也可以是混合栈本身的 route
-  static String getNativePageIdByRoute(Route<dynamic> route) {
-    return HybridRouterManager.singleton.getNativePageIdByRoute(route);
-  }
+  static String getNativePageIdByRoute(Route<dynamic> route) {}
 
   /// 获取 native 容器包含的 route 列表
-  static List<Route<dynamic>> getRoutesInNativePage(String nativePageId) {
-    return HybridRouterManager.singleton.getRoutesInNativePage(nativePageId);
-  }
-
-  /// 启动初始路由
-  static void startInitRoute() {
-    HybridRouterManager.singleton.startInitRoute();
-  }
+  static List<Route<dynamic>> getRoutesInNativePage(String nativePageId) {}
 
   /// 获取 HybridNavigatorState
   static HybridNavigatorState of(BuildContext context, {bool nullOk = false}) {
@@ -214,12 +202,12 @@ class HybridNavigatorState extends NavigatorState {
       {Object arguments,
       HybridPushType pushType,
       NativePageTransitionType transitionType}) {
-    pushType = pushType ?? HybridRouterManager.singleton.defaultPushType;
+    pushType = pushType ?? HybridNavigator.defaultPushType;
     assert(routeName != null);
     assert(pushType != null);
     if (pushType == HybridPushType.Native) {
-      return _parseFlutterNativeResult(HybridRouterManager.singleton
-          .openFlutterNamedInNative(
+      return _parseFlutterNativeResult(
+          NativeContainerManager.openFlutterNamedInNative(
               nativePageId: widget.nativePageId,
               pageName: routeName,
               args: arguments,
@@ -250,8 +238,8 @@ class HybridNavigatorState extends NavigatorState {
       pushType = HybridNavigator.defaultPushType;
     }
     if (pushType == HybridPushType.Native) {
-      return _parseFlutterNativeResult(HybridRouterManager.singleton
-          .openFlutterRouteInNative(
+      return _parseFlutterNativeResult(
+          NativeContainerManager.openFlutterRouteInNative(
               nativePageId: widget.nativePageId,
               route: route,
               type: transitionType));
@@ -266,8 +254,8 @@ class HybridNavigatorState extends NavigatorState {
     }
     // pop 函数本来是非异步的，但是这里因为是当前 Navigator 最后一个页面了，所以可以放心
     // 使用 channel 关闭页面
-    HybridRouterManager.singleton
-        .closeKeyPage(widget.nativePageId, result, _initialRoute);
+    NativeContainerManager.removeNamed(
+        nativePageId: widget.nativePageId, result: result);
     return true;
   }
 
@@ -278,7 +266,7 @@ class HybridNavigatorState extends NavigatorState {
       Map args,
       NativePageTransitionType transitionType}) {
     assert(url != null);
-    return HybridRouterManager.singleton.openNativePage<T>(
+    return NativeContainerManager.openNativePage<T>(
         url: url,
         nativePageId: widget.nativePageId,
         args: args,

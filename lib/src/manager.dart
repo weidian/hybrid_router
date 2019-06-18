@@ -198,7 +198,6 @@ class HybridRouterManager extends NavigatorObserver {
 
     _HybridKeyRoute pushRoute = _HybridKeyRoute(
       nativePageId: nativePageId,
-
       // key 必须与 widget 一一对应
       hybridNavigator: HybridNavigator(
         key: GlobalKey<HybridNavigatorState>(),
@@ -362,7 +361,7 @@ class HybridRouterManager extends NavigatorObserver {
   int _localRouteIndex = 11037;
 
   String _addLocalRoute(Route<dynamic> route) {
-    String pageName = "\hybrid_router_local_route_${_localRouteIndex++}";
+    String pageName = "hybrid_router_local_route_${_localRouteIndex++}";
     _localRoutePending[pageName] = route;
     return pageName;
   }
@@ -625,6 +624,481 @@ class _ChildNavigatorObserver extends NavigatorObserver {
   void didStopUserGesture() {
     super.didStopUserGesture();
     _manager.observers?.forEach((o) {
+      o.didStopUserGesture();
+    });
+  }
+}
+
+/// Manage the native container
+class NativeContainerManager extends StatefulWidget {
+  /// 静态状态实例，这里表明是单例模型
+  static NativeContainerManagerState state;
+
+  /// 当前 manager 是否 state 有效
+  static bool isInit() {
+    return state != null;
+  }
+
+  static void pushNamed(
+      {@required String nativePageId, @required String pageName, Object args}) {
+    _checkState();
+    state.pushNamed(nativePageId: nativePageId, pageName: pageName, args: args);
+  }
+
+  static void push(NativeContainer containter) {
+    _checkState();
+    state.push(containter);
+  }
+
+  static void showNamed({@required String nativePageId}) {
+    _checkState();
+    state.showNamed(nativePageId: nativePageId);
+  }
+
+  static void show(NativeContainer container) {
+    _checkState();
+    state.show(container);
+  }
+
+  static bool removeNamed({@required String nativePageId, dynamic result}) {
+    _checkState();
+    return state.removeNamed(nativePageId: nativePageId, result: result);
+  }
+
+  static bool remove(NativeContainer container) {
+    _checkState();
+    return state.remove(container);
+  }
+
+  /// flutter 请求在新的 native 容器中 open 一个 flutter 页面
+  static Future<NativePageResult<T>> openFlutterNamedInNative<T extends Object>(
+      {@required String nativePageId,
+      @required String pageName,
+      Object args,
+      NativePageTransitionType type}) {
+    type = type ?? NativePageTransitionType.DEFAULT;
+    return HybridPlugin.singleton.openFlutterPage<T>(
+        nativePageId: nativePageId,
+        pageName: pageName,
+        args: args,
+        transitionType: type);
+  }
+
+  /// flutter 请求在新的 native 容器中 open 一个 flutter route
+  static Future<NativePageResult<T>> openFlutterRouteInNative<T extends Object>(
+      {@required String nativePageId,
+      @required Route<T> route,
+      NativePageTransitionType type}) {
+    _checkState();
+    type = type ?? NativePageTransitionType.DEFAULT;
+    String pageName = state._addLocalRoute(route);
+    return HybridPlugin.singleton.openFlutterPage<T>(
+        nativePageId: nativePageId,
+        pageName: pageName,
+        args: {},
+        transitionType: type);
+  }
+
+  /// flutter 请求 open 一个 native 页面
+  static Future<NativePageResult<T>> openNativePage<T extends Object>(
+      {@required String url,
+      @required String nativePageId,
+      Map args,
+      NativePageTransitionType transitionType}) {
+    assert(url != null);
+    transitionType = transitionType ?? NativePageTransitionType.DEFAULT;
+    return HybridPlugin.singleton.openNativePage(
+        url: url,
+        args: args,
+        nativePageId: nativePageId,
+        transitionType: transitionType);
+  }
+
+  static _checkState() {
+    assert(
+        state != null,
+        "NativeContainerManager's state is null\n"
+        "Please add NativeContainerManager to App");
+  }
+
+  final WidgetBuilder backgroundBuilder;
+
+  /// 路由表
+  final Map<String, HybridWidgetBuilder> routes;
+
+  /// 路由匹配失败时候的 builder
+  final HybridRouteFactory unknownRouteBuilder;
+
+  /// 默认的 push type
+  final HybridPushType defaultPushType;
+
+  /// native container 变化观察者
+  final List<NativeContainerObserver> containerObserver;
+
+  /// native container 内的 hybrid navigator 内页面变化观察者
+  final List<HybridNavigatorObserver> pageObserver;
+
+  const NativeContainerManager(
+      {Key key,
+      @required this.routes,
+      this.backgroundBuilder,
+      this.unknownRouteBuilder,
+      this.defaultPushType,
+      this.containerObserver = const [],
+      this.pageObserver = const []})
+      : assert(defaultPushType != null),
+        assert(routes != null),
+        assert(containerObserver != null),
+        assert(pageObserver != null),
+        super(key: key);
+
+  @override
+  NativeContainerManagerState createState() => NativeContainerManagerState();
+}
+
+class NativeContainerManagerState extends State<NativeContainerManager> {
+  /// The overlay this navigator uses for its visual presentation.
+  OverlayState get overlay => _overlayKey.currentState;
+
+  /// native android 按了返回键
+  Future<bool> onBackPressed() async {
+    // get last navigate container
+    NativeContainer container =
+        _containerHistory.isEmpty ? null : _containerHistory.last;
+    if (await container.emmiter.emmit()) {
+      return true;
+    }
+    try {
+      return container.pop();
+    } catch (e) {
+      FlutterError.onError(e);
+    }
+    return false;
+  }
+
+  /// native request to push a flutter page
+  void pushNamed(
+      {@required String nativePageId, @required String pageName, Object args}) {
+    assert(nativePageId != null);
+    assert(pageName != null);
+
+    Route<dynamic> initRoute = _matchLocalRoute(pageName);
+    push(NativeContainer(
+      nativePageId: nativePageId,
+      initRouteName: pageName,
+      initRoute: initRoute,
+      args: args,
+      generateBuilder: _routeGenerator,
+      unknownBuilder: _unknownRouteGenerator,
+    ));
+  }
+
+  /// push a native container to manager
+  void push(NativeContainer container) {
+    assert(container != null, "Push container should not be null");
+    assert(container.nativePageId != null,
+        "Container's nativePageId should not be null");
+    NativeContainer lastContainer =
+        _containerHistory.isEmpty ? null : _containerHistory.last;
+    _containerHistory.add(container);
+    OverlayEntry overlayEntry = OverlayEntry(builder: (context) => container);
+    container._overlayEntry = overlayEntry;
+    container._manager = this;
+    overlay.insert(overlayEntry, above: lastContainer._overlayEntry);
+  }
+
+  /// move the container to top by name
+  void showNamed({@required String nativePageId}) {
+    assert(nativePageId != null, "NativePageId should not be null");
+    NativeContainer c = _containerHistory.firstWhere((c) {
+      return c.nativePageId == nativePageId;
+    });
+    show(c);
+  }
+
+  /// move the container to top
+  void show(NativeContainer container) {
+    if (container != null && container != _containerHistory.last) {
+      overlay.rearrange([container._overlayEntry],
+          above: _containerHistory.last._overlayEntry);
+      _containerHistory.remove(container);
+      _containerHistory.add(container);
+    }
+  }
+
+  /// remove a native container by native page Id
+  bool removeNamed({@required String nativePageId, dynamic result}) {
+    NativeContainer c = _containerHistory.firstWhere((c) {
+      return c.nativePageId == nativePageId;
+    });
+    c._result = result;
+    return remove(c);
+  }
+
+  /// remove a native container
+  bool remove(NativeContainer container) {
+    if (container == null) {
+      return false;
+    }
+    container._overlayEntry.remove();
+    _containerHistory.remove(container);
+    return true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    NativeContainerManager.state = this;
+    _startInitRoute();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<OverlayEntry> initEntry;
+    if (widget.backgroundBuilder != null) {
+      initEntry = [OverlayEntry(builder: widget.backgroundBuilder)];
+    }
+    return Overlay(
+      key: _overlayKey,
+      initialEntries: initEntry,
+    );
+  }
+
+  final GlobalKey<OverlayState> _overlayKey = GlobalKey<OverlayState>();
+
+  final List<NativeContainer> _containerHistory = [];
+
+  /// page name 对应的 route
+  final Map<String, Route<dynamic>> _localRoutePending = {};
+
+  /// 别问我这个数字为啥是 11037
+  int _localRouteIndex = 11037;
+
+  String _addLocalRoute(Route<dynamic> route) {
+    String pageName = "hybrid_router_local_route_${_localRouteIndex++}";
+    _localRoutePending[pageName] = route;
+    return pageName;
+  }
+
+  Route<dynamic> _matchLocalRoute(String pageName) {
+    return _localRoutePending.remove(pageName);
+  }
+
+  Route<T> _routeGenerator<T extends Object>(RouteSettings settings) {
+    HybridWidgetBuilder builder = widget.routes[settings.name];
+    if (builder != null) {
+      return MaterialPageRoute<T>(
+          builder: (context) {
+            return builder(context, settings.arguments);
+          },
+          settings: settings);
+    }
+    return null;
+  }
+
+  Route<T> _unknownRouteGenerator<T extends Object>(RouteSettings settings) {
+    if (widget.unknownRouteBuilder != null) {
+      return widget.unknownRouteBuilder(settings);
+    }
+    return null;
+  }
+
+  /// 这里是异步的，所以可以直接用 push
+  void _startInitRoute() async {
+    Map initRoute = await HybridPlugin.singleton.getInitRoute();
+    assert(initRoute != null);
+    String pageName = initRoute["pageName"];
+    assert(pageName != null);
+    Object args = initRoute["args"];
+    String nativePageId = initRoute["nativePageId"];
+    pushNamed(nativePageId: nativePageId, pageName: pageName, args: args);
+  }
+}
+
+/// native container
+class NativeContainer extends StatefulWidget {
+  final String nativePageId;
+
+  final String initRouteName;
+
+  final Route<dynamic> initRoute;
+
+  final Object args;
+
+  final HybridRouteFactory generateBuilder;
+
+  final HybridRouteFactory unknownBuilder;
+
+  final BackPressedEmmiter emmiter = BackPressedEmmiter();
+
+  final GlobalKey<NavigatorState> navKey = GlobalKey();
+
+  final List<HybridNavigatorObserver> observers;
+
+  NativeContainerManagerState _manager;
+
+  OverlayEntry _overlayEntry;
+
+  dynamic _result;
+
+  /// Pop a flutter router in native container
+  bool pop<T extends Object>({T result}) {
+    assert(
+        navKey.currentState != null, "The key of Navigator return null state");
+    return navKey.currentState.pop(result);
+  }
+
+  NativeContainer(
+      {Key key,
+      @required this.nativePageId,
+      this.initRouteName,
+      this.initRoute,
+      this.args,
+      this.observers,
+      @required this.generateBuilder,
+      @required this.unknownBuilder})
+      : assert(nativePageId != null),
+        assert(generateBuilder != null),
+        assert(unknownBuilder != null),
+        super(key: key) {
+    if (initRoute is HybridPageRoute) {
+      // 强制改为 flutter 的打开方式，防止死循环
+      (initRoute as HybridPageRoute).pushType = HybridPushType.Flutter;
+    }
+  }
+
+  @override
+  NativeContainerState createState() => NativeContainerState();
+}
+
+class NativeContainerState extends State<NativeContainer>
+    with NavigatorObserver {
+  final List<Route<dynamic>> _history = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return HybridNavigator(
+      key: widget.navKey,
+      nativePageId: widget.nativePageId,
+      initialRoute: widget.initRouteName,
+      initRoute: widget.initRoute,
+      initRouteArgs: widget.args,
+      generateBuilder: widget.generateBuilder,
+      unknownBuilder: widget.unknownBuilder,
+      observers: [this],
+    );
+  }
+
+  /// 分发子页面的生命周期
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic> previousRoute) {
+    super.didPush(route, previousRoute);
+    _history.add(route);
+
+    if (previousRoute != null) {
+      HybridPlugin.singleton.onFlutterRouteEvent(
+          nativePageId: widget.nativePageId,
+          event: FlutterRouteEvent.onPause,
+          name: previousRoute.settings.name);
+    }
+
+    HybridPlugin.singleton.onFlutterRouteEvent(
+        nativePageId: widget.nativePageId,
+        event: FlutterRouteEvent.onPush,
+        name: route.settings.name);
+    widget.observers?.forEach((o) {
+      try {
+        o.didPush(route, previousRoute);
+      } catch (e) {
+        FlutterError.onError(e);
+      }
+    });
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic> previousRoute) {
+    _history.removeLast();
+    HybridPlugin.singleton.onFlutterRouteEvent(
+        nativePageId: widget.nativePageId,
+        event: FlutterRouteEvent.onPop,
+        name: route.settings.name);
+    widget.observers?.forEach((o) {
+      try {
+        o.didPop(route, previousRoute);
+      } catch (e) {
+        FlutterError.onError(e);
+      }
+    });
+    if (previousRoute != null) {
+      HybridPlugin.singleton.onFlutterRouteEvent(
+          nativePageId: widget.nativePageId,
+          event: FlutterRouteEvent.onResume,
+          name: previousRoute.settings.name);
+    }
+    super.didPop(route, previousRoute);
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic> previousRoute) {
+    _history.remove(route);
+    HybridPlugin.singleton.onFlutterRouteEvent(
+        nativePageId: widget.nativePageId,
+        event: FlutterRouteEvent.onRemove,
+        name: route.settings.name);
+    widget.observers?.forEach((o) {
+      try {
+        o.didRemove(route, previousRoute);
+      } catch (e) {
+        FlutterError.onError(e);
+      }
+    });
+
+    if (_history.isNotEmpty && _history.last == previousRoute) {
+      HybridPlugin.singleton.onFlutterRouteEvent(
+          nativePageId: widget.nativePageId,
+          event: FlutterRouteEvent.onResume,
+          name: previousRoute.settings.name);
+    }
+    super.didRemove(route, previousRoute);
+  }
+
+  @override
+  void didReplace({Route<dynamic> newRoute, Route<dynamic> oldRoute}) {
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    int index = _history.indexOf(oldRoute);
+    bool isTop = index == _history.length - 1;
+    assert(index >= 0);
+    _history[index] = newRoute;
+    HybridPlugin.singleton.onFlutterRouteEvent(
+        nativePageId: widget.nativePageId,
+        event: FlutterRouteEvent.onReplace,
+        name: newRoute.settings.name,
+        extra: {"oldRouteName": oldRoute.settings.name, "isTop": isTop});
+    widget.observers?.forEach((o) {
+      try {
+        o.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+      } catch (e) {
+        FlutterError.onError(e);
+      }
+    });
+  }
+
+  @override
+  void didStartUserGesture(Route<dynamic> route, Route<dynamic> previousRoute) {
+    super.didStartUserGesture(route, previousRoute);
+    widget.observers?.forEach((o) {
+      try {
+        o.didStartUserGesture(route, previousRoute);
+      } catch (e) {
+        FlutterError.onError(e);
+      }
+    });
+  }
+
+  @override
+  void didStopUserGesture() {
+    super.didStopUserGesture();
+    widget.observers?.forEach((o) {
       o.didStopUserGesture();
     });
   }

@@ -4,33 +4,32 @@ import 'package:hybrid_router/hybrid_router.dart';
 import 'example.dart';
 
 void main() {
-  NavigatorObserver observer = HybridNavigator.init(
-      defaultPushType: HybridPushType.Native,
-      observers: [_TestNavigatorObserver()],
-      routes: {
-        "example": (context, argument) {
-          return ExamplePage(
-            title: argument as String,
-          );
-        }
-      },
-      unknownRouteBuilder: <T>(RouteSettings settings) {
-        return MaterialPageRoute<T>(
-          builder: (context) {
-            return PageNotFound();
-          },
-          settings: settings,
-        );
-      });
-
   runApp(MaterialApp(
-    navigatorObservers: [observer],
     theme: ThemeData(
       brightness: Brightness.light,
     ),
     home: EmptyPage(),
+    builder: (context, child) {
+      return HybridNavigator.init(
+          defaultPushType: HybridPushType.Flutter,
+          pageObserver: [_TestNavigatorObserver()],
+          routes: {
+            "example": (context, argument) {
+              return ExamplePage(
+                title: argument as String,
+              );
+            }
+          },
+          unknownRouteBuilder: <T>(RouteSettings settings) {
+            return MaterialPageRoute<T>(
+              builder: (context) {
+                return PageNotFound();
+              },
+              settings: settings,
+            );
+          });
+    },
   ));
-  HybridNavigator.startInitRoute();
 }
 
 class EmptyPage extends StatelessWidget {

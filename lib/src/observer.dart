@@ -44,6 +44,7 @@
 /// @since 2019-03-23 15:51
 ///
 import 'package:flutter/material.dart';
+import 'package:hybrid_router/src/manager.dart';
 import 'navigator.dart';
 
 /// 混合栈内部的 Observer，可以观察到混合栈中不同 Navigator 中 route 的变化
@@ -92,4 +93,15 @@ class HybridNavigatorObserver {
   ///
   /// Paired with an earlier call to [didStartUserGesture].
   void didStopUserGesture() { }
+}
+
+class NativeContainerObserver {
+
+  void didPush(NativeContainer container, NativeContainer previousContainer) { }
+
+  void didResume(NativeContainer container, NativeContainer previousContainer) { }
+
+  void didPause(NativeContainer container, NativeContainer previousContainer) { }
+
+  void didRemove(NativeContainer container, NativeContainer previousContainer) { }
 }
