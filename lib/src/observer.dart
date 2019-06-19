@@ -99,9 +99,7 @@ class NativeContainerObserver {
 
   void didPush(NativeContainer container, NativeContainer previousContainer) { }
 
-  void didResume(NativeContainer container, NativeContainer previousContainer) { }
-
-  void didPause(NativeContainer container, NativeContainer previousContainer) { }
+  void didShow(NativeContainer container, NativeContainer topContainer) { }
 
   void didRemove(NativeContainer container, NativeContainer previousContainer) { }
 }

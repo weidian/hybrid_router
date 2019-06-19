@@ -639,6 +639,11 @@ class NativeContainerManager extends StatefulWidget {
     return state != null;
   }
 
+  static Future<bool> onBackPressed() {
+    _checkState();
+    return state.onBackPressed();
+  }
+
   static void pushNamed(
       {@required String nativePageId, @required String pageName, Object args}) {
     _checkState();
@@ -660,12 +665,12 @@ class NativeContainerManager extends StatefulWidget {
     state.show(container);
   }
 
-  static bool removeNamed({@required String nativePageId, dynamic result}) {
+  static Future<bool> removeNamed({@required String nativePageId, dynamic result}) {
     _checkState();
     return state.removeNamed(nativePageId: nativePageId, result: result);
   }
 
-  static bool remove(NativeContainer container) {
+  static Future<bool> remove(NativeContainer container) {
     _checkState();
     return state.remove(container);
   }
@@ -804,7 +809,8 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     OverlayEntry overlayEntry = OverlayEntry(builder: (context) => container);
     container._overlayEntry = overlayEntry;
     container._manager = this;
-    overlay.insert(overlayEntry, above: lastContainer._overlayEntry);
+    overlay.insert(overlayEntry, above: lastContainer?._overlayEntry);
+    _didPush(container, lastContainer);
   }
 
   /// move the container to top by name
@@ -821,13 +827,16 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     if (container != null && container != _containerHistory.last) {
       overlay.rearrange([container._overlayEntry],
           above: _containerHistory.last._overlayEntry);
+      NativeContainer topContainer =
+          _containerHistory.isEmpty ? null : _containerHistory.last;
       _containerHistory.remove(container);
       _containerHistory.add(container);
+      _didShow(container, topContainer);
     }
   }
 
   /// remove a native container by native page Id
-  bool removeNamed({@required String nativePageId, dynamic result}) {
+  Future<bool> removeNamed({@required String nativePageId, dynamic result}) {
     NativeContainer c = _containerHistory.firstWhere((c) {
       return c.nativePageId == nativePageId;
     });
@@ -836,12 +845,26 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
   }
 
   /// remove a native container
-  bool remove(NativeContainer container) {
+  Future<bool> remove(NativeContainer container) async {
     if (container == null) {
       return false;
     }
+
+    // 通知 native 组件，我将要 pop
+    await HybridPlugin.singleton.onNativeRouteEvent(
+      event: NativeRouteEvent.beforeDestroy,
+      nativePageId: container.nativePageId,
+      result: container._result
+    );
+
     container._overlayEntry.remove();
-    _containerHistory.remove(container);
+    int index = _containerHistory.indexOf(container);
+    NativeContainer preContainer;
+    if (index > 0) {
+      preContainer = _containerHistory[index];
+    }
+    _containerHistory.removeAt(index);
+    _didRemove(container, preContainer);
     return true;
   }
 
@@ -857,6 +880,8 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     List<OverlayEntry> initEntry;
     if (widget.backgroundBuilder != null) {
       initEntry = [OverlayEntry(builder: widget.backgroundBuilder)];
+    } else {
+      initEntry = [];
     }
     return Overlay(
       key: _overlayKey,
@@ -873,6 +898,62 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
 
   /// 别问我这个数字为啥是 11037
   int _localRouteIndex = 11037;
+
+  void _didPush(NativeContainer container, NativeContainer preContainer) {
+    HybridPlugin.singleton.onNativeRouteEvent(
+        event: NativeRouteEvent.onCreate, nativePageId: container.nativePageId);
+    widget.containerObserver?.forEach((o) {
+      try {
+        o.didPush(container, preContainer);
+      } catch (e) {
+        FlutterError.onError(e);
+      }
+    });
+    if (preContainer != null) {
+      HybridPlugin.singleton.onNativeRouteEvent(
+          event: NativeRouteEvent.onPause,
+          nativePageId: preContainer.nativePageId);
+    }
+  }
+
+  void _didShow(NativeContainer container, NativeContainer topContainer) {
+    HybridPlugin.singleton.onNativeRouteEvent(
+        event: NativeRouteEvent.onResume, nativePageId: container.nativePageId);
+    if (topContainer != null && topContainer != container) {
+      HybridPlugin.singleton.onNativeRouteEvent(
+          event: NativeRouteEvent.onPause,
+          nativePageId: topContainer.nativePageId);
+    }
+    widget.containerObserver?.forEach((o) {
+      try {
+        o.didShow(container, topContainer);
+      } catch (e) {
+        FlutterError.onError(e);
+      }
+    });
+  }
+
+  void _didRemove(NativeContainer container, NativeContainer preContainer) {
+    HybridPlugin.singleton.onNativeRouteEvent(
+      event: NativeRouteEvent.onDestroy,
+      nativePageId: container.nativePageId
+    );
+    if (preContainer != null) {
+      HybridPlugin.singleton.onNativeRouteEvent(
+        event: NativeRouteEvent.onResume,
+        nativePageId: container.nativePageId
+      );
+    }
+    _repairFrameSchedule();
+  }
+
+  void _repairFrameSchedule() {
+    // need to repair onDrawFrame callback
+    Future.delayed(Duration(microseconds: 0), () {
+      window.onBeginFrame(null);
+      window.onDrawFrame();
+    });
+  }
 
   String _addLocalRoute(Route<dynamic> route) {
     String pageName = "hybrid_router_local_route_${_localRouteIndex++}";

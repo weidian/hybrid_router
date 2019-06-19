@@ -216,7 +216,7 @@ class HybridPlugin {
         case "pushFlutterPage":
           Map args = call.arguments;
           assert(args != null);
-          HybridRouterManager.singleton.push(
+          NativeContainerManager.pushNamed(
               nativePageId: args["nativePageId"],
               pageName: args["pageName"],
               args: args["args"]);
@@ -235,13 +235,13 @@ class HybridPlugin {
 
           /// 这里重写了 onBackPressed 是防止出现黑屏无法返回退出的情况
           /// 仅 android 才有
-          return await HybridRouterManager.singleton.onBackPressed();
+          return await NativeContainerManager.onBackPressed();
         case "onNativePageFinished":
           Map args = call.arguments;
           assert(args != null);
           print('onNativePageFinished: ${args['nativePageId']}');
-          HybridRouterManager.singleton
-              .onNativePageFinished(args["nativePageId"]);
+          NativeContainerManager
+              .removeNamed(nativePageId: args["nativePageId"]);
           break;
         default:
           assert(false, "Method: ${call.method} not implemented in flutter");

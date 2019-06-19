@@ -11,7 +11,10 @@ void main() {
     home: EmptyPage(),
     builder: (context, child) {
       return HybridNavigator.init(
-          defaultPushType: HybridPushType.Flutter,
+          backgroundBuilder: (context) {
+            return EmptyPage();
+          },
+          defaultPushType: HybridPushType.Native,
           pageObserver: [_TestNavigatorObserver()],
           routes: {
             "example": (context, argument) {
