@@ -699,13 +699,7 @@ public class FlutterWrapActivity extends AppCompatActivity implements PluginRegi
                 // 从 flutter 过来的数据
                 result = extras.get(EXTRA_RESULT_KEY);
             } else if (extras != null){
-                HashMap<String, Object> retMap = new HashMap<>();
-                if (data.getExtras() != null) {
-                    for (String key : data.getExtras().keySet()) {
-                        retMap.put(key, data.getExtras().get(key));
-                    }
-                }
-                result = retMap;
+                result = FlutterStackManagerUtil.bundle2Map(extras);
             }
             ret.put("data", result);
             resultChannel.success(ret);

@@ -25,6 +25,8 @@
 package com.vdian.flutter.hybridrouter;
 
 import android.content.Intent;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 import android.util.Log;
@@ -32,6 +34,9 @@ import android.util.Log;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.flutter.embedding.engine.FlutterJNI;
@@ -61,6 +66,71 @@ import io.flutter.view.FlutterView;
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 public class FlutterStackManagerUtil {
+
+    public static Map bundle2Map(@NonNull Bundle bundle) {
+        Map<String, Object> ret = new HashMap<>();
+        for (String key : bundle.keySet()) {
+            Object value = bundle.get(key);
+            if (value instanceof Map) {
+                filterMap((Map) value);
+            } else if (value instanceof List) {
+                filterList((List) value);
+            } else if (!isBasicValue(value)) {
+                value = null;
+            }
+            if (value != null) {
+                ret.put(key, value);
+            }
+        }
+        return ret;
+    }
+
+    // 过滤 map 中不合法数据
+    private static void filterMap(@NonNull Map map) {
+        Map copy = new HashMap();
+        copy.putAll(map);
+        for (Object key : copy.keySet()) {
+            if (!isBasicValue(key)) {
+                map.remove(key);
+                continue;
+            }
+            Object value = map.get(key);
+            if (value instanceof Map) {
+                filterMap((Map) value);
+            } else if (value instanceof List) {
+                filterList((List) value);
+            } else if (!isBasicValue(value)) {
+                map.remove(key);
+            }
+        }
+    }
+
+    // 过滤 list 中不合法数据
+    private static void filterList(@NonNull List list) {
+        List copy = new ArrayList<>(list.size());
+        copy.addAll(list);
+        for (Object value : copy) {
+            if (value instanceof Map) {
+                filterMap((Map) value);
+            } else if (value instanceof List) {
+                filterList((List) value);
+            } else if (!isBasicValue(value)) {
+                list.remove(value);
+            }
+        }
+    }
+
+    private static boolean isBasicValue(Object o) {
+        return o instanceof Integer ||
+                o instanceof Long ||
+                o instanceof Short ||
+                o instanceof Float ||
+                o instanceof Double ||
+                o instanceof Boolean ||
+                o instanceof String ||
+                o instanceof List ||
+                o instanceof Map;
+    }
 
     public static void updateIntent(Intent intent, @Nullable Map<String, Object> args) {
         if (args == null) {

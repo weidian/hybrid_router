@@ -150,6 +150,18 @@ class _ExampleBody extends StatelessWidget {
                   SnackBar(content: Text(message ?? "No result found")));
             },
           ),
+          ListTile(
+            title: Text(
+              '跳转到 android 数据非法的 native 页面',
+              style: TextStyle(color: Colors.white),
+            ),
+            onTap: () async {
+              NativePageResult result = await HybridNavigator.of(context)
+                  .openNativePage(
+                      url: "native://hybridstackmanager/illegal_result");
+              print("返回的数据是: ${result.data}");
+            },
+          ),
         ],
       ),
     );
