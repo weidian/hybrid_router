@@ -37,14 +37,15 @@
   tabVC.viewControllers = @[nav0,nav1];
   
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-  self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:tabVC];
+  self.window.rootViewController = tabVC;
   [self.window makeKeyAndVisible];
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
 #pragma mark - WDFlutterURLRouterDelegate
 - (UIViewController *)flutterCurrentController {
-    return [UIApplication sharedApplication].delegate.window.rootViewController;
+    UITabBarController *tabVC = (UITabBarController *) [UIApplication sharedApplication].delegate.window.rootViewController;
+    return tabVC.viewControllers[0];
 }
 
 - (void)openNativePage:(NSString *)page params:(NSDictionary *)params {

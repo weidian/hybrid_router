@@ -97,10 +97,11 @@
             [HybridRouterPlugin sharedInstance].mainEntryParams = [_routeOptions toDictionary]; //{"pageName": 路由地址, "args": {}}
             sIsFirstPush = NO;
         } else {
-            [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"pushFlutterPage" arguments:[_routeOptions toDictionary] result:^(id result) {
-            }];
+            [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"pushFlutterPage" arguments:[_routeOptions toDictionary]];
         }
         _isFirstOpen = NO;
+    } else {
+        [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.routeOptions.nativePageId}];
     }
     
     if (!self.lastSnapshot) {

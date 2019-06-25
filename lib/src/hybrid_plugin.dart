@@ -243,6 +243,13 @@ class HybridPlugin {
           NativeContainerManager
               .removeNamed(nativePageId: args["nativePageId"]);
           break;
+        case "onNativePageResumed":
+          Map args = call.arguments;
+          assert(args != null);
+          print('onNativePageFinished: ${args['nativePageId']}');
+          NativeContainerManager
+              .showNamed(nativePageId: args["nativePageId"]);
+          break;
         default:
           assert(false, "Method: ${call.method} not implemented in flutter");
           break;

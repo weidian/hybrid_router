@@ -34,6 +34,13 @@
 //    [WDFStackManager openFlutterPage:@"example" params:@{} result:^(NSDictionary* data) {
 //        NSLog(@"%@", data[@"data"]);
 //    }];
+    
+    UIButton *btn_ = [[UIButton alloc] initWithFrame:CGRectMake(0, 300, self.view.frame.size.width, 40)];
+    [btn_ setTitle:@"Click to jump Flutter Tab" forState:UIControlStateNormal];
+    [self.view addSubview:btn_];
+    [btn_ setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    //[btn_ setCenter:self.view.center];
+    [btn_ addTarget:self action:@selector(onJumpFlutterTabPressed) forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)onJumpFlutterPressed {
@@ -42,6 +49,11 @@
     }];
 }
 
+- (void)onJumpFlutterTabPressed {
+     UITabBarController *tabVc = (UITabBarController *)[UIApplication sharedApplication].delegate.window.rootViewController;
+    
+    tabVc.selectedIndex = 1;
+}
 /*
 #pragma mark - Navigation
 
