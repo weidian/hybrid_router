@@ -246,7 +246,7 @@ class HybridPlugin {
         case "onNativePageResumed":
           Map args = call.arguments;
           assert(args != null);
-          print('onNativePageFinished: ${args['nativePageId']}');
+          print('onNativePageResumed: ${args['nativePageId']}');
           NativeContainerManager
               .showNamed(nativePageId: args["nativePageId"]);
           break;
