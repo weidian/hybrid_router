@@ -43,11 +43,14 @@
 @implementation WDFlutterViewWrapperController {
     BOOL _isFirstOpen;
     int _flutterPageCount;
+    long long _pageId;
 }
 
 - (instancetype)init {
     self = [super init];
     if (self) {
+        static long long fTag = 0;
+        _pageId = fTag++;
         _isFirstOpen = YES;
         _flutterPageCount = 0;
         self.hidesBottomBarWhenPushed = YES;
@@ -89,12 +92,12 @@
     static BOOL sIsFirstPush = YES;
     
     if (_isFirstOpen) {
+        _routeOptions.nativePageId = @(_pageId).stringValue;
         if(sIsFirstPush) {
             [HybridRouterPlugin sharedInstance].mainEntryParams = [_routeOptions toDictionary]; //{"pageName": 路由地址, "args": {}}
             sIsFirstPush = NO;
         } else {
             [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"pushFlutterPage" arguments:[_routeOptions toDictionary] result:^(id result) {
-                
             }];
         }
         _isFirstOpen = NO;

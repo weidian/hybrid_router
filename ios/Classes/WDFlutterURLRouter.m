@@ -34,8 +34,6 @@
 #import "HybridRouterPlugin.h"
 #import "WDFlutterPluginRigstrant.h"
 
-static long long fTag = 0;
-
 @implementation WDFlutterURLRouter {
     bool _isFlutterWarmedup;
     CFAbsoluteTime _startTime;
@@ -101,7 +99,6 @@ static long long fTag = 0;
     
     WDFlutterRouteOptions *options = [WDFlutterRouteOptions new];
     options.pageName = page;
-    options.nativePageId = [NSNumber numberWithLongLong:fTag].stringValue;
     options.args = params;
     options.resultBlock = result;
     
@@ -125,8 +122,6 @@ static long long fTag = 0;
     UINavigationController *nav = [self getCurrentNavigationController];
     if (!nav)   return;
     [nav pushViewController:viewController animated:YES];
-    
-    fTag++;
 }
 
 - (void)onFlutterViewRender {
