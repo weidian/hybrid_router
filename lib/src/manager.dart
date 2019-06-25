@@ -826,7 +826,7 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
   void show(NativeContainer container) {
     if (container != null && container != _containerHistory.last) {
       overlay.rearrange([container._overlayEntry],
-          above: _containerHistory.last._overlayEntry);
+          below: container._overlayEntry);
       NativeContainer topContainer =
           _containerHistory.isEmpty ? null : _containerHistory.last;
       _containerHistory.remove(container);
