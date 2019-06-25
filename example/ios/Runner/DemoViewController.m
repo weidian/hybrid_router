@@ -23,7 +23,7 @@
 
 - (void)loadView {
     [super loadView];
-    self.title = @"demo";
+    //self.title = @"demo";
     
     UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 200, 40)];
     [btn setTitle:@"Click to jump Flutter" forState:UIControlStateNormal];
