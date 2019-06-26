@@ -156,7 +156,7 @@
     [self removePage:pageId result:result];
 }
 
-+ (void)onNativePageReady:(NSString *)pageId {
++ (void)onNativePageResume:(NSString *)pageId {
     //do nothing
     //理论上需要根据这个回调，控制截屏消失的时间
 }
@@ -215,8 +215,8 @@
     UINavigationController *nav = [[WDFlutterURLRouter sharedInstance] getCurrentNavigationController];
     if (!nav) return nil;
     NSMutableArray<UIViewController *> *viewControllers = nav.viewControllers.mutableCopy;
-    for (NSInteger i = viewControllers.count - 1; i > 0; --i) {
-        UIViewController *vc = viewControllers[i];
+    for (NSInteger i = viewControllers.count; i > 0; --i) {
+        UIViewController *vc = viewControllers[i - 1];
         if ([vc isKindOfClass:[WDFlutterViewWrapperController class]]) {
             WDFlutterViewWrapperController *flutterVC = (WDFlutterViewWrapperController *)vc;
             if ([flutterVC.routeOptions.nativePageId isEqualToString:pageId]) {

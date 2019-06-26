@@ -83,7 +83,7 @@
             [WDFlutterURLRouter onNativePageRemoved:nativePageId result:result];
             break;
         case WDFNativeRouteEventOnResume:
-            [WDFlutterURLRouter onNativePageReady:nativePageId];
+            [WDFlutterURLRouter onNativePageResume:nativePageId];
             break;
         default:
             break;

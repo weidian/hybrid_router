@@ -87,7 +87,7 @@ typedef void(^FlutterToNativeCallback)(NSDictionary *dic);
 
 + (void)onNativePageRemoved:(NSString *)pageId result:(id)result;
 
-+ (void)onNativePageReady:(NSString *)pageId;
++ (void)onNativePageResume:(NSString *)pageId;
 
 + (void)onFlutterPagePushed:(NSString *)pageId name:(NSString *)name;
 
