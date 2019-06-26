@@ -32,7 +32,7 @@
     [btn setCenter:self.view.center];
     [btn addTarget:self action:@selector(onJumpFlutterPressed) forControlEvents:UIControlEventTouchUpInside];
 
-    [self onJumpFlutterPressed];
+    //[self onJumpFlutterPressed];
     
     UIButton *btn_ = [[UIButton alloc] initWithFrame:CGRectMake(0, 300, self.view.frame.size.width, 40)];
     [btn_ setTitle:@"Click to jump Flutter Tab" forState:UIControlStateNormal];
@@ -51,7 +51,7 @@
 - (void)onJumpFlutterTabPressed {
      UITabBarController *tabVc = (UITabBarController *)[UIApplication sharedApplication].delegate.window.rootViewController;
     
-    tabVc.selectedIndex = 1;
+    tabVc.selectedIndex = 0;
 }
 /*
 #pragma mark - Navigation

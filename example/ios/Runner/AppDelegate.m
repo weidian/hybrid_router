@@ -16,12 +16,7 @@
   // Override point for customization after application launch.
   
   [WDFStackManager setupWithDelegate:self];
-  
-  DemoViewController *vc = [[DemoViewController alloc] init];
-  //vc.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"native" image:nil tag:0];
-  UINavigationController *nav0 = [[UINavigationController alloc] initWithRootViewController:vc];
-  nav0.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"native" image:nil tag:0];
-  
+
   WDFlutterRouteOptions *options = [[WDFlutterRouteOptions alloc] init];
   options.pageName = @"example";
   options.args = @"EXAMPLE";
@@ -30,10 +25,13 @@
   WDFlutterViewWrapperController *fvc = [[WDFlutterViewWrapperController alloc] init];
   fvc.hidesBottomBarWhenPushed = NO;
   fvc.routeOptions = options;
-  //fvc.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"flutter" image:nil tag:1];
-  UINavigationController *nav1 = [[UINavigationController alloc] initWithRootViewController:fvc];
-  nav1.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"flutter" image:nil tag:1];
-  
+  UINavigationController *nav0 = [[UINavigationController alloc] initWithRootViewController:fvc];
+  nav0.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"flutter" image:nil tag:1];
+
+  DemoViewController *vc = [[DemoViewController alloc] init];
+  UINavigationController *nav1 = [[UINavigationController alloc] initWithRootViewController:vc];
+  nav1.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"native" image:nil tag:0];
+
   UITabBarController *tabVC = [[UITabBarController alloc] init];
   tabVC.viewControllers = @[nav0,nav1];
   
