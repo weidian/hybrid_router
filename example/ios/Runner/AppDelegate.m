@@ -25,6 +25,7 @@
   WDFlutterRouteOptions *options = [[WDFlutterRouteOptions alloc] init];
   options.pageName = @"example";
   options.args = @"EXAMPLE";
+  options.isTab = TRUE;
   
   WDFlutterViewWrapperController *fvc = [[WDFlutterViewWrapperController alloc] init];
   fvc.hidesBottomBarWhenPushed = NO;
@@ -45,7 +46,7 @@
 #pragma mark - WDFlutterURLRouterDelegate
 - (UIViewController *)flutterCurrentController {
     UITabBarController *tabVC = (UITabBarController *) [UIApplication sharedApplication].delegate.window.rootViewController;
-    return tabVC.viewControllers[0];
+    return tabVC.viewControllers[tabVC.selectedIndex];
 }
 
 - (void)openNativePage:(NSString *)page params:(NSDictionary *)params {

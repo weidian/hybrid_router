@@ -31,9 +31,8 @@
     [btn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [btn setCenter:self.view.center];
     [btn addTarget:self action:@selector(onJumpFlutterPressed) forControlEvents:UIControlEventTouchUpInside];
-//    [WDFStackManager openFlutterPage:@"example" params:@{} result:^(NSDictionary* data) {
-//        NSLog(@"%@", data[@"data"]);
-//    }];
+
+    [self onJumpFlutterPressed];
     
     UIButton *btn_ = [[UIButton alloc] initWithFrame:CGRectMake(0, 300, self.view.frame.size.width, 40)];
     [btn_ setTitle:@"Click to jump Flutter Tab" forState:UIControlStateNormal];

@@ -246,6 +246,7 @@
     }
     [dictionary setObject:_pageName ? :@"" forKey:@"pageName"];
     [dictionary setObject:_nativePageId ? :@"" forKey:@"nativePageId"];
+    [dictionary setObject:@(_isTab) forKey:@"isTab"];
     return dictionary;
 }
 

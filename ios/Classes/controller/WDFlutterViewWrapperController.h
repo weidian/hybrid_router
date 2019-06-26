@@ -49,13 +49,11 @@
 
 @interface WDFlutterRouteOptions : NSObject
 
-@property (nonatomic, copy) NSString *nativePageId;
-
-@property (nonatomic, strong) id args;
-
 @property (nonatomic, copy) NSString *pageName;
-
+@property (nonatomic, copy) NSString *nativePageId;
+@property (nonatomic, strong) id args;
 @property (nonatomic, strong) FlutterResult resultBlock;
+@property (nonatomic, assign) BOOL isTab;
 
 - (NSDictionary *)toDictionary;
 
