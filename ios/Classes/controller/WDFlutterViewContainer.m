@@ -30,14 +30,16 @@
 #import "WDFlutterViewContainer.h"
 #import "WDFlutterViewController.h"
 #import "HybridRouterPlugin.h"
-#import "WDFlutterURLRouter.h"
+#import "WDFlutterRouter.h"
+#import "WDFlutterEngine.h"
+#import "WDFlutterRouteEventHandler.h"
+
+#define FLUTTER_VIEWCONTROLLER WDFlutterEngine.sharedInstance.viewController
+#define FLUTTER_VIEWCONTROLLER_VIEW WDFlutterEngine.sharedInstance.viewController.view
 
 @interface WDFlutterViewContainer ()
-
 @property (nonatomic, strong) UIImageView *fakeSnapImgView;
 @property (nonatomic, strong) UIImage *lastSnapshot;
-@property (nonatomic, strong) UINavigationController *currentNav;
-
 @end
 
 @implementation WDFlutterViewContainer {
@@ -78,59 +80,64 @@
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    WDFlutterViewController *flutterVC = [WDFlutterViewContainer flutterVC];
-    if ([[flutterVC parentViewController] isEqual:self]) {
-        [flutterVC didReceiveMemoryWarning];
+    if ([[FLUTTER_VIEWCONTROLLER parentViewController] isEqual:self]) {
+        [FLUTTER_VIEWCONTROLLER didReceiveMemoryWarning];
     }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    self.currentNav = self.navigationController;
     self.navigationController.navigationBar.hidden = YES;
     
     static BOOL sIsFirstPush = YES;
     
     if (_isFirstOpen) {
         _routeOptions.nativePageId = @(_pageId).stringValue;
+        [WDFlutterRouter.sharedInstance add:self];
         if(sIsFirstPush) {
-            [HybridRouterPlugin sharedInstance].mainEntryParams = [_routeOptions toDictionary]; //{"pageName": 路由地址, "args": {}}
+            CFAbsoluteTime startTime = CFAbsoluteTimeGetCurrent();
+            [FLUTTER_VIEWCONTROLLER setFlutterViewDidRenderCallback:^{
+                [WDFlutterRouteEventHandler onFlutterViewRender:self.routeOptions.nativePageId time:CFAbsoluteTimeGetCurrent()-startTime];
+            }];
+            [HybridRouterPlugin sharedInstance].mainEntryParams = [_routeOptions toDictionary];
             sIsFirstPush = NO;
         } else {
             [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"pushFlutterPage" arguments:[_routeOptions toDictionary]];
         }
         _isFirstOpen = NO;
-        
-        [self addChildFlutterVC];
     } else {
         [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.routeOptions.nativePageId}];
-        
-        [self nativePageResume];
+    }
+    
+    if (!self.lastSnapshot) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self addChildFlutterVC];
+        });
     }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    [[WDFlutterViewContainer flutterVC].view setUserInteractionEnabled:TRUE];
-    
+    [self addChildFlutterVC];
+    [FLUTTER_VIEWCONTROLLER_VIEW setUserInteractionEnabled:TRUE];
     //只能在didAppear里调用，willAppear里调用会导致导航栈bug
     self.navigationController.interactivePopGestureRecognizer.enabled = (_flutterPageCount <= 1);
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    [[WDFlutterViewContainer flutterVC].view setUserInteractionEnabled:FALSE];
+    NSArray *curStackAry = self.navigationController.viewControllers;
+    NSInteger idx = [curStackAry indexOfObject:self];
+    if(idx != NSNotFound && idx != curStackAry.count-1){
+        [self saveSnapshot];
+    }
+    [FLUTTER_VIEWCONTROLLER_VIEW setUserInteractionEnabled:FALSE];
 }
 
 - (void)flutterPagePushed {
     _flutterPageCount ++;
     if (_flutterPageCount > 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = NO;
-    } else {
-        WDFlutterViewController *flutterVC = [WDFlutterViewContainer flutterVC];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [self.view bringSubviewToFront:flutterVC.view];
-        });
     }
 }
 
@@ -139,18 +146,6 @@
     if (_flutterPageCount <= 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
     }
-}
-
-- (void)nativePageResume {
-    self.lastSnapshot = nil;
-    WDFlutterViewController *flutterVC = [WDFlutterViewContainer flutterVC];
-    
-    if (flutterVC.parentViewController == self) {
-        return;
-    }
-    
-    [self.view addSubview:flutterVC.view];
-    [self addChildViewController:flutterVC];
 }
 
 - (void)nativePageWillRemove:(id)result {
@@ -162,38 +157,51 @@
         }
     }
     
-    [self saveSnapshot];
+    //[self saveSnapshot];
+    [WDFlutterRouter.sharedInstance remove:self];
 }
 
 #pragma mark - Child/Parent VC
 
+- (void)showFlutterViewOverSnapshot {
+    if (self.lastSnapshot) {
+        [self.view bringSubviewToFront:self.fakeSnapImgView];
+    }
+    FLUTTER_VIEWCONTROLLER_VIEW.frame = self.view.bounds;
+    FLUTTER_VIEWCONTROLLER_VIEW.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
+        // pop时清除，
+        if (self.navigationController.topViewController == self) {
+            self.lastSnapshot = nil;
+        }
+    });
+}
 - (void)addChildFlutterVC {
-    WDFlutterViewController *flutterVC = [WDFlutterViewContainer flutterVC];
-    flutterVC.view.frame = self.view.bounds;
-    flutterVC.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    
-    if (nil != flutterVC.parentViewController) {
+    if (self == FLUTTER_VIEWCONTROLLER.parentViewController) {
+        [self showFlutterViewOverSnapshot];
+        return;
+    }
+    if (nil != FLUTTER_VIEWCONTROLLER.parentViewController) {
         [self removeChildFlutterVC];
     }
-    [self.view addSubview:flutterVC.view];
-    [self addChildViewController:flutterVC];
-    [self.view bringSubviewToFront:self.fakeSnapImgView];
+    [self.view addSubview:FLUTTER_VIEWCONTROLLER_VIEW];
+    [self addChildViewController:FLUTTER_VIEWCONTROLLER];
+    [self showFlutterViewOverSnapshot];
 }
 
 - (void)removeChildFlutterVC{
-    WDFlutterViewController *flutterVC = [WDFlutterViewContainer flutterVC];
-    [flutterVC removeFromParentViewController];
-    [flutterVC.view removeFromSuperview];
+    [FLUTTER_VIEWCONTROLLER removeFromParentViewController];
+    [FLUTTER_VIEWCONTROLLER_VIEW removeFromSuperview];
 }
 
 - (void)saveSnapshot {
-    WDFlutterViewController *flutterVC = [WDFlutterViewContainer flutterVC];
-    if(flutterVC.parentViewController != self) {
+    if(FLUTTER_VIEWCONTROLLER.parentViewController != self) {
         return;
     }
     if(self.lastSnapshot == nil) {
         UIGraphicsBeginImageContextWithOptions([UIScreen mainScreen].bounds.size, YES, 0);
-        [flutterVC.view drawViewHierarchyInRect:flutterVC.view.bounds afterScreenUpdates:NO];
+        [FLUTTER_VIEWCONTROLLER_VIEW drawViewHierarchyInRect:FLUTTER_VIEWCONTROLLER_VIEW.bounds afterScreenUpdates:NO];
         self.lastSnapshot = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         [self.fakeSnapImgView setImage:self.lastSnapshot];
@@ -203,33 +211,10 @@
 
 - (void)didMoveToParentViewController:(UIViewController *)parent {
     [super didMoveToParentViewController:parent];
-    
     if (parent == nil) {
         //当前controllere被remove
         [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageFinished" arguments:@{@"nativePageId": self.routeOptions.nativePageId}];
     }
-}
-
-- (void)flutterViewDidRender {
-    [WDFlutterURLRouter onFlutterViewRender];
-}
-
-+ (WDFlutterViewController *)flutterVC {
-    static dispatch_once_t onceToken;
-    static WDFlutterViewController *flutterVC;
-    if (flutterVC) {
-        return flutterVC;
-    }
-    dispatch_once(&onceToken, ^{
-        printf("init flutter engine");
-        flutterVC = [[WDFlutterViewController alloc] initWithProject:nil nibName:nil bundle:nil];
-        [flutterVC setFlutterViewDidRenderCallback:^{
-            if (flutterVC.parentViewController) {
-                [(WDFlutterViewContainer *)flutterVC.parentViewController flutterViewDidRender];
-            }
-        }];
-    });
-    return flutterVC;
 }
 
 @end

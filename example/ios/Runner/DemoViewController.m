@@ -7,7 +7,7 @@
 //
 
 #import "DemoViewController.h"
-#import "WDFStackManager.h"
+#import "WDFlutterRouter.h"
 
 @interface DemoViewController ()
 
@@ -43,7 +43,7 @@
 }
 
 - (void)onJumpFlutterPressed {
-    [WDFStackManager openFlutterPage:@"example" params:@"EXAMPLE" result:^(NSDictionary* data) {
+    [WDFlutterRouter.sharedInstance openFlutterPage:@"example" params:@"EXAMPLE" result:^(NSDictionary* data) {
         NSLog(@"%@", data[@"data"]);
     }];
 }
