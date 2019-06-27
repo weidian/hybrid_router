@@ -30,7 +30,7 @@
 #import <Foundation/Foundation.h>
 #import <Flutter/Flutter.h>
 
-@class UIViewController, WDFlutterViewWrapperController, WDFlutterRouteOptions;
+@class UIViewController, WDFlutterViewContainer, WDFlutterRouteOptions;
 typedef void(^FlutterToNativeCallback)(NSDictionary *dic);
 
 @protocol WDFlutterURLRouterDelegate <NSObject>
@@ -61,7 +61,7 @@ typedef void(^FlutterToNativeCallback)(NSDictionary *dic);
  @param routeOptions 路由参数
  @return flutter页面容器
  */
-- (WDFlutterViewWrapperController *)flutterWrapperController:(WDFlutterRouteOptions *)routeOptions;
+- (WDFlutterViewContainer *)flutterWrapperController:(WDFlutterRouteOptions *)routeOptions;
 
 - (void)flutterViewDidRender:(NSString *)page time:(CFAbsoluteTime)time;
 

@@ -2,7 +2,7 @@
 #include "GeneratedPluginRegistrant.h"
 #include "DemoViewController.h"
 #import "WDFStackManager.h"
-#import "WDFlutterViewWrapperController.h"
+#import "WDFlutterViewContainer.h"
 
 @interface AppDelegate()<WDFlutterURLRouterDelegate>
 
@@ -22,7 +22,7 @@
   options.args = @"EXAMPLE";
   options.isTab = TRUE;
   
-  WDFlutterViewWrapperController *fvc = [[WDFlutterViewWrapperController alloc] init];
+  WDFlutterViewContainer *fvc = [[WDFlutterViewContainer alloc] init];
   fvc.hidesBottomBarWhenPushed = NO;
   fvc.routeOptions = options;
   UINavigationController *nav0 = [[UINavigationController alloc] initWithRootViewController:fvc];

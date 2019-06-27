@@ -33,17 +33,19 @@
 
 @class WDFlutterViewController, WDFlutterRouteOptions;
 
-@interface WDFlutterViewWrapperController : UIViewController
+@interface WDFlutterViewContainer : UIViewController
 
 + (WDFlutterViewController *)flutterVC;
 
 @property (nonatomic, strong) WDFlutterRouteOptions *routeOptions;
 
-- (void)onResult:(id)result;
-
 - (void)flutterPagePushed;
 
 - (void)flutterPageRemoved;
+
+- (void)nativePageResume;
+
+- (void)nativePageWillRemove:(id)result;
 
 @end
 

@@ -29,7 +29,7 @@
 
 #import <UIKit/UIKit.h>
 #import "WDFlutterURLRouter.h"
-#import "WDFlutterViewWrapperController.h"
+#import "WDFlutterViewContainer.h"
 #import "WDFlutterViewController.h"
 #import "HybridRouterPlugin.h"
 #import "WDFlutterPluginRigstrant.h"
@@ -59,7 +59,7 @@
 
 - (void)warmupFlutter {
     if (_isFlutterWarmedup) return;
-    WDFlutterViewController *flutterVC = [WDFlutterViewWrapperController flutterVC];
+    WDFlutterViewController *flutterVC = [WDFlutterViewContainer flutterVC];
     [flutterVC view];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
@@ -103,16 +103,16 @@
     options.resultBlock = result;
     
     //Push
-    WDFlutterViewWrapperController *viewController = nil;
+    WDFlutterViewContainer *viewController = nil;
     if ([self.delegate respondsToSelector:@selector(flutterWrapperController:)]) {
         id customController = [self.delegate flutterWrapperController:options];
-        if ([customController isKindOfClass:[WDFlutterViewWrapperController class]]) {
+        if ([customController isKindOfClass:[WDFlutterViewContainer class]]) {
             viewController = customController;
         }
     }
     
     if (!viewController) {
-        viewController = [[WDFlutterViewWrapperController alloc] init];
+        viewController = [[WDFlutterViewContainer alloc] init];
     }
     
     if (!viewController.routeOptions) {
@@ -142,10 +142,10 @@
 
 + (void)beforeNativePagePop:(NSString *)pageId result:(id)result {
     UINavigationController *nav = [[WDFlutterURLRouter sharedInstance] getCurrentNavigationController];
-    WDFlutterViewWrapperController *flutterVC = [self getFlutterController:pageId];
+    WDFlutterViewContainer *flutterVC = [self getFlutterController:pageId];
     if (!nav || !flutterVC) return;
     if (nav.topViewController == flutterVC) {
-        [flutterVC onResult:result];
+        [flutterVC nativePageWillRemove:result];
         [nav popViewControllerAnimated:YES];
     } else {
         [self removePage:pageId result:result];
@@ -157,12 +157,14 @@
 }
 
 + (void)onNativePageResume:(NSString *)pageId {
-    //do nothing
-    //理论上需要根据这个回调，控制截屏消失的时间
+    WDFlutterViewContainer *flutterVC = [self getFlutterController:pageId];
+    if (flutterVC) {
+        [flutterVC nativePageResume];
+    }
 }
 
 + (void)onFlutterPagePushed:(NSString *)pageId name:(NSString *)name {
-    WDFlutterViewWrapperController *flutterVC = [self getFlutterController:pageId];
+    WDFlutterViewContainer *flutterVC = [self getFlutterController:pageId];
     if (flutterVC) {
         [flutterVC flutterPagePushed];
     }
@@ -172,7 +174,7 @@
 }
 
 + (void)onFlutterPageRemoved:(NSString *)pageId name:(NSString *)name {
-    WDFlutterViewWrapperController *flutterVC = [self getFlutterController:pageId];
+    WDFlutterViewContainer *flutterVC = [self getFlutterController:pageId];
     if (flutterVC) {
         [flutterVC flutterPageRemoved];
     }
@@ -199,9 +201,9 @@
 
 #pragma mark - internal function
 + (void)removePage:(NSString *)pageId result:(id)result {
-    WDFlutterViewWrapperController *controller = [self getFlutterController:pageId];
+    WDFlutterViewContainer *controller = [self getFlutterController:pageId];
     if (controller) {
-        [controller onResult:result];
+        [controller nativePageWillRemove:result];
         
         UINavigationController *nav = [[WDFlutterURLRouter sharedInstance] getCurrentNavigationController];
         if (!nav) return;
@@ -211,14 +213,14 @@
     }
 }
 
-+ (WDFlutterViewWrapperController *)getFlutterController:(NSString *)pageId {
++ (WDFlutterViewContainer *)getFlutterController:(NSString *)pageId {
     UINavigationController *nav = [[WDFlutterURLRouter sharedInstance] getCurrentNavigationController];
     if (!nav) return nil;
     NSMutableArray<UIViewController *> *viewControllers = nav.viewControllers.mutableCopy;
     for (NSInteger i = viewControllers.count; i > 0; --i) {
         UIViewController *vc = viewControllers[i - 1];
-        if ([vc isKindOfClass:[WDFlutterViewWrapperController class]]) {
-            WDFlutterViewWrapperController *flutterVC = (WDFlutterViewWrapperController *)vc;
+        if ([vc isKindOfClass:[WDFlutterViewContainer class]]) {
+            WDFlutterViewContainer *flutterVC = (WDFlutterViewContainer *)vc;
             if ([flutterVC.routeOptions.nativePageId isEqualToString:pageId]) {
                 return flutterVC;
             }

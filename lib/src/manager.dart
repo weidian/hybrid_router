@@ -872,7 +872,7 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     int index = _containerHistory.indexOf(container);
     NativeContainer preContainer;
     if (index > 0) {
-      preContainer = _containerHistory[index];
+      preContainer = _containerHistory[index - 1];
     }
     _containerHistory.removeAt(index);
     _didRemove(container, preContainer);
@@ -951,7 +951,7 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     if (preContainer != null) {
       HybridPlugin.singleton.onNativeRouteEvent(
           event: NativeRouteEvent.onResume,
-          nativePageId: container.nativePageId);
+          nativePageId: preContainer.nativePageId);
     }
     _repairFrameSchedule();
   }
