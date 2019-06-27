@@ -154,6 +154,8 @@
             self.routeOptions.resultBlock(@{});
         }
     }
+    
+    [self saveSnapshot];
 }
 
 #pragma mark - Child/Parent VC
