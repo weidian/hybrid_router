@@ -34,7 +34,7 @@
 
     //[self onJumpFlutterPressed];
     
-    UIButton *btn_ = [[UIButton alloc] initWithFrame:CGRectMake(0, 300, self.view.frame.size.width, 40)];
+    UIButton *btn_ = [[UIButton alloc] initWithFrame:CGRectMake(0, 150, self.view.frame.size.width, 40)];
     [btn_ setTitle:@"Click to jump Flutter Tab" forState:UIControlStateNormal];
     [self.view addSubview:btn_];
     [btn_ setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];

@@ -101,7 +101,9 @@
         }
         _isFirstOpen = NO;
     } else {
-        [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.routeOptions.nativePageId}];
+        if (!self.lastSnapshot) {
+            [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.routeOptions.nativePageId}];
+        }
     }
     
     if (!self.lastSnapshot) {
