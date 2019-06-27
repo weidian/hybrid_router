@@ -140,6 +140,8 @@
     _flutterPageCount ++;
     if (_flutterPageCount > 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = NO;
+    } else {
+        [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
     }
 }
 
@@ -181,15 +183,27 @@
 }
 - (void)addChildFlutterVC {
     if (self == FLUTTER_VIEWCONTROLLER.parentViewController) {
-        [self showFlutterViewOverSnapshot];
+        [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
+        self.lastSnapshot = nil;
+        //[self showFlutterViewOverSnapshot];
         return;
     }
     if (nil != FLUTTER_VIEWCONTROLLER.parentViewController) {
         [self removeChildFlutterVC];
     }
+    FLUTTER_VIEWCONTROLLER_VIEW.frame = self.view.bounds;
+    FLUTTER_VIEWCONTROLLER_VIEW.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    
     [self.view addSubview:FLUTTER_VIEWCONTROLLER_VIEW];
     [self addChildViewController:FLUTTER_VIEWCONTROLLER];
-    [self showFlutterViewOverSnapshot];
+    
+    if (!_lastSnapshot) {
+        [self.view bringSubviewToFront:self.fakeSnapImgView];
+    } else {
+        self.lastSnapshot = nil;
+    }
+    
+    //[self showFlutterViewOverSnapshot];
 }
 
 - (void)removeChildFlutterVC {
