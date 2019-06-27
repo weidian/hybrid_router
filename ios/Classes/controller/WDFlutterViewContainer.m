@@ -159,7 +159,7 @@
         }
     }
     
-    //[self saveSnapshot];
+    [self saveSnapshot];
     [WDFlutterRouter.sharedInstance remove:self];
 }
 
