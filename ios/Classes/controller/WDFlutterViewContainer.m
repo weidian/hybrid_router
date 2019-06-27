@@ -192,7 +192,7 @@
     [self showFlutterViewOverSnapshot];
 }
 
-- (void)removeChildFlutterVC{
+- (void)removeChildFlutterVC {
     [FLUTTER_VIEWCONTROLLER removeFromParentViewController];
     [FLUTTER_VIEWCONTROLLER_VIEW removeFromSuperview];
 }
@@ -203,7 +203,7 @@
     }
     if(self.lastSnapshot == nil) {
         UIGraphicsBeginImageContextWithOptions([UIScreen mainScreen].bounds.size, YES, 0);
-        [FLUTTER_VIEWCONTROLLER_VIEW drawViewHierarchyInRect:FLUTTER_VIEWCONTROLLER_VIEW.bounds afterScreenUpdates:NO];
+        [self.view drawViewHierarchyInRect:self.view.bounds afterScreenUpdates:NO];
         self.lastSnapshot = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         [self.fakeSnapImgView setImage:self.lastSnapshot];
