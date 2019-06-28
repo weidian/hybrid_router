@@ -5,13 +5,13 @@
 //  Created by blackox626 on 2019/6/27.
 //
 
-#define FLUTTER_CONTAINER_MANAGER [WDFlutterRouter.sharedInstance contaninerManger]
-#define FLUTTER_ROUTER_DELEGATE [WDFlutterRouter.sharedInstance delegate]
-
 #import "WDFlutterRouteEventHandler.h"
 #import "WDFlutterRouter.h"
 #import "WDFlutterViewContainerManager.h"
 #import "WDFlutterViewContainer.h"
+
+#define FLUTTER_CONTAINER_MANAGER [WDFlutterRouter.sharedInstance contaninerManger]
+#define FLUTTER_ROUTER_DELEGATE [WDFlutterRouter.sharedInstance delegate]
 
 @implementation WDFlutterRouteEventHandler
 
@@ -26,10 +26,10 @@
 }
 
 + (void)onNativePageRemoved:(NSString *)pageId result:(id)result {
-//    WDFlutterViewContainer *container = [FLUTTER_CONTAINER_MANAGER find:pageId];
-//    if (container) {
-//        [container nativePageWillRemove:result];
-//    }
+    WDFlutterViewContainer *container = [FLUTTER_CONTAINER_MANAGER find:pageId];
+    if (container) {
+        [container nativePageWillRemove:result];
+    }
 }
 
 + (void)onNativePageResume:(NSString *)pageId {

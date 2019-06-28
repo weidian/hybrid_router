@@ -46,6 +46,12 @@
 
 @optional
 
+/**
+ 获取flutter页面的容器，可以通过继承WDFlutterViewContainer来定制容器。默认使用WDFlutterViewContainer。
+ @return flutter页面容器
+ */
+- (WDFlutterViewContainer *)flutterViewContainer;
+
 - (void)flutterViewDidRender:(NSString *)page time:(CFAbsoluteTime)time;
 
 - (void)flutterViewDidAppear:(UIViewController *)viewController name:(NSString *)name;

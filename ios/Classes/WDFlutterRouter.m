@@ -73,7 +73,13 @@
     options.args = params;
     options.resultBlock = result;
     
-    WDFlutterViewContainer *viewController  = [[WDFlutterViewContainer alloc] init];
+    WDFlutterViewContainer *viewController = nil;
+    if ([_delegate respondsToSelector:@selector(flutterViewContainer)]) {
+        viewController = [_delegate flutterViewContainer];
+    }
+    if (viewController == nil) {
+        viewController = [[WDFlutterViewContainer alloc] init];
+    }
     viewController.routeOptions = options;
     
     UINavigationController *nav = _viewProvider.flutterNavigationController;
