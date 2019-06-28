@@ -35,11 +35,18 @@
     //[self onJumpFlutterPressed];
     
     UIButton *btn_ = [[UIButton alloc] initWithFrame:CGRectMake(0, 150, self.view.frame.size.width, 40)];
-    [btn_ setTitle:@"Click to jump Flutter Tab" forState:UIControlStateNormal];
+    [btn_ setTitle:@"jump Flutter Tab" forState:UIControlStateNormal];
     [self.view addSubview:btn_];
     [btn_ setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     //[btn_ setCenter:self.view.center];
     [btn_ addTarget:self action:@selector(onJumpFlutterTabPressed) forControlEvents:UIControlEventTouchUpInside];
+    
+//    UIButton *btn__ = [[UIButton alloc] initWithFrame:CGRectMake(0, 200, self.view.frame.size.width, 40)];
+//    [btn__ setTitle:@"jump native Tab" forState:UIControlStateNormal];
+//    [self.view addSubview:btn__];
+//    [btn__ setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+//    //[btn_ setCenter:self.view.center];
+//    [btn__ addTarget:self action:@selector(onJumpNativeTabPressed) forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)onJumpFlutterPressed {
@@ -53,6 +60,12 @@
     
     tabVc.selectedIndex = 0;
 }
+
+//- (void)onJumpNativeTabPressed {
+//    UITabBarController *tabVc = (UITabBarController *)[UIApplication sharedApplication].delegate.window.rootViewController;
+//
+//    tabVc.selectedIndex = 1;
+//}
 /*
 #pragma mark - Navigation
 

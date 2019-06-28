@@ -35,7 +35,7 @@
 + (void)onNativePageResume:(NSString *)pageId {
     WDFlutterViewContainer *container = [FLUTTER_CONTAINER_MANAGER find:pageId];
     if (container) {
-        //[container nativePageResume];
+        [container nativePageResume];
     }
 }
 

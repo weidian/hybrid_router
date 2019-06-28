@@ -41,6 +41,7 @@
 - (void)flutterPageRemoved;
 
 - (void)nativePageWillRemove:(id)result;
+- (void)nativePageResume;
 
 @end
 
