@@ -209,7 +209,7 @@ static long long fTag = 0;
         [controller onResult:result];
         
         UINavigationController *nav = [[WDFlutterURLRouter sharedInstance] getCurrentNavigationController];
-        if (!nav) return;
+        if (!nav || [nav.topViewController isKindOfClass:WDFlutterViewWrapperController.class]) return;
         NSMutableArray<UIViewController *> *viewControllers = nav.viewControllers.mutableCopy;
         [viewControllers removeObject:controller];
         nav.viewControllers = viewControllers.copy;
