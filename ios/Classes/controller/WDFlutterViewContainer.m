@@ -173,6 +173,10 @@
 }
 
 - (void)nativePageResume {
+    if (self.navigationController.topViewController != self) {
+        return;
+    }
+    
     [self addChildFlutterVC];
 
     if (_lastSnapshot) {
@@ -181,9 +185,7 @@
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
-        if (self.navigationController.topViewController == self) {
-            self.lastSnapshot = nil;
-        }
+        self.lastSnapshot = nil;
     });
 }
 
