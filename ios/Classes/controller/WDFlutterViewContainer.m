@@ -120,7 +120,9 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    [self addChildFlutterVC];
+    if (!_isFirstOpen) {
+        [self nativePageResume];
+    }
     [FLUTTER_VIEWCONTROLLER_VIEW setUserInteractionEnabled:TRUE];
     //只能在didAppear里调用，willAppear里调用会导致导航栈bug
     self.navigationController.interactivePopGestureRecognizer.enabled = (_flutterPageCount <= 1);
@@ -143,7 +145,9 @@
     } else {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
-            self.lastSnapshot = nil;
+            if (self.navigationController.topViewController == self) {
+                self.lastSnapshot = nil;
+            }
         });
     }
 }
@@ -169,36 +173,24 @@
 }
 
 - (void)nativePageResume {
+    [self addChildFlutterVC];
+
+    if (_lastSnapshot) {
+        [self.view bringSubviewToFront:self.fakeSnapImgView];
+    }
+    
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
-        self.lastSnapshot = nil;
+        if (self.navigationController.topViewController == self) {
+            self.lastSnapshot = nil;
+        }
     });
 }
 
 #pragma mark - Child/Parent VC
 
-//- (void)showFlutterViewOverSnapshot {
-//    if (self.lastSnapshot) {
-//        [self.view bringSubviewToFront:self.fakeSnapImgView];
-//    }
-//    FLUTTER_VIEWCONTROLLER_VIEW.frame = self.view.bounds;
-//    FLUTTER_VIEWCONTROLLER_VIEW.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//        [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
-//        // pop时清除，
-//        if (self.navigationController.topViewController == self) {
-//            self.lastSnapshot = nil;
-//        }
-//    });
-//}
-
 - (void)addChildFlutterVC {
     if (self == FLUTTER_VIEWCONTROLLER.parentViewController) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
-            self.lastSnapshot = nil;
-        });
-        //[self showFlutterViewOverSnapshot];
         return;
     }
     if (nil != FLUTTER_VIEWCONTROLLER.parentViewController) {
@@ -210,10 +202,9 @@
     [self.view addSubview:FLUTTER_VIEWCONTROLLER_VIEW];
     [self addChildViewController:FLUTTER_VIEWCONTROLLER];
     
-    if (_lastSnapshot) {
+    if (!_lastSnapshot) {
         [self.view bringSubviewToFront:self.fakeSnapImgView];
     }
-    //[self showFlutterViewOverSnapshot];
 }
 
 - (void)removeChildFlutterVC {
