@@ -120,7 +120,7 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    if (!_isFirstOpen) {
+    if (_lastSnapshot) {
         [self nativePageResume];
     }
     [FLUTTER_VIEWCONTROLLER_VIEW setUserInteractionEnabled:TRUE];
