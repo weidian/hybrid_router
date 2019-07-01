@@ -247,7 +247,7 @@ class HybridNavigatorState extends NavigatorState {
       // 否则使用默认的跳转
       pushType = HybridNavigator.defaultPushType;
     }
-    if(widget.isTab) {
+    if(widget.isTab && !route.settings.isInitialRoute) {
       pushType = HybridPushType.Native;
     }
     if (pushType == HybridPushType.Native) {
