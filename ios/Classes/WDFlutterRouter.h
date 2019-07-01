@@ -52,14 +52,6 @@
  */
 - (WDFlutterViewContainer *)flutterViewContainer;
 
-- (void)flutterViewDidRender:(NSString *)page time:(CFAbsoluteTime)time;
-
-- (void)flutterViewDidAppear:(UIViewController *)viewController name:(NSString *)name;
-
-- (void)flutterViewDidDisappear:(UIViewController *)viewController name:(NSString *)name;
-
-- (void)flutterViewDidRemove:(UIViewController *)viewController name:(NSString *)name;
-
 @end
 
 @interface WDFlutterRouter : NSObject
