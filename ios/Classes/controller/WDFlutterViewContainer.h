@@ -23,35 +23,36 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 //
-//  WDFStackManager.h
-//  hybrid_router
-//
-//  Created by shazhou on 2019/4/25.
+// Created by lm on 2018/11/15.
+// Copyright (c) 2018 lm. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
-#import "WDFlutterURLRouter.h"
+#import <UIKit/UIKit.h>
+#import <Flutter/Flutter.h>
 
-NS_ASSUME_NONNULL_BEGIN
+@class WDFlutterViewController, WDFlutterRouteOptions;
 
-@interface WDFStackManager : NSObject
+@interface WDFlutterViewContainer : UIViewController
 
-/**
- 初始化
+@property (nonatomic, strong) WDFlutterRouteOptions *routeOptions;
 
- @param delegate 实现<WDFlutterURLRouterDelegate>的代理
- */
-+ (void)setupWithDelegate:(id<WDFlutterURLRouterDelegate>)delegate;
+- (void)flutterPagePushed;
+- (void)flutterPageRemoved;
 
-/**
- 打开flutter页面
-
- @param page flutter页面名
- @param params 传给页面的参数
- @param result 页面返回时的回调
- */
-+ (void)openFlutterPage:(NSString *)page params:(id)params result:(void (^)(id))result;
+- (void)nativePageWillRemove:(id)result;
+- (void)nativePageResume;
 
 @end
 
-NS_ASSUME_NONNULL_END
+@interface WDFlutterRouteOptions : NSObject
+
+@property (nonatomic, copy) NSString *pageName;
+@property (nonatomic, copy) NSString *nativePageId;
+@property (nonatomic, strong) id args;
+@property (nonatomic, strong) FlutterResult resultBlock;
+@property (nonatomic, assign) BOOL isTab;
+
+- (NSDictionary *)toDictionary;
+
+@end

@@ -645,9 +645,16 @@ class NativeContainerManager extends StatefulWidget {
   }
 
   static void pushNamed(
-      {@required String nativePageId, @required String pageName, Object args}) {
+      {@required String nativePageId,
+      @required String pageName,
+      Object args,
+      bool isTab}) {
     _checkState();
-    state.pushNamed(nativePageId: nativePageId, pageName: pageName, args: args);
+    state.pushNamed(
+        nativePageId: nativePageId,
+        pageName: pageName,
+        args: args,
+        isTab: isTab);
   }
 
   static void push(NativeContainer containter) {
@@ -665,7 +672,8 @@ class NativeContainerManager extends StatefulWidget {
     state.show(container);
   }
 
-  static Future<bool> removeNamed({@required String nativePageId, dynamic result}) {
+  static Future<bool> removeNamed(
+      {@required String nativePageId, dynamic result}) {
     _checkState();
     return state.removeNamed(nativePageId: nativePageId, result: result);
   }
@@ -783,7 +791,10 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
 
   /// native request to push a flutter page
   void pushNamed(
-      {@required String nativePageId, @required String pageName, Object args}) {
+      {@required String nativePageId,
+      @required String pageName,
+      Object args,
+      bool isTab}) {
     assert(nativePageId != null);
     assert(pageName != null);
 
@@ -793,8 +804,10 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
       initRouteName: pageName,
       initRoute: initRoute,
       args: args,
+      isTab: isTab,
       generateBuilder: _routeGenerator,
       unknownBuilder: _unknownRouteGenerator,
+      observers: widget.pageObserver,
     ));
   }
 
@@ -825,8 +838,8 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
   /// move the container to top
   void show(NativeContainer container) {
     if (container != null && container != _containerHistory.last) {
-      overlay.rearrange([container._overlayEntry],
-          above: _containerHistory.last._overlayEntry);
+      overlay
+          .rearrange([container._overlayEntry], below: container._overlayEntry);
       NativeContainer topContainer =
           _containerHistory.isEmpty ? null : _containerHistory.last;
       _containerHistory.remove(container);
@@ -852,16 +865,15 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
 
     // 通知 native 组件，我将要 pop
     await HybridPlugin.singleton.onNativeRouteEvent(
-      event: NativeRouteEvent.beforeDestroy,
-      nativePageId: container.nativePageId,
-      result: container._result
-    );
+        event: NativeRouteEvent.beforeDestroy,
+        nativePageId: container.nativePageId,
+        result: container._result);
 
     container._overlayEntry.remove();
     int index = _containerHistory.indexOf(container);
     NativeContainer preContainer;
     if (index > 0) {
-      preContainer = _containerHistory[index];
+      preContainer = _containerHistory[index - 1];
     }
     _containerHistory.removeAt(index);
     _didRemove(container, preContainer);
@@ -935,14 +947,12 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
 
   void _didRemove(NativeContainer container, NativeContainer preContainer) {
     HybridPlugin.singleton.onNativeRouteEvent(
-      event: NativeRouteEvent.onDestroy,
-      nativePageId: container.nativePageId
-    );
+        event: NativeRouteEvent.onDestroy,
+        nativePageId: container.nativePageId);
     if (preContainer != null) {
       HybridPlugin.singleton.onNativeRouteEvent(
-        event: NativeRouteEvent.onResume,
-        nativePageId: container.nativePageId
-      );
+          event: NativeRouteEvent.onResume,
+          nativePageId: preContainer.nativePageId);
     }
     _repairFrameSchedule();
   }
@@ -992,7 +1002,12 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     assert(pageName != null);
     Object args = initRoute["args"];
     String nativePageId = initRoute["nativePageId"];
-    pushNamed(nativePageId: nativePageId, pageName: pageName, args: args);
+    bool isTab = initRoute["isTab"];
+    pushNamed(
+        nativePageId: nativePageId,
+        pageName: pageName,
+        args: args,
+        isTab: isTab);
   }
 }
 
@@ -1005,6 +1020,8 @@ class NativeContainer extends StatefulWidget {
   final Route<dynamic> initRoute;
 
   final Object args;
+
+  final bool isTab;
 
   final HybridRouteFactory generateBuilder;
 
@@ -1036,6 +1053,7 @@ class NativeContainer extends StatefulWidget {
       this.initRoute,
       this.args,
       this.observers,
+      this.isTab,
       @required this.generateBuilder,
       @required this.unknownBuilder})
       : assert(nativePageId != null),
@@ -1064,6 +1082,7 @@ class NativeContainerState extends State<NativeContainer>
       initialRoute: widget.initRouteName,
       initRoute: widget.initRoute,
       initRouteArgs: widget.args,
+      isTab: widget.isTab,
       generateBuilder: widget.generateBuilder,
       unknownBuilder: widget.unknownBuilder,
       observers: [this],

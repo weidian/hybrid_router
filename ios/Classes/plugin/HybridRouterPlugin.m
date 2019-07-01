@@ -23,7 +23,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 #import "HybridRouterPlugin.h"
-#import "WDFlutterURLRouter.h"
+#import "WDFlutterRouter.h"
+#import "WDFlutterRouteEventHandler.h"
 
 @interface HybridRouterPlugin()
 @property (nonatomic, strong) FlutterMethodChannel *methodChannel;
@@ -77,13 +78,13 @@
     id result = arguments[@"result"];
     switch (eventId.integerValue) {
         case WDFNativeRouteEventBeforeDestroy:
-            [WDFlutterURLRouter beforeNativePagePop:nativePageId result:result];
+            [WDFlutterRouteEventHandler beforeNativePagePop:nativePageId result:result];
             break;
         case WDFNativeRouteEventOnDestroy:
-            [WDFlutterURLRouter onNativePageRemoved:nativePageId result:result];
+            [WDFlutterRouteEventHandler onNativePageRemoved:nativePageId result:result];
             break;
         case WDFNativeRouteEventOnResume:
-            [WDFlutterURLRouter onNativePageReady:nativePageId];
+            [WDFlutterRouteEventHandler onNativePageResume:nativePageId];
             break;
         default:
             break;
@@ -97,22 +98,22 @@
     NSString *name = arguments[@"name"];
     switch (eventId.integerValue) {
         case WDFFlutterRouteEventOnPush:
-            [WDFlutterURLRouter onFlutterPagePushed:nativePageId name:name];
+            [WDFlutterRouteEventHandler onFlutterPagePushed:nativePageId name:name];
             break;
         case WDFFlutterRouteEventOnResume:
-            [WDFlutterURLRouter onFlutterPageResume:nativePageId name:name];
+            [WDFlutterRouteEventHandler onFlutterPageResume:nativePageId name:name];
             break;
         case WDFFlutterRouteEventOnPause:
-            [WDFlutterURLRouter onFlutterPagePause:nativePageId name:name];
+            [WDFlutterRouteEventHandler onFlutterPagePause:nativePageId name:name];
             break;
         case WDFFlutterRouteEventOnReplace:
             //do nothing
             break;
         case WDFFlutterRouteEventOnPop:
-            [WDFlutterURLRouter onFlutterPageRemoved:nativePageId name:name];
+            [WDFlutterRouteEventHandler onFlutterPageRemoved:nativePageId name:name];
             break;
         case WDFFlutterRouteEventOnRemove:
-            [WDFlutterURLRouter onFlutterPageRemoved:nativePageId name:name];
+            [WDFlutterRouteEventHandler onFlutterPageRemoved:nativePageId name:name];
             break;
         default:
             break;
@@ -121,12 +122,12 @@
 
 #pragma mark - open flutter page
 - (void)openFlutterPage:(NSDictionary *)arguments result:(FlutterResult)result {
-    [WDFlutterURLRouter openFlutterPage:arguments[@"pageName"] params:arguments[@"args"] result:result];
+    [WDFlutterRouter.sharedInstance openFlutterPage:arguments[@"pageName"] params:arguments[@"args"] result:result];
 }
 
 #pragma mark - open native page
 - (void)openNativePage:(NSDictionary *)arguments result:(FlutterResult)result {
-    [WDFlutterURLRouter openNativePage:arguments[@"url"] params:arguments[@"args"]];
+    [WDFlutterRouter.sharedInstance openNativePage:arguments[@"url"] params:arguments[@"args"]];
 }
 
 #pragma mark - invoke method

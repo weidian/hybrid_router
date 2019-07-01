@@ -30,21 +30,12 @@
 #import <Foundation/Foundation.h>
 #import <Flutter/Flutter.h>
 
-@class UIViewController, WDFlutterViewWrapperController, WDFlutterRouteOptions;
-typedef void(^FlutterToNativeCallback)(NSDictionary *dic);
+@class WDFlutterViewContainer,WDFlutterViewContainerManager;
+@class UIViewController, WDFlutterViewContainer, WDFlutterRouteOptions;
 
-@protocol WDFlutterURLRouterDelegate <NSObject>
+@protocol WDFlutterRouterDelegate <NSObject>
     
 @required
-
-/**
- 返回导航对象的回调，用于打开flutter页面
-
- @return 导航对象
- */
-- (UIViewController *)flutterCurrentController;
-
-
 /**
  flutter打开native页面的回调
 
@@ -56,12 +47,10 @@ typedef void(^FlutterToNativeCallback)(NSDictionary *dic);
 @optional
 
 /**
- 获取flutter页面的容器，可以通过继承WDFlutterViewWrapperController来定制容器。默认使用WDFlutterViewWrapperController。
-
- @param routeOptions 路由参数
+ 获取flutter页面的容器，可以通过继承WDFlutterViewContainer来定制容器。默认使用WDFlutterViewContainer。
  @return flutter页面容器
  */
-- (WDFlutterViewWrapperController *)flutterWrapperController:(WDFlutterRouteOptions *)routeOptions;
+- (WDFlutterViewContainer *)flutterViewContainer;
 
 - (void)flutterViewDidRender:(NSString *)page time:(CFAbsoluteTime)time;
 
@@ -73,30 +62,22 @@ typedef void(^FlutterToNativeCallback)(NSDictionary *dic);
 
 @end
 
-@interface WDFlutterURLRouter : NSObject
+@interface WDFlutterRouter : NSObject
 
-@property (nonatomic, weak) id<WDFlutterURLRouterDelegate> delegate;
+@property (nonatomic, weak) id<WDFlutterRouterDelegate> delegate;
 
 + (instancetype)sharedInstance;
 
-+ (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result;
+- (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result;
+- (void)openNativePage:(NSString *)page params:(id)params;
 
-+ (void)openNativePage:(NSString *)page params:(id)params;
+#pragma mark -- container
 
-+ (void)beforeNativePagePop:(NSString *)pageId result:(id)result;
+- (void)add:(WDFlutterViewContainer*)container;
+- (void)remove:(WDFlutterViewContainer*)container;
 
-+ (void)onNativePageRemoved:(NSString *)pageId result:(id)result;
+#pragma mark -- manager
 
-+ (void)onNativePageReady:(NSString *)pageId;
-
-+ (void)onFlutterPagePushed:(NSString *)pageId name:(NSString *)name;
-
-+ (void)onFlutterPageRemoved:(NSString *)pageId name:(NSString *)name;
-
-+ (void)onFlutterPageResume:(NSString *)pageId name:(NSString *)name;
-
-+ (void)onFlutterPagePause:(NSString *)pageId name:(NSString *)name;
-
-+ (void)onFlutterViewRender;
+- (WDFlutterViewContainerManager *)contaninerManger;
 
 @end

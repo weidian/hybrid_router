@@ -44,10 +44,11 @@
 
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'model.dart';
+import 'package:flutter/services.dart';
+
 import 'manager.dart';
+import 'model.dart';
 
 /// Native 容器对应的 route 变化的事件
 enum NativeRouteEvent {
@@ -219,7 +220,8 @@ class HybridPlugin {
           NativeContainerManager.pushNamed(
               nativePageId: args["nativePageId"],
               pageName: args["pageName"],
-              args: args["args"]);
+              args: args["args"],
+              isTab: args["isTab"]);
           break;
         case "requestUpdateTheme":
 
@@ -240,8 +242,14 @@ class HybridPlugin {
           Map args = call.arguments;
           assert(args != null);
           print('onNativePageFinished: ${args['nativePageId']}');
-          NativeContainerManager
-              .removeNamed(nativePageId: args["nativePageId"]);
+          NativeContainerManager.removeNamed(
+              nativePageId: args["nativePageId"]);
+          break;
+        case "onNativePageResumed":
+          Map args = call.arguments;
+          assert(args != null);
+          print('onNativePageResumed: ${args['nativePageId']}');
+          NativeContainerManager.showNamed(nativePageId: args["nativePageId"]);
           break;
         default:
           assert(false, "Method: ${call.method} not implemented in flutter");

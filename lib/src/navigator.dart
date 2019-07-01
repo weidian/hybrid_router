@@ -113,6 +113,9 @@ class HybridNavigator extends Navigator {
   /// 初始路由的参数
   final Object initRouteArgs;
 
+  /// 标示tab页
+  final bool isTab;
+
   /// 初始路由
   final Route<dynamic> initRoute;
 
@@ -121,6 +124,7 @@ class HybridNavigator extends Navigator {
     @required this.nativePageId,
     String initialRoute,
     Object initRouteArgs,
+    bool isTab,
     List<NavigatorObserver> observers,
     Route<dynamic> initRoute,
     this.generateBuilder,
@@ -129,6 +133,7 @@ class HybridNavigator extends Navigator {
         assert(nativePageId != null),
         initRouteArgs = initRouteArgs,
         initRoute = initRoute,
+        isTab = isTab,
         super(
           key: key,
           initialRoute: initialRoute,
@@ -252,10 +257,12 @@ class HybridNavigatorState extends NavigatorState {
     if (canPop()) {
       return super.pop(result);
     }
-    // pop 函数本来是非异步的，但是这里因为是当前 Navigator 最后一个页面了，所以可以放心
-    // 使用 channel 关闭页面
-    NativeContainerManager.removeNamed(
-        nativePageId: widget.nativePageId, result: result);
+    if(widget.isTab == null || !widget.isTab) {
+      // pop 函数本来是非异步的，但是这里因为是当前 Navigator 最后一个页面了，所以可以放心
+      // 使用 channel 关闭页面
+      NativeContainerManager.removeNamed(
+          nativePageId: widget.nativePageId, result: result);
+    }
     return true;
   }
 

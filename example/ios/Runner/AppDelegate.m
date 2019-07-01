@@ -1,9 +1,11 @@
 #include "AppDelegate.h"
 #include "GeneratedPluginRegistrant.h"
 #include "DemoViewController.h"
-#import "WDFStackManager.h"
+#import "WDFlutterViewContainer.h"
+#import "WDFlutterRouter.h"
+#import "WDFlutterEngine.h"
 
-@interface AppDelegate()<WDFlutterURLRouterDelegate>
+@interface AppDelegate()<WDFlutterRouterDelegate,WDFlutterEngineDelegate>
 
 @end
 
@@ -11,27 +13,44 @@
 
 - (BOOL)application:(UIApplication *)application
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-  [GeneratedPluginRegistrant registerWithRegistry:self];
-  // Override point for customization after application launch.
+//    [GeneratedPluginRegistrant registerWithRegistry:self];
+//    Override point for customization after application launch.
+  
+    WDFlutterEngine.sharedInstance.delegate = self;
+    WDFlutterRouter.sharedInstance.delegate = self;
+
+    WDFlutterRouteOptions *options = [[WDFlutterRouteOptions alloc] init];
+    options.pageName = @"example";
+    options.args = @"EXAMPLE";
+    options.isTab = TRUE;
+  
+    WDFlutterViewContainer *fvc = [[WDFlutterViewContainer alloc] init];
+    fvc.hidesBottomBarWhenPushed = NO;
+    fvc.routeOptions = options;
+    UINavigationController *nav0 = [[UINavigationController alloc] initWithRootViewController:fvc];
+    nav0.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"flutter" image:nil tag:1];
+
+    DemoViewController *vc = [[DemoViewController alloc] init];
+    UINavigationController *nav1 = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav1.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"native" image:nil tag:0];
+
+    UITabBarController *tabVC = [[UITabBarController alloc] init];
+    tabVC.viewControllers = @[nav0,nav1];
     
-    
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:[[DemoViewController alloc] init]];
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    self.window.rootViewController = nav;
+    self.window.rootViewController = tabVC;
     [self.window makeKeyAndVisible];
-    
-    [WDFStackManager setupWithDelegate:self];
-    
-  return [super application:application didFinishLaunchingWithOptions:launchOptions];
+    return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
 #pragma mark - WDFlutterURLRouterDelegate
-- (UIViewController *)flutterCurrentController {
-    return [UIApplication sharedApplication].delegate.window.rootViewController;
+- (UINavigationController *)appNavigationController {
+    UITabBarController *tabVC = (UITabBarController *) [UIApplication sharedApplication].delegate.window.rootViewController;
+    return tabVC.viewControllers[tabVC.selectedIndex];
 }
 
 - (void)openNativePage:(NSString *)page params:(NSDictionary *)params {
-    [(UINavigationController *)[self flutterCurrentController] pushViewController:[[DemoViewController alloc] init] animated:YES];
+    [(UINavigationController *)[self appNavigationController] pushViewController:[[DemoViewController alloc] init] animated:YES];
 }
 
 @end
