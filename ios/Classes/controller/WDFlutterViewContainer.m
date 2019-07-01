@@ -105,16 +105,12 @@
             [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"pushFlutterPage" arguments:[_routeOptions toDictionary]];
         }
         _isFirstOpen = NO;
+        
+        [self addChildFlutterVC];
     } else {
         if (!self.lastSnapshot) {
             [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.routeOptions.nativePageId}];
         }
-    }
-    
-    if (!self.lastSnapshot) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self addChildFlutterVC];
-        });
     }
 }
 
