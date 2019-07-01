@@ -807,6 +807,7 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
       isTab: isTab,
       generateBuilder: _routeGenerator,
       unknownBuilder: _unknownRouteGenerator,
+      observers: widget.pageObserver,
     ));
   }
 
