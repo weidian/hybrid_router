@@ -150,7 +150,7 @@
             }
         });
     }
-    if (_routeOptions.isTab) {
+    if (_routeOptions.isTab && self.tabBarController) {
         self.tabBarController.tabBar.hidden = _flutterPageCount > 1;
     }
 }
@@ -160,7 +160,7 @@
     if (_flutterPageCount <= 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
     }
-    if (_routeOptions.isTab) {
+    if (_routeOptions.isTab && self.tabBarController) {
         self.tabBarController.tabBar.hidden = _flutterPageCount > 1;
     }
 }
