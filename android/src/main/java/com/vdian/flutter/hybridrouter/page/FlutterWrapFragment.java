@@ -79,6 +79,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         onNativePageRoute(routeOptions, generateRequestCodeByChannel(result));
     }
 
+
     @Override
     public void openFlutterPage(@NonNull FlutterRouteOptions routeOptions, @NonNull MethodChannel.Result result) {
         onFlutterPageRoute(routeOptions, generateRequestCodeByChannel(result));
@@ -152,8 +153,31 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     protected SparseArray<IPageResultCallback> pageCallbackMap = new SparseArray<>();
     // 是否需要在 destroy 的时候调用 destroy surface
     protected boolean needDestroySurface = false;
+    // 当前 flutter 的状态
+    protected int flag;
+
+    protected void onNativePageRoute(NativeRouteOptions routeOptions, int generateRequestCodeByChannel) {
+
+    }
+
+    protected void onFlutterPageRoute(FlutterRouteOptions routeOptions, int generateRequestCodeByChannel) {
+
+    }
+
 
     private boolean hasFlag(int flag, int target) {
         return (flag & target) == target;
+    }
+
+    private int generateRequestCode() {
+        return 0;
+    }
+
+    private void localAttachFlutter() {
+
+    }
+
+    private void localDetachFlutter() {
+
     }
 }
