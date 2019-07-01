@@ -47,29 +47,29 @@
 
 + (void)onFlutterPagePushed:(NSString *)pageId name:(NSString *)name {
     WDFlutterViewContainer *container = [self find:pageId];
-    if (container && [container respondsToSelector:@selector(flutterPagePushed)]) {
-        [container flutterPagePushed];
+    if (container && [container respondsToSelector:@selector(flutterPagePushed:)]) {
+        [container flutterPagePushed:name];
     }
 }
 
 + (void)onFlutterPageRemoved:(NSString *)pageId name:(NSString *)name {
     WDFlutterViewContainer *container = [self find:pageId];
-    if (container && [container respondsToSelector:@selector(flutterPageRemoved)]) {
-        [container flutterPageRemoved];
+    if (container && [container respondsToSelector:@selector(flutterPageRemoved:)]) {
+        [container flutterPageRemoved:name];
     }
 }
 
 + (void)onFlutterPageResume:(NSString *)pageId name:(NSString *)name {
     WDFlutterViewContainer *container = [self find:pageId];
-    if (container && [container respondsToSelector:@selector(flutterPageResume)]) {
-        [container flutterPageResume];
+    if (container && [container respondsToSelector:@selector(flutterPageResume:)]) {
+        [container flutterPageResume:name];
     }
 }
 
 + (void)onFlutterPagePause:(NSString *)pageId name:(NSString *)name {
     WDFlutterViewContainer *container = [self find:pageId];
-    if (container && [container respondsToSelector:@selector(flutterPagePause)]) {
-        [container flutterPagePause];
+    if (container && [container respondsToSelector:@selector(flutterPagePause:)]) {
+        [container flutterPagePause:name];
     }
 }
 
