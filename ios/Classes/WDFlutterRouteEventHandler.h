@@ -23,7 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)onFlutterPageRemoved:(NSString *)pageId name:(NSString *)name;
 + (void)onFlutterPageResume:(NSString *)pageId name:(NSString *)name;
 + (void)onFlutterPagePause:(NSString *)pageId name:(NSString *)name;
-+ (void)onFlutterViewRender:(NSString *)pageId time:(CFAbsoluteTime)time;
 
 @end
 

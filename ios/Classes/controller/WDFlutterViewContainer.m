@@ -95,10 +95,6 @@
         _routeOptions.nativePageId = @(_pageId).stringValue;
         [WDFlutterRouter.sharedInstance add:self];
         if(sIsFirstPush) {
-            CFAbsoluteTime startTime = CFAbsoluteTimeGetCurrent();
-            [FLUTTER_VIEWCONTROLLER setFlutterViewDidRenderCallback:^{
-                [WDFlutterRouteEventHandler onFlutterViewRender:self.routeOptions.nativePageId time:CFAbsoluteTimeGetCurrent()-startTime];
-            }];
             [HybridRouterPlugin sharedInstance].mainEntryParams = [_routeOptions toDictionary];
             sIsFirstPush = NO;
         } else {

@@ -39,52 +39,33 @@
     }
 }
 
-#pragma mark -- fluttr page
+#pragma mark -- flutter page
 
 + (void)onFlutterPagePushed:(NSString *)pageId name:(NSString *)name {
     WDFlutterViewContainer *container = [FLUTTER_CONTAINER_MANAGER find:pageId];
-    if (container) {
+    if (container && [container respondsToSelector:@selector(flutterPagePushed)]) {
         [container flutterPagePushed];
-        if([FLUTTER_ROUTER_DELEGATE respondsToSelector:@selector(flutterViewDidAppear:name:)]) {
-            [FLUTTER_ROUTER_DELEGATE flutterViewDidAppear:container name:name];
-        }
     }
 }
 
 + (void)onFlutterPageRemoved:(NSString *)pageId name:(NSString *)name {
     WDFlutterViewContainer *container = [FLUTTER_CONTAINER_MANAGER find:pageId];
-    if (container) {
+    if (container && [container respondsToSelector:@selector(flutterPageRemoved)]) {
         [container flutterPageRemoved];
-        if([FLUTTER_ROUTER_DELEGATE respondsToSelector:@selector(flutterViewDidRemove:name:)]) {
-            [FLUTTER_ROUTER_DELEGATE flutterViewDidRemove:container name:name];
-        }
     }
 }
 
 + (void)onFlutterPageResume:(NSString *)pageId name:(NSString *)name {
     WDFlutterViewContainer *container = [FLUTTER_CONTAINER_MANAGER find:pageId];
-    if (container) {
-        if([FLUTTER_ROUTER_DELEGATE respondsToSelector:@selector(flutterViewDidAppear:name:)]) {
-            [FLUTTER_ROUTER_DELEGATE flutterViewDidAppear:container name:name];
-        }
+    if (container && [container respondsToSelector:@selector(flutterPageResume)]) {
+        [container flutterPageResume];
     }
 }
 
 + (void)onFlutterPagePause:(NSString *)pageId name:(NSString *)name {
     WDFlutterViewContainer *container = [FLUTTER_CONTAINER_MANAGER find:pageId];
-    if (container) {
-        if([FLUTTER_ROUTER_DELEGATE respondsToSelector:@selector(flutterViewDidDisappear:name:)]) {
-            [FLUTTER_ROUTER_DELEGATE flutterViewDidDisappear:container name:name];
-        }
-    }
-}
-
-+ (void)onFlutterViewRender:(NSString *)pageId time:(CFAbsoluteTime)time {
-    WDFlutterViewContainer *container = [FLUTTER_CONTAINER_MANAGER find:pageId];
-    if (container) {
-        if ([FLUTTER_ROUTER_DELEGATE respondsToSelector:@selector(flutterViewDidRender:time:)]) {
-            [FLUTTER_ROUTER_DELEGATE flutterViewDidRender:container.routeOptions.pageName time:time];
-        }
+    if (container && [container respondsToSelector:@selector(flutterPagePause)]) {
+        [container flutterPagePause];
     }
 }
 
