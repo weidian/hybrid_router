@@ -12,10 +12,10 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol WDFlutterPageLifeCircle <NSObject>
 
 @optional
-- (void)flutterPagePushed;
-- (void)flutterPageResume;
-- (void)flutterPagePause;
-- (void)flutterPageRemoved;
+- (void)flutterPagePushed:(NSString *)pageName;
+- (void)flutterPageResume:(NSString *)pageName;
+- (void)flutterPagePause:(NSString *)pageName;
+- (void)flutterPageRemoved:(NSString *)pageName;
 
 @end
 

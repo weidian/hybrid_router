@@ -132,7 +132,7 @@
     [FLUTTER_VIEWCONTROLLER_VIEW setUserInteractionEnabled:FALSE];
 }
 
-- (void)flutterPagePushed {
+- (void)flutterPagePushed:(NSString *)pageName {
     _flutterPageCount ++;
     if (_flutterPageCount > 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = NO;
@@ -146,7 +146,7 @@
     }
 }
 
-- (void)flutterPageRemoved {
+- (void)flutterPageRemoved:(NSString *)pageName {
     _flutterPageCount --;
     if (_flutterPageCount <= 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
