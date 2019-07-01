@@ -106,7 +106,9 @@
         }
         _isFirstOpen = NO;
         
-        [self addChildFlutterVC];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self addChildFlutterVC];
+        });
     } else {
         if (!self.lastSnapshot) {
             [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.routeOptions.nativePageId}];
@@ -216,7 +218,7 @@
     }
     if(self.lastSnapshot == nil) {
         UIGraphicsBeginImageContextWithOptions([UIScreen mainScreen].bounds.size, YES, 0);
-        [self.view drawViewHierarchyInRect:self.view.bounds afterScreenUpdates:NO];
+        [FLUTTER_VIEWCONTROLLER_VIEW drawViewHierarchyInRect:FLUTTER_VIEWCONTROLLER_VIEW.bounds afterScreenUpdates:NO];
         self.lastSnapshot = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         [self.fakeSnapImgView setImage:self.lastSnapshot];
