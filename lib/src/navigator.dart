@@ -181,7 +181,6 @@ class HybridNavigatorState extends NavigatorState {
 
   @override
   void didUpdateWidget(Navigator oldWidget) {
-    oldWidget.observers.remove(_observable);
     widget.observers.add(_observable);
     super.didUpdateWidget(oldWidget);
   }
