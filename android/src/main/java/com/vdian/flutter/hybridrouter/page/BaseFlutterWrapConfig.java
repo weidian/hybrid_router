@@ -25,6 +25,7 @@
 package com.vdian.flutter.hybridrouter.page;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -50,32 +51,29 @@ import android.support.annotation.Nullable;
  * @since 2019-04-25 15:22
  */
 public class BaseFlutterWrapConfig implements IFlutterWrapConfig {
-    @Override
-    public void preFlutterApplyTheme(@NonNull FlutterWrapActivity activity) {
-    }
 
     @Override
-    public void postFlutterApplyTheme(@NonNull FlutterWrapActivity activity) {
+    public void preFlutterApplyTheme(@NonNull IFlutterNativePage nativePage) {
 
     }
 
     @Override
-    public boolean onFlutterPageRoute(@NonNull FlutterWrapActivity activity, @Nullable FlutterRouteOptions routeOptions, int requestCode) {
+    public void postFlutterApplyTheme(@NonNull IFlutterNativePage nativePage) {
+
+    }
+
+    @Override
+    public boolean onFlutterPageRoute(@NonNull IFlutterNativePage nativePage, @Nullable FlutterRouteOptions routeOptions, int requestCode) {
         return false;
     }
 
     @Override
-    public boolean onNativePageRoute(@NonNull FlutterWrapActivity activity, @NonNull NativeRouteOptions routeOptions, int requestCode) {
+    public boolean onNativePageRoute(@NonNull IFlutterNativePage nativePage, @NonNull NativeRouteOptions routeOptions, int requestCode) {
         return false;
     }
 
     @Override
-    public FlutterRouteOptions parseFlutterRouteFromIntent(@NonNull FlutterWrapActivity activity, Intent intent) {
+    public FlutterRouteOptions parseFlutterRouteFromBundle(@NonNull IFlutterNativePage nativePage, Bundle bundle) {
         return null;
-    }
-
-    @Override
-    public boolean updatePageTransition(@NonNull FlutterWrapActivity activity, int transitionType, boolean isOpenPage) {
-        return false;
     }
 }

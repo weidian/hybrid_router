@@ -133,7 +133,7 @@ class HybridNavigator extends Navigator {
         assert(nativePageId != null),
         initRouteArgs = initRouteArgs,
         initRoute = initRoute,
-        isTab = isTab,
+        this.isTab = isTab ?? false,
         super(
           key: key,
           initialRoute: initialRoute,

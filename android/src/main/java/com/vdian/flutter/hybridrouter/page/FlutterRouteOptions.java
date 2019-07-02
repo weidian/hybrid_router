@@ -56,6 +56,8 @@ import java.io.Serializable;
  */
 public class FlutterRouteOptions implements Parcelable {
 
+    public static final FlutterRouteOptions home = new Builder("/").build();
+
     // 默认的 切换动画
     public static final int TRANSITION_TYPE_DEFAULT = 0;
     // 底部弹出动画

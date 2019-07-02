@@ -123,7 +123,7 @@ public class FlutterStackManagerUtil {
         }
     }
 
-    public static void attachFlutterNativeVIew(FlutterNativeView flutterNativeView) {
+    public static void attachFlutterNativeView(FlutterNativeView flutterNativeView) {
         flutterNativeView.getDartExecutor().onAttachedToJNI();
     }
 }

@@ -135,4 +135,9 @@ public interface IFlutterNativePage {
      * @param eventId
      */
     void onFlutterRouteEvent(String name, int eventId, Map extra);
+
+    /**
+     * 当前页面是否是一个 tab 页面
+     */
+    boolean isTab();
 }

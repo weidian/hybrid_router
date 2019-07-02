@@ -103,14 +103,16 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
      * @param args
      * @param nativePageId
      * @param result
+     * @param isTab 是否是 tab 页面
      */
     public void pushFlutterPager(String pageName, Object args, String nativePageId
-            , @Nullable Result result) {
+            , @Nullable Result result, boolean isTab) {
         if (channel != null) {
             HashMap<String, Object> channelArgs = new HashMap<>();
             channelArgs.put("args", args);
             channelArgs.put("pageName", pageName);
             channelArgs.put("nativePageId", nativePageId);
+            channelArgs.put("isTab", isTab);
             channel.invokeMethod("pushFlutterPage", channelArgs, result);
         }
     }
@@ -154,12 +156,13 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
     protected void onSafeMethodCall(MethodCall call, SafeResult result) {
         switch (call.method) {
             case "getInitRoute": {
-                IFlutterNativePage nativePage = FlutterStackManager.getInstance().getCurNativePage();
+                IFlutterNativePage nativePage = FlutterManager.getInstance().getCurNativePage();
                 if (nativePage != null) {
                     result.success(nativePage.getInitRoute());
                 } else {
                     result.error("-1", "no native page found", null);
                 }
+                FlutterManager.getInstance().setFlutterRouteStart(true);
                 break;
             }
             case "openNativePage": {
@@ -168,7 +171,7 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
                 String nativePageId = (String) args.get("nativePageId");
                 int transitionType = (int) args.get("transitionType");
                 Map<String, Object> subArgs = (Map<String, Object>) args.get("args");
-                IFlutterNativePage nativePage = FlutterStackManager.getInstance().getNativePageById(nativePageId);
+                IFlutterNativePage nativePage = FlutterManager.getInstance().getNativePageById(nativePageId);
                 if (nativePage != null) {
                     nativePage.openNativePage(new NativeRouteOptions.Builder()
                             .setUrl(url).setArgs(subArgs).setTransitionType(transitionType)
@@ -184,7 +187,7 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
                 String nativePageId = (String) args.get("nativePageId");
                 int transitionType = (int) args.get("transitionType");
                 Object subArgs = args.get("args");
-                IFlutterNativePage nativePage = FlutterStackManager.getInstance().getNativePageById(nativePageId);
+                IFlutterNativePage nativePage = FlutterManager.getInstance().getNativePageById(nativePageId);
                 if (nativePage != null) {
                     nativePage.openFlutterPage(new FlutterRouteOptions.Builder(pageName)
                             .setArgs(subArgs)
@@ -224,7 +227,7 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
                 String name = (String) args.get("name");
                 Map extra = (Map) args.get("extra");
                 int eventId = (int) args.get("eventId");
-                IFlutterNativePage nativePage = FlutterStackManager.getInstance().getNativePageById(nativePageId);
+                IFlutterNativePage nativePage = FlutterManager.getInstance().getNativePageById(nativePageId);
                 if (nativePage != null) {
                     nativePage.onFlutterRouteEvent(name, eventId, extra);
                 }
@@ -239,7 +242,7 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
 
     private void beforeNativeRouteDestroy(String nativePageId, Result result) {
         // 在 pop 之前，请求 native detach form window
-        IFlutterNativePage nativePage = FlutterStackManager.getInstance().getNativePageById(nativePageId);
+        IFlutterNativePage nativePage = FlutterManager.getInstance().getNativePageById(nativePageId);
         if (nativePage != null) {
             nativePage.requestDetachFromWindow();
         }
@@ -247,7 +250,7 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
     }
 
     private void onNativeRouteDestroy(String nativePageId, Result result, Object ret) {
-        IFlutterNativePage nativePage = FlutterStackManager.getInstance().getNativePageById(nativePageId);
+        IFlutterNativePage nativePage = FlutterManager.getInstance().getNativePageById(nativePageId);
         if (nativePage != null) {
             nativePage.finishNativePage(ret);
         }
