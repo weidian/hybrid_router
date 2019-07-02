@@ -51,8 +51,4 @@
     return _viewController;
 }
 
-- (nonnull UINavigationController *)flutterNavigationController {
-    return _delegate.appNavigationController;
-}
-
 @end

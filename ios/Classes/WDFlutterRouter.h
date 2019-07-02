@@ -44,6 +44,8 @@
  */
 - (void)openNativePage:(NSString *)page params:(id)params;
 
+- (UINavigationController *)appNavigationController;
+
 @optional
 
 /**

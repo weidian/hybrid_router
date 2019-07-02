@@ -14,7 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @required
 - (FlutterViewController *)viewController;
-- (UINavigationController *)flutterNavigationController;
 
 @end
 
