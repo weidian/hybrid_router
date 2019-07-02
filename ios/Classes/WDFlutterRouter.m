@@ -37,7 +37,6 @@
 #import "WDFlutterViewContainerManager.h"
 
 @interface WDFlutterRouter()
-@property (nonatomic,strong) id<WDFlutterViewProvider>viewProvider;
 @property (nonatomic,strong) WDFlutterViewContainerManager *manager;
 @end
 
@@ -55,7 +54,6 @@
 - (id)init {
     self = [super init];
     if (self) {
-        _viewProvider = WDFlutterEngine.sharedInstance;
         _manager = [WDFlutterViewContainerManager new];
     }
     return self;
@@ -82,8 +80,8 @@
     }
     viewController.routeOptions = options;
     
-    UINavigationController *nav = _viewProvider.flutterNavigationController;
-    if (!nav)   return;
+    UINavigationController *nav = _delegate.appNavigationController;
+    if (!nav) return;
     [nav pushViewController:viewController animated:YES];
 }
 

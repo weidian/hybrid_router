@@ -5,7 +5,7 @@
 #import "WDFlutterRouter.h"
 #import "WDFlutterEngine.h"
 
-@interface AppDelegate()<WDFlutterRouterDelegate,WDFlutterEngineDelegate>
+@interface AppDelegate()<WDFlutterRouterDelegate>
 
 @end
 
@@ -16,7 +16,6 @@
 //    [GeneratedPluginRegistrant registerWithRegistry:self];
 //    Override point for customization after application launch.
   
-    WDFlutterEngine.sharedInstance.delegate = self;
     WDFlutterRouter.sharedInstance.delegate = self;
 
     WDFlutterRouteOptions *options = [[WDFlutterRouteOptions alloc] init];
@@ -43,7 +42,7 @@
     return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
-#pragma mark - WDFlutterURLRouterDelegate
+#pragma mark -- WDFlutterRouterDelegate
 - (UINavigationController *)appNavigationController {
     UITabBarController *tabVC = (UITabBarController *) [UIApplication sharedApplication].delegate.window.rootViewController;
     return tabVC.viewControllers[tabVC.selectedIndex];
