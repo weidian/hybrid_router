@@ -95,26 +95,20 @@
         _routeOptions.nativePageId = @(_pageId).stringValue;
         [WDFlutterRouter.sharedInstance add:self];
         if(sIsFirstPush) {
-            CFAbsoluteTime startTime = CFAbsoluteTimeGetCurrent();
-            [FLUTTER_VIEWCONTROLLER setFlutterViewDidRenderCallback:^{
-                [WDFlutterRouteEventHandler onFlutterViewRender:self.routeOptions.nativePageId time:CFAbsoluteTimeGetCurrent()-startTime];
-            }];
             [HybridRouterPlugin sharedInstance].mainEntryParams = [_routeOptions toDictionary];
             sIsFirstPush = NO;
         } else {
             [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"pushFlutterPage" arguments:[_routeOptions toDictionary]];
         }
         _isFirstOpen = NO;
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self addChildFlutterVC];
+        });
     } else {
         if (!self.lastSnapshot) {
             [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.routeOptions.nativePageId}];
         }
-    }
-    
-    if (!self.lastSnapshot) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self addChildFlutterVC];
-        });
     }
 }
 
@@ -138,7 +132,7 @@
     [FLUTTER_VIEWCONTROLLER_VIEW setUserInteractionEnabled:FALSE];
 }
 
-- (void)flutterPagePushed {
+- (void)flutterPagePushed:(NSString *)pageName {
     _flutterPageCount ++;
     if (_flutterPageCount > 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = NO;
@@ -152,7 +146,7 @@
     }
 }
 
-- (void)flutterPageRemoved {
+- (void)flutterPageRemoved:(NSString *)pageName {
     _flutterPageCount --;
     if (_flutterPageCount <= 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
@@ -220,7 +214,7 @@
     }
     if(self.lastSnapshot == nil) {
         UIGraphicsBeginImageContextWithOptions([UIScreen mainScreen].bounds.size, YES, 0);
-        [self.view drawViewHierarchyInRect:self.view.bounds afterScreenUpdates:NO];
+        [FLUTTER_VIEWCONTROLLER_VIEW drawViewHierarchyInRect:FLUTTER_VIEWCONTROLLER_VIEW.bounds afterScreenUpdates:NO];
         self.lastSnapshot = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         [self.fakeSnapImgView setImage:self.lastSnapshot];

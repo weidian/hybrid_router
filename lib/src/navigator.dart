@@ -207,6 +207,11 @@ class HybridNavigatorState extends NavigatorState {
       HybridPushType pushType,
       NativePageTransitionType transitionType}) {
     pushType = pushType ?? HybridNavigator.defaultPushType;
+
+    if(widget.isTab) {
+      pushType = HybridPushType.Native;
+    }
+
     assert(routeName != null);
     assert(pushType != null);
     if (pushType == HybridPushType.Native) {
@@ -240,6 +245,9 @@ class HybridNavigatorState extends NavigatorState {
     } else {
       // 否则使用默认的跳转
       pushType = HybridNavigator.defaultPushType;
+    }
+    if(widget.isTab && !route.settings.isInitialRoute) {
+      pushType = HybridPushType.Native;
     }
     if (pushType == HybridPushType.Native) {
       return _parseFlutterNativeResult(

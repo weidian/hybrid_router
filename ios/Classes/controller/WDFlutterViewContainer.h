@@ -30,15 +30,13 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <Flutter/Flutter.h>
+#import "WDFlutterPageLifeCircle.h"
 
 @class WDFlutterViewController, WDFlutterRouteOptions;
 
-@interface WDFlutterViewContainer : UIViewController
+@interface WDFlutterViewContainer : UIViewController <WDFlutterPageLifeCircle>
 
 @property (nonatomic, strong) WDFlutterRouteOptions *routeOptions;
-
-- (void)flutterPagePushed;
-- (void)flutterPageRemoved;
 
 - (void)nativePageWillRemove:(id)result;
 - (void)nativePageResume;
