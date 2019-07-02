@@ -24,6 +24,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 package com.vdian.flutter.hybridrouter;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
@@ -149,6 +150,17 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
             channel.invokeMethod("onBackPressed", null, result);
         } else if (result != null){
             result.error("-1", "channel is null", null);
+        }
+    }
+
+    /**
+     * 某个 native 页面 resume 了
+     */
+    public void onNativePageResumed(@NonNull IFlutterNativePage nativePage) {
+        if (channel != null) {
+            Map<String, Object> args = new HashMap<>();
+            args.put("nativePageId", nativePage.getNativePageId());
+            channel.invokeMethod("onNativePageResumed", args, null);
         }
     }
 

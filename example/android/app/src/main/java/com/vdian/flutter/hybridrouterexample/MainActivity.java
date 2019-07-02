@@ -99,6 +99,15 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         ));
+        dataList.add(new MenuItem(
+                "跳转到 tab 页面", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(), TabExampleActivity.class);
+                startActivity(intent);
+            }
+        }
+        ));
         adapter.set(dataList);
         recList.setLayoutManager(new LinearLayoutManager(this));
         recList.setAdapter(adapter);

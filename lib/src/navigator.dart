@@ -76,14 +76,14 @@ class HybridNavigator extends Navigator {
   }
 
   /// 通过此 context 获取到对应的 native page id
-  static String getNativePageIdByContext(BuildContext context) {}
-
-  /// 通过此 route 获取到对应的 native page id
-  /// 此 route 可以是混合栈容器内的 route，也可以是混合栈本身的 route
-  static String getNativePageIdByRoute(Route<dynamic> route) {}
+  static String getNativePageIdByContext(BuildContext context) {
+    return NativeContainerManager.getNativePageIdByContext(context);
+  }
 
   /// 获取 native 容器包含的 route 列表
-  static List<Route<dynamic>> getRoutesInNativePage(String nativePageId) {}
+  static List<Route<dynamic>> getRoutesInNativePage(String nativePageId) {
+    return NativeContainerManager.getRoutesInNativePage(nativePageId);
+  }
 
   /// 获取 HybridNavigatorState
   static HybridNavigatorState of(BuildContext context, {bool nullOk = false}) {
@@ -264,7 +264,7 @@ class HybridNavigatorState extends NavigatorState {
     if (canPop()) {
       return super.pop(result);
     }
-    if(widget.isTab == null || !widget.isTab) {
+    if(widget.isTab == false) {
       // pop 函数本来是非异步的，但是这里因为是当前 Navigator 最后一个页面了，所以可以放心
       // 使用 channel 关闭页面
       NativeContainerManager.removeNamed(

@@ -167,6 +167,6 @@ public class FlutterWrapActivity extends AppCompatActivity implements FlutterWra
 
     @Override
     public boolean isTab(IFlutterNativePage page) {
-        return true;
+        return false;
     }
 }

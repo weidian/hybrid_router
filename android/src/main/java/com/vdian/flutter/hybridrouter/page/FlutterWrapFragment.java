@@ -41,6 +41,7 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -152,6 +153,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
     private static int FLAG_ATTACH = 1;
     private static int FLAG_ENGINE_INIT = 2;
+    private static int FLAG_SURFACE_CREATED = 4;
+    private static int FLAG_PAGE_PUSHED = 8;
     private static int MAX_REQUEST_CODE = 100;
 
     @Override
@@ -212,6 +215,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
      */
     @Override
     public Map<String, Object> getInitRoute() {
+        // 这里获取 initRoute 可以认为 push 了 page
+        flag |= FLAG_PAGE_PUSHED;
         Map<String, Object> ret = new HashMap<>();
         if (routeOptions != null) {
             ret.put("pageName", routeOptions.pageName);
@@ -254,7 +259,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         if (delegate != null) {
             return delegate.isTab(this);
         }
-        return false;
+        return true;
     }
 
     // 当前页面的 id
@@ -277,6 +282,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     protected int flag;
     // 当前 fragment 不能处理的 delegate，比如页面结束，tab 判断，native 跳转动画
     protected IPageDelegate delegate;
+    // 是否需要在 destroy 的时候调用 destroy surface
+    protected boolean needDestroySurface = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -398,6 +405,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         if (HybridRouterPlugin.isRegistered()) {
             HybridRouterPlugin.getInstance().onNativePageFinished(nativePageId);
         }
+        // 这里去掉打开页面的标记
+        flag &= ~FLAG_PAGE_PUSHED;
     }
 
     @Override
@@ -587,6 +596,28 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             container.addView(maskView, lp);
         }
 
+        // surface 的生命周期回调，flutter detach 需要用到
+        flutterView.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                flag = flag | FLAG_SURFACE_CREATED;
+                needDestroySurface = true;
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                flag = flag & (~FLAG_SURFACE_CREATED);
+                if (flutterView.getFlutterNativeView() != null) {
+                    /// not detach, need not to destroy
+                    needDestroySurface = false;
+                }
+            }
+        });
+
         final AtomicInteger visibleCount = !needWaitForResult ?
                 new AtomicInteger(1) : new AtomicInteger(0);
         final View finalMaskView = maskView;
@@ -733,11 +764,11 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         if (hasFlag(flag, FLAG_ATTACH) || !hasFlag(flag, FLAG_ENGINE_INIT)) {
             return;
         }
-        flag |= FLAG_ATTACH;
         final IFlutterNativePage curNativePage = FlutterManager.getInstance().getCurNativePage();
         if (curNativePage != null) {
             curNativePage.detachFlutter();
         }
+        flag |= FLAG_ATTACH;
         assert container != null;
         assert maskView != null;
         // 设置当前页面是 native page
@@ -745,12 +776,12 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         assert flutterNativeView != null;
         if (flutterView == null) {
             flutterView = createFlutterView(container);
-            if (FlutterManager.getInstance().isFlutterRouteStart()) {
+            if (FlutterManager.getInstance().isFlutterRouteStart() && !hasFlag(flag, FLAG_PAGE_PUSHED)) {
+                flag |= FLAG_PAGE_PUSHED;
                 MethodChannel.Result result = setupFlutterView(container, flutterView, maskView,
                         true);
-                // TODO add tab flag
                 HybridRouterPlugin.getInstance().pushFlutterPager(routeOptions.pageName,
-                        routeOptions.args, nativePageId, result, false);
+                        routeOptions.args, nativePageId, result, isTab());
             } else {
                 setupFlutterView(container, flutterView, maskView, false);
             }
@@ -762,6 +793,9 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
             flutterView.onPostResume();
         }
+        if (HybridRouterPlugin.isRegistered()) {
+            HybridRouterPlugin.getInstance().onNativePageResumed(this);
+        }
     }
 
     private void localDetachFlutter() {
@@ -772,7 +806,13 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         assert flutterView != null;
         assert flutterNativeView != null;
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
+            this.flutterNativeView.getPluginRegistry().onUserLeaveHint();
             flutterView.onPause();
+        }
+        if (hasFlag(flag, FLAG_SURFACE_CREATED) || needDestroySurface) {
+            flag &= ~FLAG_SURFACE_CREATED;
+            needDestroySurface = false;
+            FlutterStackManagerUtil.onSurfaceDestroyed(flutterView, flutterView.getFlutterNativeView());
         }
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
             flutterView.onStop();

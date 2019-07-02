@@ -62,8 +62,7 @@ public class FlutterDemoApp extends Application {
             public boolean onFlutterPageRoute(@NonNull IFlutterNativePage nativePage,
                                               @Nullable FlutterRouteOptions routeOptions, int requestCode) {
                 // 自定义flutter 页面的跳转
-                Intent intent = new Intent(nativePage.getContext(), FlutterWrapActivity.class);
-                intent.putExtra(FlutterWrapFragment.EXTRA_FLUTTER_ROUTE, routeOptions);
+                Intent intent = FlutterWrapActivity.startIntent(nativePage.getContext(), routeOptions);
                 nativePage.startActivityForResult(intent, requestCode);
                 return true;
             }
