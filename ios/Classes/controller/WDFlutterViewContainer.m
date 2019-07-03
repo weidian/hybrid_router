@@ -46,6 +46,7 @@
     BOOL _isFirstOpen;
     int _flutterPageCount;
     long long _pageId;
+    BOOL _changeTab;
 }
 
 - (instancetype)init {
@@ -106,7 +107,7 @@
             [self addChildFlutterVC];
         });
     } else {
-        if (!self.lastSnapshot) {
+        if (_changeTab) {
             [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.routeOptions.nativePageId}];
         }
     }
@@ -126,7 +127,8 @@
     [super viewWillDisappear:animated];
     NSArray *curStackAry = self.navigationController.viewControllers;
     NSInteger idx = [curStackAry indexOfObject:self];
-    if(idx != NSNotFound && idx != curStackAry.count-1){
+    if(idx != NSNotFound){
+        _changeTab = (idx == curStackAry.count-1);
         [self saveSnapshot];
     }
     [FLUTTER_VIEWCONTROLLER_VIEW setUserInteractionEnabled:FALSE];

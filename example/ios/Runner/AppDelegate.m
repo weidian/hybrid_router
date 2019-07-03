@@ -27,14 +27,25 @@
     fvc.hidesBottomBarWhenPushed = NO;
     fvc.routeOptions = options;
     UINavigationController *nav0 = [[UINavigationController alloc] initWithRootViewController:fvc];
-    nav0.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"flutter" image:nil tag:1];
+    nav0.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"flutter" image:nil tag:0];
 
     DemoViewController *vc = [[DemoViewController alloc] init];
     UINavigationController *nav1 = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav1.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"native" image:nil tag:0];
+    nav1.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"native" image:nil tag:1];
 
+    WDFlutterRouteOptions *options_ = [[WDFlutterRouteOptions alloc] init];
+    options_.pageName = @"example";
+    options_.args = @"EXAMPLE";
+    options_.isTab = TRUE;
+
+    WDFlutterViewContainer *fvc_ = [[WDFlutterViewContainer alloc] init];
+    fvc_.hidesBottomBarWhenPushed = NO;
+    fvc_.routeOptions = options_;
+    UINavigationController *nav2 = [[UINavigationController alloc] initWithRootViewController:fvc_];
+    nav2.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"flutter2" image:nil tag:2];
+    
     UITabBarController *tabVC = [[UITabBarController alloc] init];
-    tabVC.viewControllers = @[nav0,nav1];
+    tabVC.viewControllers = @[nav0,nav1,nav2];
     
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.rootViewController = tabVC;
