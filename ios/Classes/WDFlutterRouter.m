@@ -85,7 +85,7 @@
     [nav pushViewController:viewController animated:YES];
 }
 
-#pragma mark --container
+#pragma mark -- container
 
 - (void)add:(WDFlutterViewContainer*)container {
     [_manager add:container];
@@ -95,7 +95,7 @@
     [_manager remove:container];
 }
 
-#pragma mark --
+#pragma mark -- manager
 
 - (WDFlutterViewContainerManager *)contaninerManger {
     return _manager;

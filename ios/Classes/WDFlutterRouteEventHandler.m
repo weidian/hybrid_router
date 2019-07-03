@@ -23,9 +23,15 @@
 
 + (void)beforeNativePagePop:(NSString *)pageId result:(id)result {
     WDFlutterViewContainer *container = [self find:pageId];
-    if (container) {
+    UINavigationController *nav = container.navigationController;
+    
+    if (!nav || !container) return;
+    
+    if (nav.topViewController == container) {
         [container nativePageWillRemove:result];
         [container.navigationController popViewControllerAnimated:YES];
+    } else {
+        [self removeContainer:container];
     }
 }
 
@@ -33,6 +39,7 @@
     WDFlutterViewContainer *container = [self find:pageId];
     if (container) {
         [container nativePageWillRemove:result];
+        [self removeContainer:container];
     }
 }
 
@@ -41,6 +48,14 @@
     if (container) {
         [container nativePageResume];
     }
+}
+
++ (void)removeContainer:(WDFlutterViewContainer *)container {
+    UINavigationController *nav = container.navigationController;
+    if (!nav) return;
+    NSMutableArray<UIViewController *> *viewControllers = nav.viewControllers.mutableCopy;
+    [viewControllers removeObject:container];
+    nav.viewControllers = viewControllers.copy;
 }
 
 #pragma mark -- flutter page
