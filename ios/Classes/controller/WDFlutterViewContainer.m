@@ -49,6 +49,10 @@
     BOOL _changeTab;
 }
 
+- (void)dealloc {
+    NSLog(@"----dealloc");
+}
+
 - (instancetype)init {
     self = [super init];
     if (self) {
