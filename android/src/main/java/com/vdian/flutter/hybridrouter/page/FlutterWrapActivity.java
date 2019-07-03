@@ -88,18 +88,27 @@ public class FlutterWrapActivity extends AppCompatActivity {
         return intent;
     }
 
+    public FlutterWrapFragment getFlutterWrapFragment() {
+        return flutterWrapFragment;
+    }
+
     private FlutterWrapFragment flutterWrapFragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        flutterWrapFragment = new FlutterWrapFragment.Builder()
+        flutterWrapFragment = createAndSetupFragment();
+    }
+
+    protected FlutterWrapFragment createAndSetupFragment() {
+        FlutterWrapFragment ret = new FlutterWrapFragment.Builder()
                 .pageDelegate(new FlutterWrapFragment.ActivityPageDelegate())
                 .extra(getIntent().getExtras())
                 .build();
         getSupportFragmentManager().beginTransaction()
-                .add(android.R.id.content, flutterWrapFragment)
+                .add(android.R.id.content, ret)
                 .commit();
+        return ret;
     }
 
     @Override

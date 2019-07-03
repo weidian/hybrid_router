@@ -165,6 +165,13 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return this;
         }
 
+        public Builder initializationArgs(String[] args) {
+            if (args != null) {
+                arguments.putStringArray(EXTRA_INITIALIZATION_ARGS, args);
+            }
+            return this;
+        }
+
         public Builder appBundlePath(String appBundlePath) {
             if (appBundlePath != null) {
                 arguments.putString(EXTRA_APP_BUNDLE_PATH, appBundlePath);
@@ -191,10 +198,14 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
         public FlutterWrapFragment build() {
             FlutterWrapFragment ret = new FlutterWrapFragment();
-            ret.delegate = delegate;
-            ret.openScreenshot = openScreenshot;
-            ret.setArguments(arguments);
+            updateFragmentProperties(ret);
             return ret;
+        }
+
+        protected void updateFragmentProperties(FlutterWrapFragment fragment) {
+            fragment.delegate = delegate;
+            fragment.openScreenshot = openScreenshot;
+            fragment.setArguments(arguments);
         }
     }
 
