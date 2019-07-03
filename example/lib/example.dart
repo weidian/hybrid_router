@@ -33,6 +33,34 @@ class _ExamplePageState extends State<ExamplePage> with WidgetsBindingObserver {
   }
 }
 
+class TabExamplePage extends StatefulWidget {
+  @override
+  _TabExamplePageState createState() => _TabExamplePageState();
+}
+
+class _TabExamplePageState extends State<TabExamplePage> with NativeContainerExitMixin {
+
+  final Color color = _ColorMaker.getNextColor();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: color,
+        title: Text('Flutter tab example'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop("I am message from flutter example");
+          },
+        ),
+      ),
+      body: _ExampleBody(color: color,),
+    );
+  }
+}
+
 class _ExampleBody extends StatelessWidget {
   final Color color;
 

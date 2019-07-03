@@ -101,13 +101,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
          * @return
          */
         boolean isTab(FlutterWrapFragment page);
-
-        /**
-         * 当前 native 页面是否可以通过 flutter 的 pop 退出
-         * @param page
-         * @return
-         */
-        boolean canPop(FlutterWrapFragment page);
     }
 
     /**
@@ -116,11 +109,9 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     public static class ActivityPageDelegate implements IPageDelegate {
 
         private boolean isTab;
-        private boolean canPop;
 
         public ActivityPageDelegate() {
             this.isTab = false;
-            this.canPop = true;
         }
 
         /**
@@ -128,14 +119,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
          */
         public ActivityPageDelegate tab(boolean tab) {
             isTab = tab;
-            return this;
-        }
-
-        /**
-         * 当前的 native 容器是否可以通过 flutter pop 移除
-         */
-        public ActivityPageDelegate canPop(boolean canPop) {
-            this.canPop = canPop;
             return this;
         }
 
@@ -158,11 +141,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         @Override
         public boolean isTab(FlutterWrapFragment page) {
             return isTab;
-        }
-
-        @Override
-        public boolean canPop(FlutterWrapFragment page) {
-            return canPop;
         }
     }
 
@@ -291,7 +269,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         }
         ret.put("nativePageId", nativePageId);
         ret.put("isTab", isTab());
-        ret.put("canPop", canPop());
         return ret;
     }
 
@@ -327,14 +304,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return delegate.isTab(this);
         }
         return true;
-    }
-
-    @Override
-    public boolean canPop() {
-        if (delegate != null) {
-            return delegate.canPop(this);
-        }
-        return false;
     }
 
     // 当前页面的 id
@@ -856,7 +825,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
                 MethodChannel.Result result = setupFlutterView(container, flutterView, maskView,
                         true);
                 HybridRouterPlugin.getInstance().pushFlutterPager(routeOptions.pageName,
-                        routeOptions.args, nativePageId, isTab(), canPop(), result);
+                        routeOptions.args, nativePageId, isTab(), result);
             } else {
                 setupFlutterView(container, flutterView, maskView, false);
             }

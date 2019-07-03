@@ -50,11 +50,11 @@ public class TabExampleActivity extends AppCompatActivity {
         setContentView(R.layout.activity_tab_example);
         flutterWrapFragmentA = new FlutterWrapFragment.Builder()
                 .pageDelegate(new FlutterWrapFragment.ActivityPageDelegate().tab(true))
-                .route(new FlutterRouteOptions.Builder("example").build())
+                .route(new FlutterRouteOptions.Builder("tab_example").build())
                 .build();
         flutterWrapFragmentB = new FlutterWrapFragment.Builder()
                 .pageDelegate(new FlutterWrapFragment.ActivityPageDelegate().tab(true))
-                .route(new FlutterRouteOptions.Builder("example").build())
+                .route(new FlutterRouteOptions.Builder("tab_example").build())
                 .build();
         nativeFragment = new NativeFragment();
         tabLayout = findViewById(R.id.tab);

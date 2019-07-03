@@ -107,14 +107,13 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
      * @param isTab 是否是 tab 页面
      */
     public void pushFlutterPager(String pageName, Object args, String nativePageId,
-                                 boolean isTab, boolean canPop, @Nullable Result result) {
+                                 boolean isTab, @Nullable Result result) {
         if (channel != null) {
             HashMap<String, Object> channelArgs = new HashMap<>();
             channelArgs.put("args", args);
             channelArgs.put("pageName", pageName);
             channelArgs.put("nativePageId", nativePageId);
             channelArgs.put("isTab", isTab);
-            channelArgs.put("canPop", canPop);
             channel.invokeMethod("pushFlutterPage", channelArgs, result);
         }
     }

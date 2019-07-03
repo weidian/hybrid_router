@@ -22,9 +22,23 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
+import 'package:hybrid_router/src/navigator.dart';
 
-export 'src/navigator.dart';
-export 'src/model.dart';
-export 'src/observer.dart';
-export 'src/back_pressed.dart';
-export 'src/utils.dart';
+import 'package:flutter/material.dart';
+
+mixin NativeContainerExitMixin<T extends StatefulWidget> on State<T> {
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    HybridNavigatorState state = HybridNavigator.of(context);
+    if (state != null) {
+      state.canExit = canNativeContainerExit();
+    }
+  }
+
+  /// native container 是否可以 pop
+  bool canNativeContainerExit() {
+    return true;
+  }
+}

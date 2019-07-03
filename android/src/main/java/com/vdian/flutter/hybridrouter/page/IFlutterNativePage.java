@@ -140,10 +140,4 @@ public interface IFlutterNativePage {
      * 当前页面是否是一个 tab 页面
      */
     boolean isTab();
-
-    /**
-     * 当前 native 容器是否可以通过 flutter 的 navigator pop 退出
-     * @return
-     */
-    boolean canPop();
 }

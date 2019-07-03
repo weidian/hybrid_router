@@ -31,6 +31,16 @@
         android:id="@+id/btn_jump_to_native"
         android:text="Jump to native"
         app:layout_constraintTop_toBottomOf="@id/btn_jump_to_flutter"
+        app:layout_constraintBottom_toTopOf="@+id/btn_jump_to_tab_flutter"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/btn_jump_to_tab_flutter"
+        android:text="Jump to tab native"
+        app:layout_constraintTop_toBottomOf="@id/btn_jump_to_native"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -42,7 +52,7 @@
         android:layout_marginTop="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_jump_to_native"
+        app:layout_constraintTop_toBottomOf="@id/btn_jump_to_tab_flutter"
         android:text="no message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

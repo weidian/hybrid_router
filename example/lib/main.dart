@@ -21,6 +21,9 @@ void main() {
               return ExamplePage(
                 title: argument as String,
               );
+            },
+            "tab_example": (context, argument) {
+              return TabExamplePage();
             }
           },
           unknownRouteBuilder: <T>(RouteSettings settings) {

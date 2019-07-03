@@ -33,7 +33,7 @@ import 'model.dart';
 import 'navigator.dart';
 import 'observer.dart';
 
-/// Manage the native container
+/// [NativeContainer] 管理类，管理当前 app 所有的 [NativeContainer]
 class NativeContainerManager extends StatefulWidget {
   /// 静态状态实例，这里表明是单例模型
   static NativeContainerManagerState state;
@@ -216,8 +216,7 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
       {@required String nativePageId,
       @required String pageName,
       Object args,
-      bool isTab = false,
-      bool canPop = true}) {
+      bool isTab = false}) {
     assert(nativePageId != null);
     assert(pageName != null);
 
@@ -427,17 +426,15 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     Object args = initRoute["args"];
     String nativePageId = initRoute["nativePageId"];
     bool isTab = initRoute["isTab"];
-    bool canPop = initRoute["canPop"];
     pushNamed(
         nativePageId: nativePageId,
         pageName: pageName,
         args: args,
-        isTab: isTab,
-        canPop: canPop);
+        isTab: isTab);
   }
 }
 
-/// native container
+/// Native 容器，一个 native 页面对应一个 [NativeContainer]
 class NativeContainer extends StatefulWidget {
   /// 获取 native container 的 state
   static NativeContainerState of(BuildContext context) {
@@ -461,9 +458,6 @@ class NativeContainer extends StatefulWidget {
 
   /// 当前 native 容器是否是 tab 页面
   final bool isTab;
-
-  /// 当前 native 容器是否可以通过 flutter navigator 的 pop 退出
-  final bool canPop;
 
   final HybridRouteFactory generateBuilder;
 
@@ -495,7 +489,6 @@ class NativeContainer extends StatefulWidget {
       this.args,
       this.observers,
       this.isTab = false,
-      this.canPop = true,
       @required this.generateBuilder,
       @required this.unknownBuilder})
       : assert(nativePageId != null),
@@ -514,6 +507,7 @@ class NativeContainer extends StatefulWidget {
 
 class NativeContainerState extends State<NativeContainer>
     with NavigatorObserver {
+
   final List<Route<dynamic>> _history = [];
 
   @override
@@ -525,7 +519,6 @@ class NativeContainerState extends State<NativeContainer>
       initRoute: widget.initRoute,
       initRouteArgs: widget.args,
       isTab: widget.isTab,
-      canPop: widget.canPop,
       generateBuilder: widget.generateBuilder,
       unknownBuilder: widget.unknownBuilder,
       observers: [this],

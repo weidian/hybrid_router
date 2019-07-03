@@ -59,6 +59,14 @@ public class NativeExampleActivity extends AppCompatActivity {
             }
         });
 
+        findViewById(R.id.btn_jump_to_tab_flutter).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(), TabExampleActivity.class);
+                startActivityForResult(intent, REQUEST_NATIVE);
+            }
+        });
+
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
