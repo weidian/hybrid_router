@@ -52,7 +52,8 @@ class NativeContainerManager extends StatefulWidget {
       {@required String nativePageId,
       @required String pageName,
       Object args,
-      bool isTab}) {
+      bool isTab = false,
+      bool canPop = true}) {
     _checkState();
     state.pushNamed(
         nativePageId: nativePageId,
@@ -215,7 +216,8 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
       {@required String nativePageId,
       @required String pageName,
       Object args,
-      bool isTab}) {
+      bool isTab = false,
+      bool canPop = true}) {
     assert(nativePageId != null);
     assert(pageName != null);
 
@@ -425,11 +427,13 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     Object args = initRoute["args"];
     String nativePageId = initRoute["nativePageId"];
     bool isTab = initRoute["isTab"];
+    bool canPop = initRoute["canPop"];
     pushNamed(
         nativePageId: nativePageId,
         pageName: pageName,
         args: args,
-        isTab: isTab);
+        isTab: isTab,
+        canPop: canPop);
   }
 }
 
@@ -443,15 +447,23 @@ class NativeContainer extends StatefulWidget {
     return context.ancestorStateOfType(TypeMatcher<NativeContainerState>());
   }
 
+  /// 当前 native 容器对应的 nativePageId
   final String nativePageId;
 
+  /// 初始路由名
   final String initRouteName;
 
+  /// 初始路由 为 null 时根据 [initRouteName] 来跳转初始页面
   final Route<dynamic> initRoute;
 
+  /// 路由跳转过来的参数
   final Object args;
 
+  /// 当前 native 容器是否是 tab 页面
   final bool isTab;
+
+  /// 当前 native 容器是否可以通过 flutter navigator 的 pop 退出
+  final bool canPop;
 
   final HybridRouteFactory generateBuilder;
 
@@ -463,10 +475,9 @@ class NativeContainer extends StatefulWidget {
 
   final List<HybridNavigatorObserver> observers;
 
+  /// 私有非 final 属性
   NativeContainerManagerState _manager;
-
   OverlayEntry _overlayEntry;
-
   dynamic _result;
 
   /// Pop a flutter router in native container
@@ -483,7 +494,8 @@ class NativeContainer extends StatefulWidget {
       this.initRoute,
       this.args,
       this.observers,
-      this.isTab,
+      this.isTab = false,
+      this.canPop = true,
       @required this.generateBuilder,
       @required this.unknownBuilder})
       : assert(nativePageId != null),
@@ -513,6 +525,7 @@ class NativeContainerState extends State<NativeContainer>
       initRoute: widget.initRoute,
       initRouteArgs: widget.args,
       isTab: widget.isTab,
+      canPop: widget.canPop,
       generateBuilder: widget.generateBuilder,
       unknownBuilder: widget.unknownBuilder,
       observers: [this],

@@ -116,6 +116,9 @@ class HybridNavigator extends Navigator {
   /// 标示tab页
   final bool isTab;
 
+  /// 是否可以主动退出（通过 navigator 的 pop 退出）
+  final bool canPop;
+
   /// 初始路由
   final Route<dynamic> initRoute;
 
@@ -124,7 +127,8 @@ class HybridNavigator extends Navigator {
     @required this.nativePageId,
     String initialRoute,
     Object initRouteArgs,
-    bool isTab,
+    bool isTab = false,
+    bool canPop = true,
     List<NavigatorObserver> observers,
     Route<dynamic> initRoute,
     this.generateBuilder,
@@ -134,6 +138,7 @@ class HybridNavigator extends Navigator {
         initRouteArgs = initRouteArgs,
         initRoute = initRoute,
         this.isTab = isTab ?? false,
+        this.canPop = canPop ?? !(isTab == true),
         super(
           key: key,
           initialRoute: initialRoute,
@@ -264,13 +269,13 @@ class HybridNavigatorState extends NavigatorState {
     if (canPop()) {
       return super.pop(result);
     }
-    if(widget.isTab == false) {
+    if(widget.canPop) {
       // pop 函数本来是非异步的，但是这里因为是当前 Navigator 最后一个页面了，所以可以放心
       // 使用 channel 关闭页面
       NativeContainerManager.removeNamed(
           nativePageId: widget.nativePageId, result: result);
     }
-    return true;
+    return widget.canPop;
   }
 
   /// open a native page

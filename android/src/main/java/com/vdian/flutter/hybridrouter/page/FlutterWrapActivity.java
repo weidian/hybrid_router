@@ -62,7 +62,7 @@ import static com.vdian.flutter.hybridrouter.page.FlutterWrapFragment.EXTRA_RESU
  * @author qigengxin
  * @since 2019/2/5 2:26 PM
  */
-public class FlutterWrapActivity extends AppCompatActivity implements FlutterWrapFragment.IPageDelegate {
+public class FlutterWrapActivity extends AppCompatActivity {
 
     /**
      * 直接打开 flutter 页面
@@ -94,7 +94,7 @@ public class FlutterWrapActivity extends AppCompatActivity implements FlutterWra
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         flutterWrapFragment = new FlutterWrapFragment.Builder()
-                .pageDelegate(this)
+                .pageDelegate(new FlutterWrapFragment.ActivityPageDelegate())
                 .extra(getIntent().getExtras())
                 .build();
         getSupportFragmentManager().beginTransaction()
@@ -150,23 +150,5 @@ public class FlutterWrapActivity extends AppCompatActivity implements FlutterWra
         } else {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    public void finishNativePage(IFlutterNativePage page, @Nullable Object result) {
-        if (result == null) {
-            setResult(RESULT_OK);
-        } else {
-            Intent data = new Intent();
-            FlutterStackManagerUtil.updateIntent(data, EXTRA_RESULT_KEY, result);
-            setResult(RESULT_OK, data);
-        }
-        // 结束当前 native 页面
-        finish();
-    }
-
-    @Override
-    public boolean isTab(IFlutterNativePage page) {
-        return false;
     }
 }

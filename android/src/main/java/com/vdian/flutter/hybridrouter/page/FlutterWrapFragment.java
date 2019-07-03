@@ -35,6 +35,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewCompat;
 import android.util.Log;
@@ -62,6 +63,7 @@ import io.flutter.view.FlutterNativeView;
 import io.flutter.view.FlutterRunArguments;
 import io.flutter.view.FlutterView;
 
+import static android.app.Activity.RESULT_OK;
 import static android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW;
 
 /**
@@ -92,13 +94,76 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         /**
          * flutter 请求结束 native 页面
          */
-        void finishNativePage(IFlutterNativePage page, @Nullable Object result);
+        void finishNativePage(FlutterWrapFragment page, @Nullable Object result);
 
         /**
          * 判断是否是 tab
          * @return
          */
-        boolean isTab(IFlutterNativePage page);
+        boolean isTab(FlutterWrapFragment page);
+
+        /**
+         * 当前 native 页面是否可以通过 flutter 的 pop 退出
+         * @param page
+         * @return
+         */
+        boolean canPop(FlutterWrapFragment page);
+    }
+
+    /**
+     * activity 页面结束代替
+     */
+    public static class ActivityPageDelegate implements IPageDelegate {
+
+        private boolean isTab;
+        private boolean canPop;
+
+        public ActivityPageDelegate() {
+            this.isTab = false;
+            this.canPop = true;
+        }
+
+        /**
+         * 当前的页面是否是 tab 页面
+         */
+        public ActivityPageDelegate tab(boolean tab) {
+            isTab = tab;
+            return this;
+        }
+
+        /**
+         * 当前的 native 容器是否可以通过 flutter pop 移除
+         */
+        public ActivityPageDelegate canPop(boolean canPop) {
+            this.canPop = canPop;
+            return this;
+        }
+
+        @Override
+        public void finishNativePage(FlutterWrapFragment page, @Nullable Object result) {
+            if (page.getActivity() != null) {
+                FragmentActivity activity = page.getActivity();
+                if (result == null) {
+                    activity.setResult(RESULT_OK);
+                } else {
+                    Intent data = new Intent();
+                    FlutterStackManagerUtil.updateIntent(data, EXTRA_RESULT_KEY, result);
+                    activity.setResult(RESULT_OK, data);
+                }
+                // 结束当前 native 页面
+                activity.finish();
+            }
+        }
+
+        @Override
+        public boolean isTab(FlutterWrapFragment page) {
+            return isTab;
+        }
+
+        @Override
+        public boolean canPop(FlutterWrapFragment page) {
+            return canPop;
+        }
     }
 
     public static class Builder {
@@ -225,6 +290,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             }
         }
         ret.put("nativePageId", nativePageId);
+        ret.put("isTab", isTab());
+        ret.put("canPop", canPop());
         return ret;
     }
 
@@ -260,6 +327,14 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return delegate.isTab(this);
         }
         return true;
+    }
+
+    @Override
+    public boolean canPop() {
+        if (delegate != null) {
+            return delegate.canPop(this);
+        }
+        return false;
     }
 
     // 当前页面的 id
@@ -781,7 +856,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
                 MethodChannel.Result result = setupFlutterView(container, flutterView, maskView,
                         true);
                 HybridRouterPlugin.getInstance().pushFlutterPager(routeOptions.pageName,
-                        routeOptions.args, nativePageId, result, isTab());
+                        routeOptions.args, nativePageId, isTab(), canPop(), result);
             } else {
                 setupFlutterView(container, flutterView, maskView, false);
             }

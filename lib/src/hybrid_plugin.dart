@@ -104,7 +104,7 @@ class HybridPlugin {
   /// 对应 [nativePageId] 的 native container 生命周期事件
   /// [event] 页面生命周期事件
   /// [nativePageId] 页面对应的 flutter 容器的 native page id
-  Future<void> onNativeRouteEvent(
+  Future<bool> onNativeRouteEvent(
       {@required NativeRouteEvent event,
       @required String nativePageId,
       dynamic result}) async {
@@ -221,7 +221,8 @@ class HybridPlugin {
               nativePageId: args["nativePageId"],
               pageName: args["pageName"],
               args: args["args"],
-              isTab: args["isTab"]);
+              isTab: args["isTab"],
+              canPop: args["canPop"]);
           break;
         case "requestUpdateTheme":
 
