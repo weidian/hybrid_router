@@ -29,6 +29,8 @@ import android.arch.lifecycle.Lifecycle;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -50,6 +52,7 @@ import android.widget.FrameLayout;
 import com.vdian.flutter.hybridrouter.FlutterManager;
 import com.vdian.flutter.hybridrouter.FlutterStackManagerUtil;
 import com.vdian.flutter.hybridrouter.HybridRouterPlugin;
+import com.vdian.flutter.hybridrouter.ScreenshotManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -148,6 +151,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
         IPageDelegate delegate;
         Bundle arguments = new Bundle();
+        boolean openScreenshot = false;
 
         public Builder pageDelegate(IPageDelegate delegate) {
             this.delegate = delegate;
@@ -180,9 +184,15 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return this;
         }
 
+        public Builder screenshot(boolean openScreenshot) {
+            this.openScreenshot = openScreenshot;
+            return this;
+        }
+
         public FlutterWrapFragment build() {
             FlutterWrapFragment ret = new FlutterWrapFragment();
             ret.delegate = delegate;
+            ret.openScreenshot = openScreenshot;
             ret.setArguments(arguments);
             return ret;
         }
@@ -328,6 +338,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     protected IPageDelegate delegate;
     // 是否需要在 destroy 的时候调用 destroy surface
     protected boolean needDestroySurface = false;
+    // 是否开启截图
+    protected boolean openScreenshot = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -411,6 +423,10 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
                 flutterView.onPostResume();
             }
             innerPostFlutterApplyTheme();
+            if (flutterView != null) {
+                // 此处修复 flutter 和 native 沉浸式同步的问题
+                ViewCompat.requestApplyInsets(flutterView);
+            }
         }
     }
 
@@ -446,6 +462,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         cancelAllResult();
         FlutterManager.getInstance().removeNativePage(this);
         detachFlutter();
+        removeScreenShot();
         if (HybridRouterPlugin.isRegistered()) {
             HybridRouterPlugin.getInstance().onNativePageFinished(nativePageId);
         }
@@ -610,6 +627,14 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         return background;
     }
 
+    protected void updateMaskView(View maskView, @Nullable Bitmap screenshot) {
+        if (screenshot != null) {
+            maskView.setBackground(new BitmapDrawable(getResources(), screenshot));
+        } else {
+            maskView.setBackground(getLaunchScreenDrawableFromActivityTheme());
+        }
+    }
+
     /**
      * 配置flutter 页面
      *
@@ -639,6 +664,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
                     , ViewGroup.LayoutParams.MATCH_PARENT) : lp;
             container.addView(maskView, lp);
         }
+        updateMaskView(maskView, getScreenshot());
 
         // surface 的生命周期回调，flutter detach 需要用到
         flutterView.getHolder().addCallback(new SurfaceHolder.Callback() {
@@ -665,11 +691,13 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         final AtomicInteger visibleCount = !needWaitForResult ?
                 new AtomicInteger(1) : new AtomicInteger(0);
         final View finalMaskView = maskView;
+        finalMaskView.setVisibility(View.VISIBLE);
         MethodChannel.Result result = new MethodChannel.Result() {
             @Override
             public void success(@Nullable Object o) {
-                if (visibleCount.incrementAndGet() >= 2 && finalMaskView != null) {
+                if (visibleCount.incrementAndGet() >= 2) {
                     finalMaskView.setVisibility(View.VISIBLE);
+                    removeScreenShot();
                 }
             }
 
@@ -685,13 +713,12 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             @Override
             public void onFirstFrame() {
                 flutterView.removeFirstFrameListener(this);
-                if (visibleCount.incrementAndGet() >= 2 && finalMaskView != null) {
+                if (visibleCount.incrementAndGet() >= 2) {
                     finalMaskView.setVisibility(View.INVISIBLE);
+                    removeScreenShot();
                 }
             }
         });
-        // 此处修复 flutter 和 native 沉浸式同步的问题
-        ViewCompat.requestApplyInsets(flutterView);
         return result;
     }
 
@@ -764,6 +791,30 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             entrypoint = arguments.getString(EXTRA_DART_ENTRYPOINT, entrypoint);
         }
         return entrypoint;
+    }
+
+    @Nullable
+    protected Bitmap getScreenshot() {
+        ScreenshotManager screenshotManager = checkScreenshotManager();
+        if (screenshotManager == null) return null;
+        return screenshotManager.getBitmap(nativePageId);
+    }
+
+    protected void saveScreenshot() {
+        ScreenshotManager screenshotManager = checkScreenshotManager();
+        if (flutterView != null && screenshotManager != null) {
+            Bitmap bitmap = flutterView.getBitmap();
+            if (bitmap != null) {
+                screenshotManager.addBitmap(nativePageId, bitmap);
+            }
+        }
+    }
+
+    protected void removeScreenShot() {
+        ScreenshotManager screenshotManager = checkScreenshotManager();
+        if (screenshotManager != null) {
+            screenshotManager.removeCache(nativePageId);
+        }
     }
 
     private void innerPreFlutterApplyTheme() {
@@ -849,6 +900,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         flag &= ~FLAG_ATTACH;
         assert flutterView != null;
         assert flutterNativeView != null;
+        saveScreenshot();
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
             this.flutterNativeView.getPluginRegistry().onUserLeaveHint();
             flutterView.onPause();
@@ -885,6 +937,17 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return getResources().getDrawable(typedValue.resourceId);
         } catch (Resources.NotFoundException e) {
             e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static ScreenshotManager screenshotManager;
+
+    @Nullable
+    private ScreenshotManager checkScreenshotManager() {
+        if (screenshotManager != null) return screenshotManager;
+        if (getContext() != null) {
+            screenshotManager = new ScreenshotManager(getContext());
         }
         return null;
     }
