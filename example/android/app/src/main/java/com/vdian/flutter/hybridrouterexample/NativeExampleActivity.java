@@ -63,7 +63,7 @@ public class NativeExampleActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(v.getContext(), TabExampleActivity.class);
-                startActivityForResult(intent, REQUEST_NATIVE);
+                startActivityForResult(intent, REQUEST_FLUTTER);
             }
         });
 
