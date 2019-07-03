@@ -36,6 +36,12 @@ import java.io.FileOutputStream;
 public class ScreenshotManager {
     // 上下文
     private final Context appContext;
+    /**
+     * 是否启用文件缓存，暂时关闭
+     * TODO 是否有必要启用文件缓存
+     */
+    private final boolean enableFileCache = false;
+
     // 允许的 flutter 保存截图最大个数，默认是 2
     private LruCache<String, Bitmap> screenshotCache = new LruCache<String, Bitmap>(2) {
         @Override
@@ -48,6 +54,7 @@ public class ScreenshotManager {
         }
     };
 
+
     public ScreenshotManager(Context appContext) {
         this.appContext = appContext.getApplicationContext();
     }
@@ -56,12 +63,11 @@ public class ScreenshotManager {
      * 设置 bitmap 缓存个数
      * @param maxSize bitmap 缓存个数
      */
-    public ScreenshotManager setMaxSize(int maxSize) {
+    public void setMaxSize(int maxSize) {
         maxSize = maxSize < 0 ? 0 : maxSize;
         if (maxSize != screenshotCache.maxSize()) {
             screenshotCache.resize(maxSize);
         }
-        return this;
     }
 
     /**
@@ -70,9 +76,8 @@ public class ScreenshotManager {
      * @param bitmap
      * @return
      */
-    public ScreenshotManager addBitmap(String nativePageId, Bitmap bitmap) {
+    public void addBitmap(String nativePageId, Bitmap bitmap) {
         screenshotCache.put(nativePageId, bitmap);
-        return this;
     }
 
     public Bitmap getBitmap(String nativePageId) {
@@ -88,17 +93,12 @@ public class ScreenshotManager {
 
     public void removeCache(String nativePageId) {
         screenshotCache.remove(nativePageId);
-        File dir = appContext.getExternalCacheDir();
-        if (dir != null && dir.exists()) {
-            File imageFile = new File(dir, getSaveFile(nativePageId));
-            if (imageFile.exists()) {
-                imageFile.delete();
-            }
-        }
+        deleteBitmap(nativePageId);
     }
 
     @Nullable
     private Bitmap readBitmap(String nativePageId) {
+        if (!enableFileCache) return null;
         File dir = appContext.getExternalCacheDir();
         if (dir != null && dir.exists()) {
             File imageFile = new File(dir, getSaveFile(nativePageId));
@@ -110,6 +110,7 @@ public class ScreenshotManager {
     }
 
     private void saveBitmap(String nativePageId, Bitmap bitmap) {
+        if (!enableFileCache) return ;
         File dir = appContext.getExternalCacheDir();
         if (dir != null && dir.exists()) {
             File imageFile = new File(dir, getSaveFile(nativePageId));
@@ -119,6 +120,17 @@ public class ScreenshotManager {
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
                 } catch (FileNotFoundException ignore) {
                 }
+            }
+        }
+    }
+
+    private void deleteBitmap(String nativePageId) {
+        if (!enableFileCache) return ;
+        File dir = appContext.getExternalCacheDir();
+        if (dir != null && dir.exists()) {
+            File imageFile = new File(dir, getSaveFile(nativePageId));
+            if (imageFile.exists()) {
+                imageFile.delete();
             }
         }
     }

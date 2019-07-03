@@ -158,6 +158,11 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return this;
         }
 
+        /**
+         * 路由参数
+         * @param routeOptions
+         * @return
+         */
         public Builder route(FlutterRouteOptions routeOptions) {
             if (routeOptions != null) {
                 arguments.putParcelable(EXTRA_FLUTTER_ROUTE, routeOptions);
@@ -165,6 +170,11 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return this;
         }
 
+        /**
+         * 引擎初始化信息
+         * @param args
+         * @return
+         */
         public Builder initializationArgs(String[] args) {
             if (args != null) {
                 arguments.putStringArray(EXTRA_INITIALIZATION_ARGS, args);
@@ -172,6 +182,11 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return this;
         }
 
+        /**
+         * app bundle 启动路径
+         * @param appBundlePath
+         * @return
+         */
         public Builder appBundlePath(String appBundlePath) {
             if (appBundlePath != null) {
                 arguments.putString(EXTRA_APP_BUNDLE_PATH, appBundlePath);
@@ -179,6 +194,11 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return this;
         }
 
+        /**
+         * dart 虚拟机主函数入口
+         * @param dartEntrypoint
+         * @return
+         */
         public Builder dartEntrypoint(String dartEntrypoint) {
             if (dartEntrypoint != null) {
                 arguments.putString(EXTRA_DART_ENTRYPOINT, dartEntrypoint);
@@ -186,11 +206,21 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return this;
         }
 
+        /**
+         * fragment arguments 额外参数
+         * @param arguments
+         * @return
+         */
         public Builder extra(Bundle arguments) {
             this.arguments.putAll(arguments);
             return this;
         }
 
+        /**
+         * 是否启用截屏功能，实验性，默认关闭，后续可能会移除
+         * @param openScreenshot
+         * @return
+         */
         public Builder screenshot(boolean openScreenshot) {
             this.openScreenshot = openScreenshot;
             return this;
@@ -349,8 +379,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     protected IPageDelegate delegate;
     // 是否需要在 destroy 的时候调用 destroy surface
     protected boolean needDestroySurface = false;
-    // 是否开启截图
-    protected boolean openScreenshot = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -464,6 +492,9 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (flutterView != null) {
+
+        }
         detachFlutter();
     }
 
@@ -804,30 +835,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         return entrypoint;
     }
 
-    @Nullable
-    protected Bitmap getScreenshot() {
-        ScreenshotManager screenshotManager = checkScreenshotManager();
-        if (screenshotManager == null) return null;
-        return screenshotManager.getBitmap(nativePageId);
-    }
-
-    protected void saveScreenshot() {
-        ScreenshotManager screenshotManager = checkScreenshotManager();
-        if (flutterView != null && screenshotManager != null) {
-            Bitmap bitmap = flutterView.getBitmap();
-            if (bitmap != null) {
-                screenshotManager.addBitmap(nativePageId, bitmap);
-            }
-        }
-    }
-
-    protected void removeScreenShot() {
-        ScreenshotManager screenshotManager = checkScreenshotManager();
-        if (screenshotManager != null) {
-            screenshotManager.removeCache(nativePageId);
-        }
-    }
-
     private void innerPreFlutterApplyTheme() {
         IFlutterWrapConfig wrapConfig = FlutterManager.getInstance().getFlutterWrapConfig();
         if (wrapConfig != null) {
@@ -952,7 +959,38 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         return null;
     }
 
+    // ================ 截图管理 =================
     private static ScreenshotManager screenshotManager;
+    // 是否开启截图
+    private boolean openScreenshot = false;
+
+    @Nullable
+    private Bitmap getScreenshot() {
+        ScreenshotManager screenshotManager = checkScreenshotManager();
+        if (screenshotManager == null) return null;
+        return screenshotManager.getBitmap(nativePageId);
+    }
+
+    private void saveScreenshot() {
+        // 如果没有开启保存截图，直接退出
+        if (!openScreenshot) {
+            return;
+        }
+        ScreenshotManager screenshotManager = checkScreenshotManager();
+        if (flutterView != null && screenshotManager != null) {
+            Bitmap bitmap = flutterView.getBitmap();
+            if (bitmap != null) {
+                screenshotManager.addBitmap(nativePageId, bitmap);
+            }
+        }
+    }
+
+    private void removeScreenShot() {
+        ScreenshotManager screenshotManager = checkScreenshotManager();
+        if (screenshotManager != null) {
+            screenshotManager.removeCache(nativePageId);
+        }
+    }
 
     @Nullable
     private ScreenshotManager checkScreenshotManager() {
