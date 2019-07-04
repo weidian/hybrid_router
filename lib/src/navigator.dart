@@ -75,6 +75,14 @@ class HybridNavigator extends Navigator {
     );
   }
 
+  // 根据 route 获取到 nativePageId
+  static String getNativePageIdByRoute(Route<dynamic> route) {
+    if (route?.navigator is HybridNavigator) {
+      return (route.navigator as HybridNavigator).nativePageId;
+    }
+    return null;
+  }
+
   /// 通过此 context 获取到对应的 native page id
   static String getNativePageIdByContext(BuildContext context) {
     return NativeContainerManager.getNativePageIdByContext(context);
