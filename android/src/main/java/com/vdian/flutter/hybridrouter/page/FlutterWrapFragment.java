@@ -56,7 +56,6 @@ import com.vdian.flutter.hybridrouter.engine.FixFlutterEngine;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
@@ -464,7 +463,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         // flutter 视图
         flutterView = createFlutterView(this.container);
         // 遮罩层
-        maskView = createMaskView(this.container);
+        maskView = createMaskView(this.container, getScreenshot());
         return this.container;
     }
 
@@ -744,7 +743,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     }
 
     // 创建遮罩层
-    protected View createMaskView(ViewGroup container) {
+    protected View createMaskView(ViewGroup container, Bitmap screenshot) {
         View background = new View(container.getContext());
         background.setClickable(true);
         return background;
@@ -755,10 +754,20 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
      * @param maskView 遮罩层视图
      * @param screenshot 截图，可能为 null
      */
-    protected void updateMaskView(View maskView, @Nullable Bitmap screenshot) {
+    protected void updateMaskScreenshot(View maskView, @Nullable Bitmap screenshot) {
         if (screenshot != null) {
             maskView.setBackground(new BitmapDrawable(getResources(), screenshot));
         } else {
+            maskView.setBackground(getLaunchScreenDrawableFromActivityTheme());
+        }
+    }
+
+    /**
+     * 移除遮罩层的 screen shot
+     * @param maskView
+     */
+    protected void removeMaskScreenshot(View maskView) {
+        if (maskView.getBackground() instanceof  BitmapDrawable) {
             maskView.setBackground(getLaunchScreenDrawableFromActivityTheme());
         }
     }
@@ -790,15 +799,15 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             container.addView(maskView, lp);
         }
         // 更新遮罩层
-        updateMaskView(maskView, getScreenshot());
+        updateMaskScreenshot(maskView, getScreenshot());
 
         final View finalMaskView = maskView;
         finalMaskView.setVisibility(View.VISIBLE);
         flutterView.addOnFirstFrameRenderedListener(new OnFirstFrameRenderedListener() {
             @Override
             public void onFirstFrameRendered() {
-                flutterView.removeOnFirstFrameRenderedListener(this);
                 finalMaskView.setVisibility(View.INVISIBLE);
+                // flutter 可见，如果可能，移除截图
                 removeScreenShot();
             }
         });
@@ -1005,6 +1014,9 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
     @Nullable
     private Bitmap getScreenshot() {
+        if (!openScreenshot) {
+            return null;
+        }
         ScreenshotManager screenshotManager = checkScreenshotManager();
         if (screenshotManager == null) return null;
         return screenshotManager.getBitmap(nativePageId);
@@ -1025,6 +1037,10 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     }
 
     private void removeScreenShot() {
+        // 同时移除 mask view 的遮罩
+        if (maskView != null) {
+            removeMaskScreenshot(maskView);
+        }
         ScreenshotManager screenshotManager = checkScreenshotManager();
         if (screenshotManager != null) {
             screenshotManager.removeCache(nativePageId);
