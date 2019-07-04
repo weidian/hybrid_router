@@ -34,6 +34,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.vdian.flutter.hybridrouter.FlutterStackManagerUtil;
 import com.vdian.flutter.hybridrouter.HybridRouterPlugin;
 
+import io.flutter.embedding.android.FlutterView;
 import io.flutter.plugin.common.MethodChannel;
 
 import static com.vdian.flutter.hybridrouter.page.FlutterWrapFragment.EXTRA_FLUTTER_ROUTE;
@@ -102,6 +103,7 @@ public class FlutterWrapActivity extends AppCompatActivity {
 
     protected FlutterWrapFragment createAndSetupFragment() {
         FlutterWrapFragment ret = new FlutterWrapFragment.Builder()
+                .renderMode(FlutterView.RenderMode.texture)
                 .pageDelegate(new FlutterWrapFragment.ActivityPageDelegate())
                 .extra(getIntent().getExtras())
                 .build();

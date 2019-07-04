@@ -29,6 +29,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.vdian.flutter.hybridrouter.engine.FixFlutterEngine;
 import com.vdian.flutter.hybridrouter.page.IFlutterNativePage;
 import com.vdian.flutter.hybridrouter.page.IFlutterWrapConfig;
 
@@ -114,6 +115,9 @@ public class FlutterManager {
      * @param nativePage
      */
     public void removeNativePage(IFlutterNativePage nativePage) {
+        if (curNativePage == nativePage) {
+            curNativePage = null;
+        }
         nativePageMap.remove(nativePage.getNativePageId());
     }
 
@@ -137,7 +141,7 @@ public class FlutterManager {
     @NonNull
     public FlutterEngine getOrCreateFlutterEngine(@NonNull Context context) {
         if (flutterEngine == null) {
-            flutterEngine = new FlutterEngine(context instanceof Application ? context
+            flutterEngine = new FixFlutterEngine(context instanceof Application ? context
                     : context.getApplicationContext());
         }
         return flutterEngine;

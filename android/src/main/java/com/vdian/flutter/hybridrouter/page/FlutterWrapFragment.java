@@ -44,7 +44,6 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -53,21 +52,25 @@ import com.vdian.flutter.hybridrouter.FlutterManager;
 import com.vdian.flutter.hybridrouter.FlutterStackManagerUtil;
 import com.vdian.flutter.hybridrouter.HybridRouterPlugin;
 import com.vdian.flutter.hybridrouter.ScreenshotManager;
+import com.vdian.flutter.hybridrouter.engine.FixFlutterEngine;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.flutter.embedding.android.FlutterView;
+import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.FlutterShellArgs;
+import io.flutter.embedding.engine.dart.DartExecutor;
+import io.flutter.embedding.engine.renderer.OnFirstFrameRenderedListener;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
+import io.flutter.plugin.platform.PlatformPlugin;
 import io.flutter.view.FlutterMain;
-import io.flutter.view.FlutterNativeView;
-import io.flutter.view.FlutterRunArguments;
-import io.flutter.view.FlutterView;
 
 import static android.app.Activity.RESULT_OK;
 import static android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW;
+import static com.vdian.flutter.hybridrouter.FlutterStackManagerUtil.assertNotNull;
 
 /**
  * ┏┛ ┻━━━━━┛ ┻┓
@@ -159,6 +162,26 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         }
 
         /**
+         * 设置 flutter view 的渲染模式
+         */
+        public Builder renderMode(FlutterView.RenderMode renderMode) {
+            if (renderMode != null) {
+                arguments.putString(EXTRA_FLUTTERVIEW_RENDER_MODE, renderMode.name());
+            }
+            return this;
+        }
+
+        /**
+         * 设置 flutter view 的透明度模式
+         */
+        public Builder transparencyMode(FlutterView.TransparencyMode transparencyMode) {
+            if (transparencyMode != null) {
+                arguments.putString(EXTRA_FLUTTERVIEW_TRANSPARENCY_MOD, transparencyMode.name());
+            }
+            return this;
+        }
+
+        /**
          * 路由参数
          * @param routeOptions
          * @return
@@ -244,12 +267,13 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     public static final String EXTRA_INITIALIZATION_ARGS = "ext_initialization_args";
     public static final String EXTRA_APP_BUNDLE_PATH = "ext_app_bundle_path";
     public static final String EXTRA_DART_ENTRYPOINT = "ext_dart_entrypoint";
+    public static final String EXTRA_FLUTTERVIEW_RENDER_MODE = "ext_flutterview_render_mode";
+    public static final String EXTRA_FLUTTERVIEW_TRANSPARENCY_MOD = "ext_flutterview_transparency_mode";
 
-    private static int FLAG_ATTACH = 1;
-    private static int FLAG_ENGINE_INIT = 2;
-    private static int FLAG_SURFACE_CREATED = 4;
-    private static int FLAG_PAGE_PUSHED = 8;
-    private static int MAX_REQUEST_CODE = 100;
+    private static final int FLAG_ATTACH = 1;
+    private static final int FLAG_ENGINE_INIT = 2;
+    private static final int FLAG_PAGE_PUSHED = 8;
+    private static final int MAX_REQUEST_CODE = 100;
 
     @Override
     public boolean isAttachToFlutter() {
@@ -287,9 +311,10 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         // 先让 flutter 脱离渲染
         detachFlutter();
         if (delegate != null) {
+            // 走代理
             delegate.finishNativePage(this, result);
         } else {
-            // 结束当前 native 页面
+            // 结束当前 native 页面，移除当前的 fragment
             FragmentManager fm = getFragmentManager();
             if (fm != null) {
                 fm.beginTransaction()
@@ -364,9 +389,11 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
      */
     protected FlutterRouteOptions routeOptions;
     @Nullable
-    protected FlutterNativeView flutterNativeView;
+    protected FlutterEngine flutterEngine;
     @Nullable
     protected FlutterView flutterView;
+    @Nullable
+    protected PlatformPlugin platformPlugin;
     protected FrameLayout container;
     protected View maskView;
     // 是否是首次启动 flutter engine
@@ -377,14 +404,13 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     protected int flag;
     // 当前 fragment 不能处理的 delegate，比如页面结束，tab 判断，native 跳转动画
     protected IPageDelegate delegate;
-    // 是否需要在 destroy 的时候调用 destroy surface
-    protected boolean needDestroySurface = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // push the page to stack manager
+        // 混合栈中添加此页面
         FlutterManager.getInstance().addNativePage(this);
+        // 解析参数
         IFlutterWrapConfig wrapConfig = FlutterManager.getInstance().getFlutterWrapConfig();
         if (routeOptions == null) {
             // 理由参数获取
@@ -409,10 +435,10 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         // init flutter
         try {
             Context context = getContext();
-            assert context != null;
+            assertNotNull(context);
             initializeFlutter(context);
             setupFlutterEngine(context);
-            assert flutterNativeView != null;
+            assertNotNull(flutterEngine);
             flag |= FLAG_ENGINE_INIT;
         } catch (Throwable t) {
             // engine init error
@@ -423,21 +449,22 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         if (!hasFlag(flag, FLAG_ENGINE_INIT)) {
             return null;
         }
-        assert flutterNativeView != null;
+        // 创建视图层
         Context context = getContext();
         assert context != null;
+        // flutter 容器
         this.container = new FrameLayout(context);
         this.container.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
                 , ViewGroup.LayoutParams.MATCH_PARENT));
+        // flutter 视图
+        flutterView = createFlutterView(this.container);
+        // 遮罩层
         maskView = createMaskView(this.container);
-        attachFlutter();
-        if (isCreatePage) {
-            onRegisterPlugin(flutterNativeView.getPluginRegistry());
-        }
         return this.container;
     }
 
@@ -445,10 +472,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     public void onStart() {
         super.onStart();
         if (hasFlag(flag, FLAG_ENGINE_INIT)) {
+            // 链接到 flutter
             attachFlutter();
-            if (flutterView != null) {
-                flutterView.onStart();
-            }
         }
     }
 
@@ -456,15 +481,25 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     public void onResume() {
         super.onResume();
         if (hasFlag(flag, FLAG_ENGINE_INIT)) {
+            // 检查链接到 flutter
             attachFlutter();
+            // 主题修复
             innerPreFlutterApplyTheme();
-            if (flutterView != null) {
-                flutterView.onPostResume();
+            if (flutterEngine != null) {
+                flutterEngine.getLifecycleChannel().appIsResumed();
+            }
+            if (platformPlugin != null) {
+                // 此方法会同步 flutter 主题到 native
+                platformPlugin.onPostResume();
             }
             innerPostFlutterApplyTheme();
             if (flutterView != null) {
                 // 此处修复 flutter 和 native 沉浸式同步的问题
                 ViewCompat.requestApplyInsets(flutterView);
+            }
+            // 通知 flutter，native page resume 了
+            if (HybridRouterPlugin.isRegistered()) {
+                HybridRouterPlugin.getInstance().onNativePageResumed(this);
             }
         }
     }
@@ -472,9 +507,9 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     @Override
     public void onPause() {
         super.onPause();
-        if (hasFlag(flag, FLAG_ENGINE_INIT)) {
-            if (flutterView != null) {
-                flutterView.onPause();
+        if (hasFlag(flag, FLAG_ATTACH)) {
+            if (flutterEngine != null) {
+                flutterEngine.getLifecycleChannel().appIsInactive();
             }
         }
     }
@@ -482,29 +517,39 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     @Override
     public void onStop() {
         super.onStop();
-        if (hasFlag(flag, FLAG_ENGINE_INIT)) {
-            if (flutterView != null) {
-                flutterView.onStop();
+        if (hasFlag(flag, FLAG_ATTACH)) {
+            if (flutterEngine != null) {
+                flutterEngine.getLifecycleChannel().appIsPaused();
             }
+            // fragment 不可见，脱离 flutter 渲染
+            detachFlutter();
         }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (flutterView != null) {
-
+        if (hasFlag(flag, FLAG_ATTACH)) {
+            // 视图被销毁，脱离 flutter 渲染
+            detachFlutter();
+            flutterView = null;
+            container = null;
+            maskView = null;
         }
-        detachFlutter();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        // 如果结束了，取消所有的结果
         cancelAllResult();
+        // 从混合栈中移除 flutter manager
         FlutterManager.getInstance().removeNativePage(this);
+        // 检查脱离 flutter
         detachFlutter();
+        // 移除截图，如果有的话
         removeScreenShot();
+        // 通知 flutter naitive 容器被移除
         if (HybridRouterPlugin.isRegistered()) {
             HybridRouterPlugin.getInstance().onNativePageFinished(nativePageId);
         }
@@ -523,8 +568,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (flutterNativeView != null) {
-            flutterNativeView.getPluginRegistry().onActivityResult(requestCode, resultCode, data);
+        if (flutterEngine != null) {
+            flutterEngine.getPluginRegistry().onActivityResult(requestCode, resultCode, data);
         }
         sendResult(requestCode, resultCode, data);
     }
@@ -533,8 +578,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (flutterNativeView != null) {
-            flutterNativeView.getPluginRegistry().onRequestPermissionsResult(requestCode, permissions,
+        if (flutterEngine != null) {
+            flutterEngine.getPluginRegistry().onRequestPermissionsResult(requestCode, permissions,
                     grantResults);
         } else {
             Log.w("FlutterWrapFragment",
@@ -542,29 +587,25 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         }
     }
 
+    // ----------------------  以下方法需要 activity 主动调用 ---------------------
     public void onNewIntent(@NonNull Intent intent) {
-        if (flutterNativeView != null) {
-            flutterNativeView.getPluginRegistry().onNewIntent(intent);
-        } else {
-            Log.w("FlutterWrapFragment",
-                    "onNewIntent() invoked before FlutterFragment was attached to an Activity.");
+        if (flutterEngine != null && isAttachToFlutter()) {
+            // 这个方法有啥用?
+            flutterEngine.getPluginRegistry().onNewIntent(intent);
         }
     }
 
-
     public void onUserLeaveHint() {
-        if (this.flutterNativeView != null) {
-            this.flutterNativeView.getPluginRegistry().onUserLeaveHint();
-        } else {
-            Log.w("FlutterFragment", "onUserLeaveHint() invoked before FlutterFragment was attached to an Activity.");
+        if (this.flutterEngine != null && isAttachToFlutter()) {
+            // 这个方法有啥用?
+            this.flutterEngine.getPluginRegistry().onUserLeaveHint();
         }
-
     }
 
     public void onTrimMemory(int level) {
-        if (this.flutterView != null) {
+        if (this.flutterEngine != null) {
             if (level == TRIM_MEMORY_RUNNING_LOW) {
-                this.flutterView.onMemoryPressure();
+                flutterEngine.getSystemChannel().sendMemoryPressureWarning();
             }
         } else {
             Log.w("FlutterFragment", "onTrimMemory() invoked before FlutterFragment was attached to an Activity.");
@@ -574,36 +615,49 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
     public void onLowMemory() {
         super.onLowMemory();
-        if (this.flutterView != null) {
-            this.flutterView.onMemoryPressure();
+        if (this.flutterEngine != null) {
+            flutterEngine.getSystemChannel().sendMemoryPressureWarning();
         }
     }
 
+    /**
+     * 初始化 flutter engine
+     */
     protected void initializeFlutter(@NonNull Context context) {
-        Bundle arguments = getArguments();
-        String[] flutterShellArgsArray = null;
-        if (arguments != null) {
-            flutterShellArgsArray = arguments.getStringArray(EXTRA_INITIALIZATION_ARGS);
+        if (isCreatePage) {
+            // 没有初始化的时候需要初始化
+            Bundle arguments = getArguments();
+            String[] flutterShellArgsArray = null;
+            if (arguments != null) {
+                flutterShellArgsArray = arguments.getStringArray(EXTRA_INITIALIZATION_ARGS);
+            }
+            FlutterShellArgs flutterShellArgs = new FlutterShellArgs(flutterShellArgsArray == null
+                    ? new String[0] : flutterShellArgsArray);
+            FlutterMain.startInitialization(context.getApplicationContext());
+            FlutterMain.ensureInitializationComplete(context.getApplicationContext(),
+                    flutterShellArgs.toArray());
         }
-        FlutterShellArgs flutterShellArgs = new FlutterShellArgs(flutterShellArgsArray == null
-                ? new String[0] : flutterShellArgsArray);
-        FlutterMain.startInitialization(context.getApplicationContext());
-        FlutterMain.ensureInitializationComplete(context.getApplicationContext(),
-                flutterShellArgs.toArray());
     }
 
+    /**
+     * 启动 dart 虚拟机
+     */
     protected void doInitialFlutterViewRun() {
-        assert flutterNativeView != null;
-        if (!flutterNativeView.isApplicationRunning()) {
-            FlutterRunArguments args = new FlutterRunArguments();
-            args.bundlePath = getAppBundlePath();
-            args.entrypoint = getEntrypoint();
-            flutterNativeView.runFromBundle(args);
+        assertNotNull(flutterEngine != null);
+        if (!flutterEngine.getDartExecutor().isExecutingDart()) {
+            DartExecutor.DartEntrypoint entrypoint = new DartExecutor.DartEntrypoint(
+                    getResources().getAssets(),
+                    getAppBundlePath(),
+                    getEntrypoint()
+            );
+            flutterEngine.getDartExecutor().executeDartEntrypoint(entrypoint);
         }
     }
 
     protected void setupFlutterEngine(@NonNull Context context) {
-        flutterNativeView = FlutterManager.getInstance().getOrCreateNativeView(context);
+        if (flutterEngine == null) {
+            flutterEngine = FlutterManager.getInstance().getOrCreateFlutterEngine(context);
+        }
     }
 
     protected void onNativePageRoute(NativeRouteOptions routeOptions, int requestCode) {
@@ -635,6 +689,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         }
     }
 
+    // 引擎初始化失败
     protected void onFlutterInitFailure(Throwable t) {
     }
 
@@ -657,18 +712,55 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     protected void postFlutterApplyTheme() {
     }
 
+    /**
+     * Returns the desired {@link FlutterView.RenderMode} for the {@link FlutterView} displayed in
+     * this {@code FlutterFragment}.
+     *
+     * Defaults to {@link FlutterView.RenderMode#surface}.
+     */
     @NonNull
-    protected FlutterView createFlutterView(ViewGroup container) {
-        return new FlutterView(container.getContext(), null, flutterNativeView);
+    protected FlutterView.RenderMode getRenderMode() {
+        Bundle arguments = getArguments();
+        String renderModeName = FlutterView.RenderMode.texture.name();
+        if (arguments != null) {
+            renderModeName = arguments.getString(EXTRA_FLUTTERVIEW_RENDER_MODE, renderModeName);
+        }
+        return FlutterView.RenderMode.valueOf(renderModeName);
     }
 
+    /**
+     * Returns the desired {@link FlutterView.TransparencyMode} for the {@link FlutterView} displayed in
+     * this {@code FlutterFragment}.
+     * <p>
+     * Defaults to {@link FlutterView.TransparencyMode#transparent}.
+     */
+    @NonNull
+    protected FlutterView.TransparencyMode getTransparencyMode() {
+        Bundle arguments = getArguments();
+        String transparencyModeName = FlutterView.TransparencyMode.opaque.name();
+        if (arguments != null) {
+            transparencyModeName= arguments.getString(EXTRA_FLUTTERVIEW_TRANSPARENCY_MOD, transparencyModeName);
+        }
+        return FlutterView.TransparencyMode.valueOf(transparencyModeName);
+    }
+
+    @NonNull
+    protected FlutterView createFlutterView(ViewGroup container) {
+        return new FlutterView(container.getContext(), getRenderMode(), getTransparencyMode());
+    }
+
+    // 创建遮罩层
     protected View createMaskView(ViewGroup container) {
         View background = new View(container.getContext());
-        background.setBackground(getLaunchScreenDrawableFromActivityTheme());
         background.setClickable(true);
         return background;
     }
 
+    /**
+     * 更新遮罩层内容
+     * @param maskView 遮罩层视图
+     * @param screenshot 截图，可能为 null
+     */
     protected void updateMaskView(View maskView, @Nullable Bitmap screenshot) {
         if (screenshot != null) {
             maskView.setBackground(new BitmapDrawable(getResources(), screenshot));
@@ -679,12 +771,9 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
     /**
      * 配置flutter 页面
-     *
-     * @param needWaitForResult 是否需要等待 channel 结束后才显示页面
-     * @return
      */
-    protected MethodChannel.Result setupFlutterView(ViewGroup container, final FlutterView flutterView,
-                                                    View maskView, boolean needWaitForResult) {
+    protected void setupFlutterView(ViewGroup container, final FlutterView flutterView,
+                                                    View maskView) {
         // 这里先移除不是当前 flutter view 的 flutter view，因为 flutter view 只有在创建的时候才会 attach
         // 所以在 attach 的时候会重新创建
         for (int i = 0; i < container.getChildCount(); ++i) {
@@ -706,62 +795,19 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
                     , ViewGroup.LayoutParams.MATCH_PARENT) : lp;
             container.addView(maskView, lp);
         }
+        // 更新遮罩层
         updateMaskView(maskView, getScreenshot());
 
-        // surface 的生命周期回调，flutter detach 需要用到
-        flutterView.getHolder().addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                flag = flag | FLAG_SURFACE_CREATED;
-                needDestroySurface = true;
-            }
-
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            }
-
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {
-                flag = flag & (~FLAG_SURFACE_CREATED);
-                if (flutterView.getFlutterNativeView() != null) {
-                    /// not detach, need not to destroy
-                    needDestroySurface = false;
-                }
-            }
-        });
-
-        final AtomicInteger visibleCount = !needWaitForResult ?
-                new AtomicInteger(1) : new AtomicInteger(0);
         final View finalMaskView = maskView;
         finalMaskView.setVisibility(View.VISIBLE);
-        MethodChannel.Result result = new MethodChannel.Result() {
+        flutterView.addOnFirstFrameRenderedListener(new OnFirstFrameRenderedListener() {
             @Override
-            public void success(@Nullable Object o) {
-                if (visibleCount.incrementAndGet() >= 2) {
-                    finalMaskView.setVisibility(View.VISIBLE);
-                    removeScreenShot();
-                }
-            }
-
-            @Override
-            public void error(String s, @Nullable String s1, @Nullable Object o) {
-            }
-
-            @Override
-            public void notImplemented() {
-            }
-        };
-        flutterView.addFirstFrameListener(new FlutterView.FirstFrameListener() {
-            @Override
-            public void onFirstFrame() {
-                flutterView.removeFirstFrameListener(this);
-                if (visibleCount.incrementAndGet() >= 2) {
-                    finalMaskView.setVisibility(View.INVISIBLE);
-                    removeScreenShot();
-                }
+            public void onFirstFrameRendered() {
+                flutterView.removeOnFirstFrameRenderedListener(this);
+                finalMaskView.setVisibility(View.INVISIBLE);
+                removeScreenShot();
             }
         });
-        return result;
     }
 
     /**
@@ -882,33 +928,33 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             curNativePage.detachFlutter();
         }
         flag |= FLAG_ATTACH;
-        assert container != null;
-        assert maskView != null;
         // 设置当前页面是 native page
         FlutterManager.getInstance().setCurNativePage(this);
-        assert flutterNativeView != null;
-        if (flutterView == null) {
-            flutterView = createFlutterView(container);
-            if (FlutterManager.getInstance().isFlutterRouteStart() && !hasFlag(flag, FLAG_PAGE_PUSHED)) {
-                flag |= FLAG_PAGE_PUSHED;
-                MethodChannel.Result result = setupFlutterView(container, flutterView, maskView,
-                        true);
-                HybridRouterPlugin.getInstance().pushFlutterPager(routeOptions.pageName,
-                        routeOptions.args, nativePageId, isTab(), result);
-            } else {
-                setupFlutterView(container, flutterView, maskView, false);
-            }
+        // null check
+        assertNotNull(container);
+        assertNotNull(maskView);
+        assertNotNull(flutterEngine);
+        assertNotNull(flutterView);
+        // attach plugin registry
+        ((FixFlutterEngine) flutterEngine).getPluginRegistry().attach(getActivity());
+        // attach platform plugin
+        if (platformPlugin == null) {
+            platformPlugin = new PlatformPlugin(getActivity(), flutterEngine.getPlatformChannel());
         }
+        if (isCreatePage) {
+            // register plugin
+            onRegisterPlugin(flutterEngine.getPluginRegistry());
+        }
+        // attach flutter view to engine
+        flutterView.attachToFlutterEngine(flutterEngine);
+        setupFlutterView(container, flutterView, maskView);
+        if (FlutterManager.getInstance().isFlutterRouteStart() && !hasFlag(flag, FLAG_PAGE_PUSHED)) {
+            flag |= FLAG_PAGE_PUSHED;
+            HybridRouterPlugin.getInstance().pushFlutterPager(routeOptions.pageName,
+                    routeOptions.args, nativePageId, isTab(), null);
+        }
+        // 检查 dart 是否执行
         doInitialFlutterViewRun();
-        if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
-            flutterView.onStart();
-        }
-        if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
-            flutterView.onPostResume();
-        }
-        if (HybridRouterPlugin.isRegistered()) {
-            HybridRouterPlugin.getInstance().onNativePageResumed(this);
-        }
     }
 
     private void localDetachFlutter() {
@@ -916,25 +962,24 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return;
         }
         flag &= ~FLAG_ATTACH;
-        assert flutterView != null;
-        assert flutterNativeView != null;
+        assertNotNull(flutterView);
+        assertNotNull(flutterEngine);
+        // 如果可能，detach 前保存截图
         saveScreenshot();
+        // 生命周期通知
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
-            this.flutterNativeView.getPluginRegistry().onUserLeaveHint();
-            flutterView.onPause();
-        }
-        if (hasFlag(flag, FLAG_SURFACE_CREATED) || needDestroySurface) {
-            flag &= ~FLAG_SURFACE_CREATED;
-            needDestroySurface = false;
-            FlutterStackManagerUtil.onSurfaceDestroyed(flutterView, flutterView.getFlutterNativeView());
+            flutterEngine.getPluginRegistry().onUserLeaveHint();
+            flutterEngine.getLifecycleChannel().appIsInactive();
         }
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
-            flutterView.onStop();
+            flutterEngine.getLifecycleChannel().appIsPaused();
         }
-        flutterView.getPluginRegistry().onViewDestroy(flutterView.getFlutterNativeView());
-        flutterView.setMessageHandler("flutter/platform", null);
-        flutterView.detach();
-        flutterView = null;
+        FlutterStackManagerUtil.detachFlutterFromEngine(flutterView, flutterEngine);
+        flutterView.detachFromFlutterEngine();
+        flutterEngine.getPluginRegistry().detach();
+        // 这里需要设置下此 channel 的 handler，否则会内存泄漏
+        flutterEngine.getPlatformChannel().setPlatformMessageHandler(null);
+        platformPlugin = null;
     }
 
     @Nullable
@@ -977,8 +1022,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return;
         }
         ScreenshotManager screenshotManager = checkScreenshotManager();
-        if (flutterView != null && screenshotManager != null) {
-            Bitmap bitmap = flutterView.getBitmap();
+        if (flutterEngine != null && screenshotManager != null) {
+            Bitmap bitmap = ((FixFlutterEngine)flutterEngine).getFlutterBitmap();
             if (bitmap != null) {
                 screenshotManager.addBitmap(nativePageId, bitmap);
             }

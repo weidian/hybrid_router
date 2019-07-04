@@ -34,9 +34,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import io.flutter.embedding.engine.FlutterJNI;
-import io.flutter.view.FlutterNativeView;
-import io.flutter.view.FlutterView;
+import io.flutter.embedding.android.FlutterView;
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.embedding.engine.systemchannels.TextInputChannel;
+import io.flutter.plugin.editing.TextInputPlugin;
+import io.flutter.view.AccessibilityBridge;
 
 /**
  * ┏┛ ┻━━━━━┛ ┻┓
@@ -61,6 +63,12 @@ import io.flutter.view.FlutterView;
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 public class FlutterStackManagerUtil {
+
+    public static <T> T assertNotNull(T object) {
+        if (object == null)
+            throw new AssertionError("Object cannot be null");
+        return object;
+    }
 
     public static void updateIntent(Intent intent, @Nullable Map<String, Object> args) {
         if (args == null) {
@@ -100,30 +108,59 @@ public class FlutterStackManagerUtil {
         }
     }
 
-    public static boolean isAttached(FlutterNativeView flutterNativeView) {
+    public static void detachFlutterFromEngine(FlutterView flutterView, FlutterEngine flutterEngine) {
+        // 1.5.4 版本 FlutterView 的内存泄漏修复
+        // 释放 AccessibilityBridge
+        flutterEngine.getAccessibilityChannel().setAccessibilityMessageHandler(null);
         try {
-            Field mFlutterViewField = FlutterNativeView.class.getDeclaredField("mFlutterView");
-            mFlutterViewField.setAccessible(true);
-            Object mFlutterView = mFlutterViewField.get(flutterNativeView);
-            return mFlutterView != null;
+            Field accessibilityBridgeField = FlutterView.class.getDeclaredField("accessibilityBridge");
+            accessibilityBridgeField.setAccessible(true);
+            AccessibilityBridge accessibilityBridge = (AccessibilityBridge) accessibilityBridgeField.get(flutterView);
+            accessibilityBridge.release();
+            accessibilityBridgeField.set(flutterView, null);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
-    }
-
-    public static void onSurfaceDestroyed(FlutterView flutterView, FlutterNativeView flutterNativeView) {
+        // 释放 text input plugin
         try {
-            Method flutterJNIMethod = FlutterNativeView.class.getDeclaredMethod("getFlutterJNI");
-            flutterJNIMethod.setAccessible(true);
-            FlutterJNI flutterJNI = (FlutterJNI) flutterJNIMethod.invoke(flutterNativeView);
-            flutterJNI.onSurfaceDestroyed();
+            Field textInputPluginField = FlutterView.class.getDeclaredField("textInputPlugin");
+            textInputPluginField.setAccessible(true);
+            Field textInputChannelField = TextInputPlugin.class.getDeclaredField("textInputChannel");
+            textInputChannelField.setAccessible(true);
+            TextInputChannel textInputChannel = (TextInputChannel) textInputChannelField
+                    .get(textInputPluginField.get(flutterView));
+            textInputChannel.channel.setMethodCallHandler(null);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void attachFlutterNativeView(FlutterNativeView flutterNativeView) {
-        flutterNativeView.getDartExecutor().onAttachedToJNI();
-    }
+//    public static boolean isAttached(FlutterNativeView flutterNativeView) {
+//        try {
+//            Field mFlutterViewField = FlutterNativeView.class.getDeclaredField("mFlutterView");
+//            mFlutterViewField.setAccessible(true);
+//            Object mFlutterView = mFlutterViewField.get(flutterNativeView);
+//            return mFlutterView != null;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return false;
+//    }
+//
+//    public static void onSurfaceDestroyed(FlutterView flutterView, FlutterNativeView flutterNativeView) {
+//        // FlutterNativeView 方案 surface destroy 结束
+//        try {
+//            Method flutterJNIMethod = FlutterNativeView.class.getDeclaredMethod("getFlutterJNI");
+//            flutterJNIMethod.setAccessible(true);
+//            FlutterJNI flutterJNI = (FlutterJNI) flutterJNIMethod.invoke(flutterNativeView);
+//            flutterJNI.onSurfaceDestroyed();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public static void attachFlutterNativeView(FlutterNativeView flutterNativeView) {
+//        // FlutterNativeView 方案 detach bug 修复
+//        flutterNativeView.getDartExecutor().onAttachedToJNI();
+//    }
 }
