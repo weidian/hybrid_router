@@ -507,21 +507,23 @@ class NativeContainer extends StatefulWidget {
 
 class NativeContainerState extends State<NativeContainer>
     with NavigatorObserver {
-
   final List<Route<dynamic>> _history = [];
 
   @override
   Widget build(BuildContext context) {
-    return HybridNavigator(
-      key: widget.navKey,
-      nativePageId: widget.nativePageId,
-      initialRoute: widget.initRouteName,
-      initRoute: widget.initRoute,
-      initRouteArgs: widget.args,
-      isTab: widget.isTab,
-      generateBuilder: widget.generateBuilder,
-      unknownBuilder: widget.unknownBuilder,
-      observers: [this],
+    return BackPressed(
+      emmiter: widget.emmiter,
+      child: HybridNavigator(
+        key: widget.navKey,
+        nativePageId: widget.nativePageId,
+        initialRoute: widget.initRouteName,
+        initRoute: widget.initRoute,
+        initRouteArgs: widget.args,
+        isTab: widget.isTab,
+        generateBuilder: widget.generateBuilder,
+        unknownBuilder: widget.unknownBuilder,
+        observers: [this],
+      ),
     );
   }
 
