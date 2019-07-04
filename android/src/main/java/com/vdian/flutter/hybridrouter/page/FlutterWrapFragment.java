@@ -396,7 +396,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     protected PlatformPlugin platformPlugin;
     protected FrameLayout container;
     protected View maskView;
-    // 是否是首次启动 flutter engine
+    // 当前 native page 是否是首次启动的 flutter native page
     protected boolean isCreatePage;
     protected SparseArray<MethodChannel.Result> resultChannelMap = new SparseArray<>();
     protected SparseArray<IPageResultCallback> pageCallbackMap = new SparseArray<>();
@@ -697,13 +697,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
      * 注册插件
      */
     protected void onRegisterPlugin(PluginRegistry pluginRegistry) {
-        try {
-            Class.forName("io.flutter.plugins.GeneratedPluginRegistrant")
-                    .getDeclaredMethod("registerWith", PluginRegistry.class)
-                    .invoke(null, pluginRegistry);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        FlutterManager.getInstance().registerPlugins();
     }
 
     protected void preFlutterApplyTheme() {
@@ -941,8 +935,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         if (platformPlugin == null) {
             platformPlugin = new PlatformPlugin(getActivity(), flutterEngine.getPlatformChannel());
         }
-        if (isCreatePage) {
-            // register plugin
+        // register plugin
+        if (!FlutterManager.getInstance().isPluginRegistry()) {
             onRegisterPlugin(flutterEngine.getPluginRegistry());
         }
         // attach flutter view to engine

@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.view.FlutterNativeView;
 
 /**
@@ -121,6 +122,30 @@ public class FlutterManager {
         nativePageMap.remove(nativePage.getNativePageId());
     }
 
+    /**
+     * 插件是否已经注册
+     * @return
+     */
+    public boolean isPluginRegistry() {
+        return isPluginRegistry;
+    }
+
+    /**
+     * 注册插件
+     */
+    public void registerPlugins() {
+        if (flutterEngine != null && !isPluginRegistry) {
+            isPluginRegistry = true;
+            try {
+                Class.forName("io.flutter.plugins.GeneratedPluginRegistrant")
+                        .getDeclaredMethod("registerWith", PluginRegistry.class)
+                        .invoke(null, flutterEngine.getPluginRegistry());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public FlutterNativeView getFlutterNativeView() {
         return flutterNativeView;
     }
@@ -184,8 +209,10 @@ public class FlutterManager {
     private FlutterNativeView flutterNativeView;
     private FlutterEngine flutterEngine;
     // flutter init route 是否已经执行完毕
-    private boolean isFlutterRouteStart;
+    private boolean isFlutterRouteStart = false;
     private IFlutterWrapConfig flutterWrapConfig;
+    // 插件是否已经注册
+    private boolean isPluginRegistry = false;
 
     private FlutterManager() {}
 }
