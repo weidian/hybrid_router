@@ -53,6 +53,7 @@ import com.vdian.flutter.hybridrouter.FlutterStackManagerUtil;
 import com.vdian.flutter.hybridrouter.HybridRouterPlugin;
 import com.vdian.flutter.hybridrouter.ScreenshotManager;
 import com.vdian.flutter.hybridrouter.engine.FixFlutterEngine;
+import com.vdian.flutter.hybridrouter.engine.FixPlatformPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -388,21 +389,21 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
      */
     protected FlutterRouteOptions routeOptions;
     @Nullable
-    protected FlutterEngine flutterEngine;
+    protected FixFlutterEngine flutterEngine;
     @Nullable
     protected FlutterView flutterView;
     @Nullable
-    protected PlatformPlugin platformPlugin;
+    protected FixPlatformPlugin platformPlugin;
     protected FrameLayout container;
     protected View maskView;
     // 当前 native page 是否是首次启动的 flutter native page
     protected boolean isCreatePage;
     protected SparseArray<MethodChannel.Result> resultChannelMap = new SparseArray<>();
     protected SparseArray<IPageResultCallback> pageCallbackMap = new SparseArray<>();
-    // 当前 flutter 的状态
-    protected int flag;
     // 当前 fragment 不能处理的 delegate，比如页面结束，tab 判断，native 跳转动画
     protected IPageDelegate delegate;
+    // 当前 flutter 的状态
+    private int flag;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -438,6 +439,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             initializeFlutter(context);
             setupFlutterEngine(context);
             assertNotNull(flutterEngine);
+            assertNotNull(platformPlugin);
             flag |= FLAG_ENGINE_INIT;
         } catch (Throwable t) {
             // engine init error
@@ -657,6 +659,9 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         if (flutterEngine == null) {
             flutterEngine = FlutterManager.getInstance().getOrCreateFlutterEngine(context);
         }
+        if (platformPlugin == null) {
+            platformPlugin = FlutterManager.getInstance().getOrCreatePlatformPlugin();
+        }
     }
 
     protected void onNativePageRoute(NativeRouteOptions routeOptions, int requestCode) {
@@ -696,7 +701,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
      * 注册插件
      */
     protected void onRegisterPlugin(PluginRegistry pluginRegistry) {
-        FlutterManager.getInstance().registerPlugins();
+        FlutterManager.getInstance().registerPlugins(pluginRegistry);
     }
 
     protected void preFlutterApplyTheme() {
@@ -938,12 +943,11 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         assertNotNull(maskView);
         assertNotNull(flutterEngine);
         assertNotNull(flutterView);
+        assertNotNull(platformPlugin);
         // attach plugin registry
-        ((FixFlutterEngine) flutterEngine).getPluginRegistry().attach(getActivity());
+        flutterEngine.getPluginRegistry().attach(getActivity());
         // attach platform plugin
-        if (platformPlugin == null) {
-            platformPlugin = new PlatformPlugin(getActivity(), flutterEngine.getPlatformChannel());
-        }
+        platformPlugin.attach(getActivity(), flutterEngine.getPlatformChannel());
         // register plugin
         if (!FlutterManager.getInstance().isPluginRegistry()) {
             onRegisterPlugin(flutterEngine.getPluginRegistry());
@@ -967,6 +971,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         flag &= ~FLAG_ATTACH;
         assertNotNull(flutterView);
         assertNotNull(flutterEngine);
+        assertNotNull(platformPlugin);
         // 如果可能，detach 前保存截图
         saveScreenshot();
         // 生命周期通知
@@ -980,9 +985,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         FlutterStackManagerUtil.detachFlutterFromEngine(flutterView, flutterEngine);
         flutterView.detachFromFlutterEngine();
         flutterEngine.getPluginRegistry().detach();
-        // 这里需要设置下此 channel 的 handler，否则会内存泄漏
-        flutterEngine.getPlatformChannel().setPlatformMessageHandler(null);
-        platformPlugin = null;
+        platformPlugin.detach();
     }
 
     @Nullable
@@ -1029,7 +1032,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         }
         ScreenshotManager screenshotManager = checkScreenshotManager();
         if (flutterEngine != null && screenshotManager != null) {
-            Bitmap bitmap = ((FixFlutterEngine)flutterEngine).getFlutterBitmap();
+            Bitmap bitmap = flutterEngine.getFlutterBitmap();
             if (bitmap != null) {
                 screenshotManager.addBitmap(nativePageId, bitmap);
             }

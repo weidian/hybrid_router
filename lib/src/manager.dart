@@ -280,6 +280,7 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
   }
 
   /// remove a native container
+  /// 如果 container 内部含有 Route ，依次调用 route 的 didPop 属性
   Future<bool> remove(NativeContainer container) async {
     if (container == null) {
       return false;
@@ -290,6 +291,19 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
         event: NativeRouteEvent.beforeDestroy,
         nativePageId: container.nativePageId,
         result: container._result);
+    
+    // 通知当前 container 所有的 route 移除事件
+    // 这里用了一点作弊的方法
+    if (container._state != null) {
+      List<Route<dynamic>> history = container._state._history;
+      for (int i = history.length - 1; i >= 0; --i) {
+        Route<dynamic> route = history[i];
+        Route<dynamic> preRoute = i == 0 ? null : history[i - 1];
+        route.navigator.widget.observers.forEach((o) {
+          o.didPop(route, preRoute);
+        });
+      }
+    }
 
     container._overlayEntry.remove();
     int index = _containerHistory.indexOf(container);
@@ -473,6 +487,7 @@ class NativeContainer extends StatefulWidget {
   NativeContainerManagerState _manager;
   OverlayEntry _overlayEntry;
   dynamic _result;
+  NativeContainerState _state;
 
   /// Pop a flutter router in native container
   bool pop<T extends Object>({T result}) {
@@ -508,6 +523,18 @@ class NativeContainer extends StatefulWidget {
 class NativeContainerState extends State<NativeContainer>
     with NavigatorObserver {
   final List<Route<dynamic>> _history = [];
+
+  @override
+  void initState() {
+    super.initState();
+    widget._state = this;
+  }
+
+  @override
+  void didUpdateWidget(NativeContainer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    widget._state = this;
+  }
 
   @override
   Widget build(BuildContext context) {

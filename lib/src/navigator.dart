@@ -279,8 +279,9 @@ class HybridNavigatorState extends NavigatorState {
     // 是否可以退出
     bool canExit = this.canExit ?? !(widget.isTab == true);
     if(canExit) {
-      // pop 函数本来是非异步的，但是这里因为是当前 Navigator 最后一个页面了，所以可以放心
-      // 使用 channel 关闭页面
+      /// pop 函数本来是非异步的，但是这里因为是当前 Navigator 最后一个页面了，所以可以放心
+      /// 使用 channel 关闭页面
+      /// 对于对应 route 的结束事件回调，交给 [NaviteContainerManager]
       NativeContainerManager.removeNamed(
           nativePageId: widget.nativePageId, result: result);
     }
