@@ -2,7 +2,7 @@ group 'com.vdian.flutter.hybridrouter'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.support_version = '27.1.1'
+    ext.support_version = '28.0.0'
     repositories {
         google()
         jcenter()
@@ -23,7 +23,7 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     defaultConfig {
         minSdkVersion 16
@@ -37,6 +37,5 @@ android {
 }
 
 dependencies {
-    def support_version = '27.1.1'
     api "com.android.support:appcompat-v7:$support_version"
 }

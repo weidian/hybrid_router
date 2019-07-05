@@ -30,6 +30,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.vdian.flutter.hybridrouter.engine.FixFlutterEngine;
+import com.vdian.flutter.hybridrouter.engine.FixPlatformPlugin;
 import com.vdian.flutter.hybridrouter.page.IFlutterNativePage;
 import com.vdian.flutter.hybridrouter.page.IFlutterWrapConfig;
 
@@ -133,13 +134,13 @@ public class FlutterManager {
     /**
      * 注册插件
      */
-    public void registerPlugins() {
-        if (flutterEngine != null && !isPluginRegistry) {
+    public void registerPlugins(PluginRegistry pluginRegistry) {
+        if (!isPluginRegistry) {
             isPluginRegistry = true;
             try {
                 Class.forName("io.flutter.plugins.GeneratedPluginRegistrant")
                         .getDeclaredMethod("registerWith", PluginRegistry.class)
-                        .invoke(null, flutterEngine.getPluginRegistry());
+                        .invoke(null, pluginRegistry);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -159,17 +160,30 @@ public class FlutterManager {
     }
 
     @Nullable
-    public FlutterEngine getFlutterEngine() {
+    public FixFlutterEngine getFlutterEngine() {
         return flutterEngine;
     }
 
     @NonNull
-    public FlutterEngine getOrCreateFlutterEngine(@NonNull Context context) {
+    public FixFlutterEngine getOrCreateFlutterEngine(@NonNull Context context) {
         if (flutterEngine == null) {
             flutterEngine = new FixFlutterEngine(context instanceof Application ? context
                     : context.getApplicationContext());
         }
         return flutterEngine;
+    }
+
+    @Nullable
+    public FixPlatformPlugin getPlatformPlugin() {
+        return platformPlugin;
+    }
+
+    @NonNull
+    public FixPlatformPlugin getOrCreatePlatformPlugin() {
+        if (platformPlugin == null) {
+            platformPlugin = new FixPlatformPlugin();
+        }
+        return platformPlugin;
     }
 
     @Nullable
@@ -207,7 +221,8 @@ public class FlutterManager {
     private Map<String, IFlutterNativePage> nativePageMap = new HashMap<>();
     private AtomicLong growNativePageId = new AtomicLong(1);
     private FlutterNativeView flutterNativeView;
-    private FlutterEngine flutterEngine;
+    private FixFlutterEngine flutterEngine;
+    private FixPlatformPlugin platformPlugin;
     // flutter init route 是否已经执行完毕
     private boolean isFlutterRouteStart = false;
     private IFlutterWrapConfig flutterWrapConfig;
