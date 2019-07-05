@@ -77,8 +77,8 @@ class HybridNavigator extends Navigator {
 
   // 根据 route 获取到 nativePageId
   static String getNativePageIdByRoute(Route<dynamic> route) {
-    if (route?.navigator is HybridNavigator) {
-      return (route.navigator as HybridNavigator).nativePageId;
+    if (route?.navigator is HybridNavigatorState) {
+      return (route.navigator as HybridNavigatorState).widget?.nativePageId;
     }
     return null;
   }
