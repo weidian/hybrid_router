@@ -292,6 +292,13 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
         nativePageId: container.nativePageId,
         result: container._result);
     
+    container._overlayEntry.remove();
+    int index = _containerHistory.indexOf(container);
+    NativeContainer preContainer;
+    if (index > 0) {
+      preContainer = _containerHistory[index - 1];
+    }
+
     // 通知当前 container 所有的 route 移除事件
     if (container._state != null) {
       List<Route<dynamic>> history = container._state._history;
@@ -302,13 +309,6 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
           o.didPop(route, preRoute);
         });
       }
-    }
-
-    container._overlayEntry.remove();
-    int index = _containerHistory.indexOf(container);
-    NativeContainer preContainer;
-    if (index > 0) {
-      preContainer = _containerHistory[index - 1];
     }
     _containerHistory.removeAt(index);
     _didRemove(container, preContainer);
@@ -381,6 +381,7 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
   }
 
   void _didRemove(NativeContainer container, NativeContainer preContainer) {
+    // 通知 native container 结束事件到 native
     HybridPlugin.singleton.onNativeRouteEvent(
         event: NativeRouteEvent.onDestroy,
         nativePageId: container.nativePageId,
