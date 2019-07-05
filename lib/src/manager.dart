@@ -293,7 +293,10 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
         result: container._result);
     
     // 通知当前 container 所有的 route 移除事件
+<<<<<<< HEAD
     // 这里用了一点作弊的方法
+=======
+>>>>>>> 27fd3995eccddc03dfaf4c6472580dd5258772b6
     if (container._state != null) {
       List<Route<dynamic>> history = container._state._history;
       for (int i = history.length - 1; i >= 0; --i) {
