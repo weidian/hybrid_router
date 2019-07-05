@@ -291,7 +291,7 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
         event: NativeRouteEvent.beforeDestroy,
         nativePageId: container.nativePageId,
         result: container._result);
-    
+
     container._overlayEntry.remove();
     int index = _containerHistory.indexOf(container);
     NativeContainer preContainer;
@@ -299,17 +299,6 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
       preContainer = _containerHistory[index - 1];
     }
 
-    // 通知当前 container 所有的 route 移除事件
-    if (container._state != null) {
-      List<Route<dynamic>> history = container._state._history;
-      for (int i = history.length - 1; i >= 0; --i) {
-        Route<dynamic> route = history[i];
-        Route<dynamic> preRoute = i == 0 ? null : history[i - 1];
-        route.navigator.widget.observers.forEach((o) {
-          o.didPop(route, preRoute);
-        });
-      }
-    }
     _containerHistory.removeAt(index);
     _didRemove(container, preContainer);
     return true;
@@ -364,13 +353,6 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
   }
 
   void _didShow(NativeContainer container, NativeContainer topContainer) {
-    HybridPlugin.singleton.onNativeRouteEvent(
-        event: NativeRouteEvent.onResume, nativePageId: container.nativePageId);
-    if (topContainer != null && topContainer != container) {
-      HybridPlugin.singleton.onNativeRouteEvent(
-          event: NativeRouteEvent.onPause,
-          nativePageId: topContainer.nativePageId);
-    }
     widget.containerObserver?.forEach((o) {
       try {
         o.didShow(container, topContainer);
@@ -378,9 +360,35 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
         FlutterError.onError(e);
       }
     });
+    HybridPlugin.singleton.onNativeRouteEvent(
+        event: NativeRouteEvent.onResume, nativePageId: container.nativePageId);
+    if (topContainer != null && topContainer != container) {
+      HybridPlugin.singleton.onNativeRouteEvent(
+          event: NativeRouteEvent.onPause,
+          nativePageId: topContainer.nativePageId);
+    }
   }
 
   void _didRemove(NativeContainer container, NativeContainer preContainer) {
+    // 通知当前 container 所有的 route 移除事件
+    if (container._state != null) {
+      List<Route<dynamic>> history = container._state._history;
+      for (int i = history.length - 1; i >= 0; --i) {
+        Route<dynamic> route = history[i];
+        Route<dynamic> preRoute = i == 0 ? null : history[i - 1];
+        route.navigator.widget.observers.forEach((o) {
+          o.didPop(route, preRoute);
+        });
+      }
+    }
+    // 通知 native container 移除事件
+    widget.containerObserver?.forEach((o) {
+      try {
+        o.didRemove(container, preContainer);
+      } catch (e) {
+        FlutterError.onError(e);
+      }
+    });
     // 通知 native container 结束事件到 native
     HybridPlugin.singleton.onNativeRouteEvent(
         event: NativeRouteEvent.onDestroy,

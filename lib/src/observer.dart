@@ -49,18 +49,17 @@ import 'navigator.dart';
 
 /// 混合栈内部的 Observer，可以观察到混合栈中不同 Navigator 中 route 的变化
 class HybridNavigatorObserver {
-
   /// The [HybridNavigator] pushed `route`.
   ///
   /// The route immediately below that one, and thus the previously active
   /// route, is `previousRoute`.
-  void didPush(Route<dynamic> route, Route<dynamic> previousRoute) { }
+  void didPush(Route<dynamic> route, Route<dynamic> previousRoute) {}
 
   /// The [HybridNavigator] popped `route`.
   ///
   /// The route immediately below that one, and thus the newly active
   /// route, is `previousRoute`.
-  void didPop(Route<dynamic> route, Route<dynamic> previousRoute) { }
+  void didPop(Route<dynamic> route, Route<dynamic> previousRoute) {}
 
   /// The [HybridNavigator] removed `route`.
   ///
@@ -71,10 +70,10 @@ class HybridNavigatorObserver {
   /// bottommost route being removed, if any, is `previousRoute`, and this
   /// method will be called once for each removed route, from the topmost route
   /// to the bottommost route.
-  void didRemove(Route<dynamic> route, Route<dynamic> previousRoute) { }
+  void didRemove(Route<dynamic> route, Route<dynamic> previousRoute) {}
 
   /// The [HybridNavigator] replaced `oldRoute` with `newRoute`.
-  void didReplace({ Route<dynamic> newRoute, Route<dynamic> oldRoute }) { }
+  void didReplace({Route<dynamic> newRoute, Route<dynamic> oldRoute}) {}
 
   /// The [HybridNavigator]'s route `route` is being moved by a user gesture.
   ///
@@ -87,19 +86,25 @@ class HybridNavigatorObserver {
   /// Though the gesture may not necessarily conclude at `previousRoute` if
   /// the gesture is canceled. In that case, [didStopUserGesture] is still
   /// called but a follow-up [didPop] is not.
-  void didStartUserGesture(Route<dynamic> route, Route<dynamic> previousRoute) { }
+  void didStartUserGesture(
+      Route<dynamic> route, Route<dynamic> previousRoute) {}
 
   /// User gesture is no longer controlling the [HybridNavigator].
   ///
   /// Paired with an earlier call to [didStartUserGesture].
-  void didStopUserGesture() { }
+  void didStopUserGesture() {}
 }
 
+/// [NativeContainer] 在 [NativeContainerManager] 内的变化，可以认为是 native 容器的变化
 class NativeContainerObserver {
+  /// 推进了一个新的 native 容器，发生在 [NaviteContainerManager] 的 push 阶段
+  void didPush(NativeContainer container, NativeContainer previousContainer) {}
 
-  void didPush(NativeContainer container, NativeContainer previousContainer) { }
+  /// native container 的显示顺序发生了变化，`container` 被显示到了前面, `topContaiener`
+  /// 就是在 show 之前最顶层的 container
+  void didShow(NativeContainer container, NativeContainer topContainer) {}
 
-  void didShow(NativeContainer container, NativeContainer topContainer) { }
-
-  void didRemove(NativeContainer container, NativeContainer previousContainer) { }
+  /// native container 被移除事件
+  void didRemove(
+      NativeContainer container, NativeContainer previousContainer) {}
 }
