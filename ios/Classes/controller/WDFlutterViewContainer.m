@@ -176,10 +176,6 @@
         return;
     }
 
-    if (self.navigationController.topViewController != self) {
-        return;
-    }
-
     [self addChildFlutterVC];
 
     if (_lastSnapshot) {
