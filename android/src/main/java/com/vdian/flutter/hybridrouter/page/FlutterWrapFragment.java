@@ -251,14 +251,10 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
         public FlutterWrapFragment build() {
             FlutterWrapFragment ret = new FlutterWrapFragment();
-            updateFragmentProperties(ret);
+            ret.delegate = delegate;
+            ret.openScreenshot = openScreenshot;
+            ret.setArguments(arguments);
             return ret;
-        }
-
-        protected void updateFragmentProperties(FlutterWrapFragment fragment) {
-            fragment.delegate = delegate;
-            fragment.openScreenshot = openScreenshot;
-            fragment.setArguments(arguments);
         }
     }
 
@@ -1013,7 +1009,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     // ================ 截图管理 =================
     private static ScreenshotManager screenshotManager;
     // 是否开启截图
-    private boolean openScreenshot = false;
+    protected boolean openScreenshot = false;
 
     @Nullable
     private Bitmap getScreenshot() {
