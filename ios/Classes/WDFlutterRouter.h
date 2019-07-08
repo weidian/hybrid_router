@@ -30,11 +30,11 @@
 #import <Foundation/Foundation.h>
 #import <Flutter/Flutter.h>
 
-@class WDFlutterViewContainer,WDFlutterViewContainerManager;
+@class WDFlutterViewContainer, WDFlutterViewContainerManager;
 @class UIViewController, WDFlutterViewContainer, WDFlutterRouteOptions;
 
 @protocol WDFlutterRouterDelegate <NSObject>
-    
+
 @required
 /**
  flutter打开native页面的回调
@@ -58,17 +58,19 @@
 
 @interface WDFlutterRouter : NSObject
 
-@property (nonatomic, weak) id<WDFlutterRouterDelegate> delegate;
+@property(nonatomic, weak) id <WDFlutterRouterDelegate> delegate;
 
 + (instancetype)sharedInstance;
 
 - (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result;
+
 - (void)openNativePage:(NSString *)page params:(id)params;
 
 #pragma mark -- container
 
-- (void)add:(WDFlutterViewContainer*)container;
-- (void)remove:(WDFlutterViewContainer*)container;
+- (void)add:(WDFlutterViewContainer *)container;
+
+- (void)remove:(WDFlutterViewContainer *)container;
 
 #pragma mark -- manager
 

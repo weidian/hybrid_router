@@ -41,9 +41,9 @@ typedef NS_ENUM(NSInteger, WDFFlutterRouteEvent) {
     WDFFlutterRouteEventOnRemove
 };
 
-@interface HybridRouterPlugin : NSObject<FlutterPlugin>
+@interface HybridRouterPlugin : NSObject <FlutterPlugin>
 
-@property (nonatomic, strong) NSDictionary *mainEntryParams;
+@property(nonatomic, strong) NSDictionary *mainEntryParams;
 
 + (instancetype)sharedInstance;
 

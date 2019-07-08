@@ -14,7 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface WDFlutterViewContainerManager : NSObject
 
 - (void)add:(WDFlutterViewContainer *)container;
+
 - (void)remove:(WDFlutterViewContainer *)container;
+
 - (WDFlutterViewContainer *)find:(NSString *)pageId;
 
 @end

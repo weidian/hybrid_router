@@ -28,18 +28,16 @@
 //
 
 #import "WDFlutterViewContainer.h"
-#import "WDFlutterViewController.h"
 #import "HybridRouterPlugin.h"
 #import "WDFlutterRouter.h"
 #import "WDFlutterEngine.h"
-#import "WDFlutterRouteEventHandler.h"
 
 #define FLUTTER_VIEWCONTROLLER WDFlutterEngine.sharedInstance.viewController
 #define FLUTTER_VIEWCONTROLLER_VIEW WDFlutterEngine.sharedInstance.viewController.view
 
 @interface WDFlutterViewContainer ()
-@property (nonatomic, strong) UIImageView *fakeSnapImgView;
-@property (nonatomic, strong) UIImage *lastSnapshot;
+@property(nonatomic, strong) UIImageView *fakeSnapImgView;
+@property(nonatomic, strong) UIImage *lastSnapshot;
 @end
 
 @implementation WDFlutterViewContainer {
@@ -47,10 +45,6 @@
     int _flutterPageCount;
     long long _pageId;
     BOOL _changeTab;
-}
-
-- (void)dealloc {
-    NSLog(@"----dealloc");
 }
 
 - (instancetype)init {
@@ -93,20 +87,20 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     self.navigationController.navigationBar.hidden = YES;
-    
+
     static BOOL sIsFirstPush = YES;
-    
+
     if (_isFirstOpen) {
         _routeOptions.nativePageId = @(_pageId).stringValue;
         [WDFlutterRouter.sharedInstance add:self];
-        if(sIsFirstPush) {
+        if (sIsFirstPush) {
             [HybridRouterPlugin sharedInstance].mainEntryParams = [_routeOptions toDictionary];
             sIsFirstPush = NO;
         } else {
             [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"pushFlutterPage" arguments:[_routeOptions toDictionary]];
         }
         _isFirstOpen = NO;
-        
+
         dispatch_async(dispatch_get_main_queue(), ^{
             [self addChildFlutterVC];
         });
@@ -129,21 +123,25 @@
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    NSArray *curStackAry = self.navigationController.viewControllers;
-    NSInteger idx = [curStackAry indexOfObject:self];
-    if(idx != NSNotFound){
-        _changeTab = (idx == curStackAry.count-1);
-        [self saveSnapshot];
+    [self saveSnapshot];
+    UIViewController *topViewController = self.navigationController.topViewController;
+    if (topViewController == self) {
+        _changeTab = YES;
+    } else {
+        if (![topViewController isKindOfClass:self.class] && topViewController.childViewControllers) {
+            _changeTab = topViewController.childViewControllers.lastObject == self;
+        }
     }
+
     [FLUTTER_VIEWCONTROLLER_VIEW setUserInteractionEnabled:FALSE];
 }
 
 - (void)flutterPagePushed:(NSString *)pageName {
-    _flutterPageCount ++;
+    _flutterPageCount++;
     if (_flutterPageCount > 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = NO;
     } else {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
             if (self.navigationController.topViewController == self) {
                 self.lastSnapshot = nil;
@@ -153,7 +151,7 @@
 }
 
 - (void)flutterPageRemoved:(NSString *)pageName {
-    _flutterPageCount --;
+    _flutterPageCount--;
     if (_flutterPageCount <= 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
     }
@@ -162,28 +160,33 @@
 - (void)nativePageWillRemove:(id)result {
     if (self.routeOptions.resultBlock) {
         if (result) {
-            self.routeOptions.resultBlock(@{@"data" : result});
+            self.routeOptions.resultBlock(@{@"data": result});
         } else {
             self.routeOptions.resultBlock(@{});
         }
     }
-    
+
     [self saveSnapshot];
     [WDFlutterRouter.sharedInstance remove:self];
 }
 
 - (void)nativePageResume {
+    UIViewController *topViewController  = self.navigationController.topViewController;
+    if (topViewController != self.parentViewController && topViewController != self) {
+        return;
+    }
+
     if (self.navigationController.topViewController != self) {
         return;
     }
-    
+
     [self addChildFlutterVC];
 
     if (_lastSnapshot) {
         [self.view bringSubviewToFront:self.fakeSnapImgView];
     }
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
         self.lastSnapshot = nil;
     });
@@ -200,10 +203,10 @@
     }
     FLUTTER_VIEWCONTROLLER_VIEW.frame = self.view.bounds;
     FLUTTER_VIEWCONTROLLER_VIEW.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    
+
     [self.view addSubview:FLUTTER_VIEWCONTROLLER_VIEW];
     [self addChildViewController:FLUTTER_VIEWCONTROLLER];
-    
+
     if (!_lastSnapshot) {
         [self.view bringSubviewToFront:self.fakeSnapImgView];
     }
@@ -215,11 +218,11 @@
 }
 
 - (void)saveSnapshot {
-    if(FLUTTER_VIEWCONTROLLER.parentViewController != self) {
+    if (FLUTTER_VIEWCONTROLLER.parentViewController != self) {
         return;
     }
-    if(self.lastSnapshot == nil) {
-        UIGraphicsBeginImageContextWithOptions([UIScreen mainScreen].bounds.size, YES, 0);
+    if (self.lastSnapshot == nil) {
+        UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, YES, 0);
         [FLUTTER_VIEWCONTROLLER_VIEW drawViewHierarchyInRect:FLUTTER_VIEWCONTROLLER_VIEW.bounds afterScreenUpdates:NO];
         self.lastSnapshot = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
@@ -243,11 +246,11 @@
 - (NSDictionary *)toDictionary {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
     if (_args) {
-        [dictionary setObject:_args forKey:@"args"];
+        dictionary[@"args"] = _args;
     }
-    [dictionary setObject:_pageName ? :@"" forKey:@"pageName"];
-    [dictionary setObject:_nativePageId ? :@"" forKey:@"nativePageId"];
-    [dictionary setObject:@(_isTab) forKey:@"isTab"];
+    dictionary[@"pageName"] = _pageName ?: @"";
+    dictionary[@"nativePageId"] = _nativePageId ?: @"";
+    dictionary[@"isTab"] = @(_isTab);
     return dictionary;
 }
 

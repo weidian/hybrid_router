@@ -7,19 +7,19 @@
 
 #import "WDFlutterPluginRigstrant.h"
 
-@interface WDFlutterPluginRigstrant()
-@property (nonatomic,strong) NSMutableArray<Class<FlutterPlugin>> *plugins;
+@interface WDFlutterPluginRigstrant ()
+@property(nonatomic, strong) NSMutableArray<Class <FlutterPlugin>> *plugins;
 @end
 
 @implementation WDFlutterPluginRigstrant
 
-+ (void)registerWithRegistry:(NSObject<FlutterPluginRegistry>*)registry {
-    [[WDFlutterPluginRigstrant sharedInstance].plugins enumerateObjectsUsingBlock:^(Class<FlutterPlugin>  _Nonnull plugin, NSUInteger idx, BOOL * _Nonnull stop) {
++ (void)registerWithRegistry:(NSObject <FlutterPluginRegistry> *)registry {
+    [[WDFlutterPluginRigstrant sharedInstance].plugins enumerateObjectsUsingBlock:^(Class <FlutterPlugin> _Nonnull plugin, NSUInteger idx, BOOL *_Nonnull stop) {
         [plugin registerWithRegistrar:[registry registrarForPlugin:NSStringFromClass(plugin)]];
     }];
 }
 
-+ (void)registePlugin:(Class<FlutterPlugin>)plugin {
++ (void)registePlugin:(Class <FlutterPlugin>)plugin {
     if ([[WDFlutterPluginRigstrant sharedInstance].plugins containsObject:plugin]) {
         return;
     }

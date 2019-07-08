@@ -9,8 +9,8 @@
 #import "WDFlutterViewController.h"
 #import "WDFlutterPluginRigstrant.h"
 
-@interface WDFlutterEngine()
-@property (nonatomic,strong) WDFlutterViewController *viewController;
+@interface WDFlutterEngine ()
+@property(nonatomic, strong) WDFlutterViewController *viewController;
 @end
 
 @implementation WDFlutterEngine
@@ -27,7 +27,7 @@
 - (instancetype)init {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-    
+
     if (self = [super init]) {
         _viewController = [[WDFlutterViewController alloc] initWithProject:nil nibName:nil bundle:nil];
         [_viewController view];
@@ -40,7 +40,7 @@
         }
         [WDFlutterPluginRigstrant registerWithRegistry:_viewController];
     }
-    
+
     return self;
 #pragma clang diagnostic pop
 }

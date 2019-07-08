@@ -27,17 +27,12 @@
 // Copyright (c) 2018 lm. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
 #import "WDFlutterRouter.h"
 #import "WDFlutterViewContainer.h"
-#import "WDFlutterViewController.h"
-#import "HybridRouterPlugin.h"
-#import "WDFlutterPluginRigstrant.h"
-#import "WDFlutterEngine.h"
 #import "WDFlutterViewContainerManager.h"
 
-@interface WDFlutterRouter()
-@property (nonatomic,strong) WDFlutterViewContainerManager *manager;
+@interface WDFlutterRouter ()
+@property(nonatomic, strong) WDFlutterViewContainerManager *manager;
 @end
 
 @implementation WDFlutterRouter
@@ -65,12 +60,12 @@
     }
 }
 
-- (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result {    
+- (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result {
     WDFlutterRouteOptions *options = [WDFlutterRouteOptions new];
     options.pageName = page;
     options.args = params;
     options.resultBlock = result;
-    
+
     WDFlutterViewContainer *viewController = nil;
     if ([_delegate respondsToSelector:@selector(flutterViewContainer)]) {
         viewController = [_delegate flutterViewContainer];
@@ -79,7 +74,7 @@
         viewController = [[WDFlutterViewContainer alloc] init];
     }
     viewController.routeOptions = options;
-    
+
     UINavigationController *nav = _delegate.appNavigationController;
     if (!nav) return;
     [nav pushViewController:viewController animated:YES];
@@ -87,11 +82,11 @@
 
 #pragma mark -- container
 
-- (void)add:(WDFlutterViewContainer*)container {
+- (void)add:(WDFlutterViewContainer *)container {
     [_manager add:container];
 }
 
-- (void)remove:(WDFlutterViewContainer*)container {
+- (void)remove:(WDFlutterViewContainer *)container {
     [_manager remove:container];
 }
 
@@ -100,5 +95,5 @@
 - (WDFlutterViewContainerManager *)contaninerManger {
     return _manager;
 }
-    
+
 @end
