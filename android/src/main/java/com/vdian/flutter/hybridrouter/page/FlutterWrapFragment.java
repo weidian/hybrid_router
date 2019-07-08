@@ -154,7 +154,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
         IPageDelegate delegate;
         Bundle arguments = new Bundle();
-        boolean openScreenshot = false;
 
         public Builder pageDelegate(IPageDelegate delegate) {
             this.delegate = delegate;
@@ -245,14 +244,13 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
          * @return
          */
         public Builder screenshot(boolean openScreenshot) {
-            this.openScreenshot = openScreenshot;
+            this.arguments.putBoolean(EXTRA_ENABLE_SCREENSHOT, openScreenshot);
             return this;
         }
 
         public FlutterWrapFragment build() {
             FlutterWrapFragment ret = new FlutterWrapFragment();
             ret.delegate = delegate;
-            ret.openScreenshot = openScreenshot;
             ret.setArguments(arguments);
             return ret;
         }
@@ -265,6 +263,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     public static final String EXTRA_DART_ENTRYPOINT = "ext_dart_entrypoint";
     public static final String EXTRA_FLUTTERVIEW_RENDER_MODE = "ext_flutterview_render_mode";
     public static final String EXTRA_FLUTTERVIEW_TRANSPARENCY_MOD = "ext_flutterview_transparency_mode";
+    public static final String EXTRA_ENABLE_SCREENSHOT = "ext_enable_screenshot";
 
     private static final int FLAG_ATTACH = 1;
     private static final int FLAG_ENGINE_INIT = 2;
@@ -420,6 +419,11 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
                     routeOptions = wrapConfig.parseFlutterRouteFromBundle(this, getArguments());
                 }
             }
+        }
+        // 解析是否开启截图缓存
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            openScreenshot = arguments.getBoolean(EXTRA_ENABLE_SCREENSHOT, openScreenshot);
         }
         if (routeOptions == null) {
             // 如果没有路由信息，默认打开根路径
@@ -1009,7 +1013,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     // ================ 截图管理 =================
     private static ScreenshotManager screenshotManager;
     // 是否开启截图
-    protected boolean openScreenshot = false;
+    private boolean openScreenshot = false;
 
     @Nullable
     private Bitmap getScreenshot() {
