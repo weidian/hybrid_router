@@ -26,23 +26,23 @@
 #import "WDFlutterRouter.h"
 #import "WDFlutterRouteEventHandler.h"
 
-@interface HybridRouterPlugin()
-@property (nonatomic, strong) FlutterMethodChannel *methodChannel;
+@interface HybridRouterPlugin ()
+@property(nonatomic, strong) FlutterMethodChannel *methodChannel;
 @end
 
 @implementation HybridRouterPlugin
 
-+ (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-    FlutterMethodChannel* channel = [FlutterMethodChannel
-      methodChannelWithName:@"com.vdian.flutter.hybridrouter"
-            binaryMessenger:[registrar messenger]];
-    HybridRouterPlugin* instance = [HybridRouterPlugin sharedInstance];
++ (void)registerWithRegistrar:(NSObject <FlutterPluginRegistrar> *)registrar {
+    FlutterMethodChannel *channel = [FlutterMethodChannel
+            methodChannelWithName:@"com.vdian.flutter.hybridrouter"
+                  binaryMessenger:[registrar messenger]];
+    HybridRouterPlugin *instance = [HybridRouterPlugin sharedInstance];
     instance.methodChannel = channel;
     [registrar addMethodCallDelegate:instance channel:channel];
 }
 
-+ (instancetype)sharedInstance{
-    static HybridRouterPlugin * sharedInst;
++ (instancetype)sharedInstance {
+    static HybridRouterPlugin *sharedInst;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInst = [[HybridRouterPlugin alloc] init];
@@ -50,10 +50,10 @@
     return sharedInst;
 }
 
-- (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
     NSString *method = call.method;
     if ([@"getInitRoute" isEqualToString:method]) {
-        NSDictionary *params = self.mainEntryParams?:@{};
+        NSDictionary *params = self.mainEntryParams ?: @{};
         result(params);
     } else if ([@"openNativePage" isEqualToString:method]) {
         [self openNativePage:call.arguments result:result];
@@ -72,6 +72,7 @@
 }
 
 #pragma mark - native route event
+
 - (void)onNativeRouteEvent:(NSDictionary *)arguments {
     NSString *nativePageId = arguments[@"nativePageId"];
     NSNumber *eventId = arguments[@"eventId"];
@@ -92,6 +93,7 @@
 }
 
 #pragma mark - flutter route event
+
 - (void)onFlutterRouteEvent:(NSDictionary *)arguments {
     NSString *nativePageId = arguments[@"nativePageId"];
     NSNumber *eventId = arguments[@"eventId"];
@@ -121,16 +123,19 @@
 }
 
 #pragma mark - open flutter page
+
 - (void)openFlutterPage:(NSDictionary *)arguments result:(FlutterResult)result {
     [WDFlutterRouter.sharedInstance openFlutterPage:arguments[@"pageName"] params:arguments[@"args"] result:result];
 }
 
 #pragma mark - open native page
+
 - (void)openNativePage:(NSDictionary *)arguments result:(FlutterResult)result {
     [WDFlutterRouter.sharedInstance openNativePage:arguments[@"url"] params:arguments[@"args"]];
 }
 
 #pragma mark - invoke method
+
 - (void)invokeFlutterMethod:(NSString *)method arguments:(id)arguments result:(void (^)(id result))callback {
     [self.methodChannel invokeMethod:method arguments:arguments result:callback];
 }

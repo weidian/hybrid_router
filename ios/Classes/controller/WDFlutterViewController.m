@@ -30,9 +30,10 @@
 #import "WDFlutterViewController.h"
 
 static BOOL onceDisplaySplashView = NO;
+
 @interface WDFlutterViewController ()
-@property (nonatomic, assign) BOOL enableViewWillAppear;
-@property (nonatomic, strong) UIView *splashView;
+@property(nonatomic, assign) BOOL enableViewWillAppear;
+@property(nonatomic, strong) UIView *splashView;
 @end
 
 @implementation WDFlutterViewController

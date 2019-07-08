@@ -10,8 +10,6 @@
 #import "WDFlutterViewContainerManager.h"
 #import "WDFlutterViewContainer.h"
 
-#define FLUTTER_CONTAINER_MANAGER
-
 @implementation WDFlutterRouteEventHandler
 
 + (WDFlutterViewContainer *)find:(NSString *)pageId {
@@ -24,9 +22,9 @@
 + (void)beforeNativePagePop:(NSString *)pageId result:(id)result {
     WDFlutterViewContainer *container = [self find:pageId];
     UINavigationController *nav = container.navigationController;
-    
+
     if (!nav || !container) return;
-    
+
     if (nav.topViewController == container) {
         [container nativePageWillRemove:result];
         [container.navigationController popViewControllerAnimated:YES];

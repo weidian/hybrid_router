@@ -9,7 +9,7 @@
 #import "WDFlutterViewContainer.h"
 
 @interface WDFlutterViewContainerManager ()
-@property (nonatomic,strong) NSMutableDictionary *containers;
+@property(nonatomic, strong) NSMutableDictionary *containers;
 @end
 
 @implementation WDFlutterViewContainerManager
