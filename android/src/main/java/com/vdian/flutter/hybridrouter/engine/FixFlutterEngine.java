@@ -33,6 +33,9 @@ import java.lang.reflect.Field;
 
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.FlutterJNI;
+import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry;
+import io.flutter.plugin.common.PluginRegistry;
+import io.flutter.plugin.platform.PlatformViewsController;
 
 /**
  * ┏┛ ┻━━━━━┛ ┻┓
@@ -59,13 +62,13 @@ import io.flutter.embedding.engine.FlutterJNI;
  */
 public class FixFlutterEngine extends FlutterEngine {
 
-    private FixFlutterPluginRegistry pluginRegistry;
     private FlutterJNI flutterJNI;
+    private FixFlutterPluginRegistry fixPluginRegistry;
 
     public FixFlutterEngine(@NonNull Context context) {
         super(context);
-        pluginRegistry = new FixFlutterPluginRegistry(this, context);
         flutterJNI = reflectFlutterJNI();
+        fixPluginRegistry = new FixFlutterPluginRegistry(this, context);
     }
 
     /**
@@ -80,10 +83,8 @@ public class FixFlutterEngine extends FlutterEngine {
         return flutterJNI.getBitmap();
     }
 
-    @NonNull
-    @Override
-    public FixFlutterPluginRegistry getPluginRegistry() {
-        return pluginRegistry;
+    public FixFlutterPluginRegistry getFixPluginRegistry() {
+        return fixPluginRegistry;
     }
 
     private FlutterJNI reflectFlutterJNI() {

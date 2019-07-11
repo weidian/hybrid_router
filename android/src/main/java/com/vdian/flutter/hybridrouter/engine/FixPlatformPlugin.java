@@ -192,14 +192,8 @@ public class FixPlatformPlugin implements ActivityLifecycleListener {
 
         // Linter refuses to believe we're only executing this code in API 28 unless we use distinct if blocks and
         // hardcode the API 28 constant.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P
-                && Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
             activity.setTaskDescription(new ActivityManager.TaskDescription(description.label));
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            ActivityManager.TaskDescription taskDescription =
-                    new ActivityManager.TaskDescription(description.label, 0, description.color);
-            activity.setTaskDescription(taskDescription);
         }
     }
 
