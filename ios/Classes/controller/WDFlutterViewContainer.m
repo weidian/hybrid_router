@@ -124,7 +124,8 @@
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     [self saveSnapshot];
-    UIViewController *topViewController = self.navigationController.topViewController;
+    _changeTab = false;
+    UIViewController *topViewController = self.navigationController.viewControllers.lastObject;
     if (topViewController == self) {
         _changeTab = YES;
     } else {
