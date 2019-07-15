@@ -77,56 +77,56 @@ public class FixPlatformPlugin implements ActivityLifecycleListener {
 
     private final PlatformChannel.PlatformMessageHandler mPlatformMessageHandler =
             new PlatformChannel.PlatformMessageHandler() {
-        @Override
-        public void playSystemSound(@NonNull PlatformChannel.SoundType soundType) {
-            FixPlatformPlugin.this.playSystemSound(soundType);
-        }
+                @Override
+                public void playSystemSound(@NonNull PlatformChannel.SoundType soundType) {
+                    FixPlatformPlugin.this.playSystemSound(soundType);
+                }
 
-        @Override
-        public void vibrateHapticFeedback(@NonNull PlatformChannel.HapticFeedbackType feedbackType) {
-            FixPlatformPlugin.this.vibrateHapticFeedback(feedbackType);
-        }
+                @Override
+                public void vibrateHapticFeedback(@NonNull PlatformChannel.HapticFeedbackType feedbackType) {
+                    FixPlatformPlugin.this.vibrateHapticFeedback(feedbackType);
+                }
 
-        @Override
-        public void setPreferredOrientations(int androidOrientation) {
-            setSystemChromePreferredOrientations(androidOrientation);
-        }
+                @Override
+                public void setPreferredOrientations(int androidOrientation) {
+                    setSystemChromePreferredOrientations(androidOrientation);
+                }
 
-        @Override
-        public void setApplicationSwitcherDescription(@NonNull PlatformChannel.AppSwitcherDescription description) {
-            setSystemChromeApplicationSwitcherDescription(description);
-        }
+                @Override
+                public void setApplicationSwitcherDescription(@NonNull PlatformChannel.AppSwitcherDescription description) {
+                    setSystemChromeApplicationSwitcherDescription(description);
+                }
 
-        @Override
-        public void showSystemOverlays(@NonNull List<PlatformChannel.SystemUiOverlay> overlays) {
-            setSystemChromeEnabledSystemUIOverlays(overlays);
-        }
+                @Override
+                public void showSystemOverlays(@NonNull List<PlatformChannel.SystemUiOverlay> overlays) {
+                    setSystemChromeEnabledSystemUIOverlays(overlays);
+                }
 
-        @Override
-        public void restoreSystemUiOverlays() {
-            restoreSystemChromeSystemUIOverlays();
-        }
+                @Override
+                public void restoreSystemUiOverlays() {
+                    restoreSystemChromeSystemUIOverlays();
+                }
 
-        @Override
-        public void setSystemUiOverlayStyle(@NonNull PlatformChannel.SystemChromeStyle systemUiOverlayStyle) {
-            setSystemChromeSystemUIOverlayStyle(systemUiOverlayStyle);
-        }
+                @Override
+                public void setSystemUiOverlayStyle(@NonNull PlatformChannel.SystemChromeStyle systemUiOverlayStyle) {
+                    setSystemChromeSystemUIOverlayStyle(systemUiOverlayStyle);
+                }
 
-        @Override
-        public void popSystemNavigator() {
-            FixPlatformPlugin.this.popSystemNavigator();
-        }
+                @Override
+                public void popSystemNavigator() {
+                    FixPlatformPlugin.this.popSystemNavigator();
+                }
 
-        @Override
-        public CharSequence getClipboardData(@Nullable PlatformChannel.ClipboardContentFormat format) {
-            return FixPlatformPlugin.this.getClipboardData(format);
-        }
+                @Override
+                public CharSequence getClipboardData(@Nullable PlatformChannel.ClipboardContentFormat format) {
+                    return FixPlatformPlugin.this.getClipboardData(format);
+                }
 
-        @Override
-        public void setClipboardData(@NonNull String text) {
-            FixPlatformPlugin.this.setClipboardData(text);
-        }
-    };
+                @Override
+                public void setClipboardData(@NonNull String text) {
+                    FixPlatformPlugin.this.setClipboardData(text);
+                }
+            };
 
     public FixPlatformPlugin() {
         mEnabledOverlays = DEFAULT_SYSTEM_UI;
@@ -226,7 +226,7 @@ public class FixPlatformPlugin implements ActivityLifecycleListener {
         updateSystemUiOverlays();
     }
 
-    private void updateSystemUiOverlays(){
+    private void updateSystemUiOverlays() {
         if (isAttach) {
             activity.getWindow().getDecorView().setSystemUiVisibility(mEnabledOverlays);
         }
