@@ -39,5 +39,4 @@ android {
 
 dependencies {
     api "com.android.support:appcompat-v7:$support_version"
-    implementation "android.arch.lifecycle:common-java8:$lifecycle_version"
 }
