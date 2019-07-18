@@ -114,25 +114,33 @@ public class FlutterWrapActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        flutterWrapFragment.onNewIntent(intent);
+        if (flutterWrapFragment != null) {
+            flutterWrapFragment.onNewIntent(intent);
+        }
     }
 
     @Override
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
-        flutterWrapFragment.onUserLeaveHint();
+        if (flutterWrapFragment != null) {
+            flutterWrapFragment.onUserLeaveHint();
+        }
     }
 
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
-        flutterWrapFragment.onTrimMemory(level);
+        if (flutterWrapFragment != null) {
+            flutterWrapFragment.onTrimMemory(level);
+        }
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        flutterWrapFragment.onLowMemory();
+        if (flutterWrapFragment != null) {
+            flutterWrapFragment.onLowMemory();
+        }
     }
 
     @Override
