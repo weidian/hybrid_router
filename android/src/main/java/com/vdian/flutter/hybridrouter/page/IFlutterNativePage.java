@@ -26,8 +26,10 @@ package com.vdian.flutter.hybridrouter.page;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 
 import java.util.Map;
 
@@ -124,10 +126,26 @@ public interface IFlutterNativePage {
     void startActivityForResult(Intent intent, int requestCode);
 
     /**
+     * 路由跳转页面
+     * @param url 路由地址
+     * @param bundle 数据参数
+     * @param requestCode 请求码
+     */
+    void route(@NonNull String url, Bundle bundle, int requestCode);
+
+    /**
      * 获取 android 上下文环境
      * @return
      */
+    @Nullable
     Context getContext();
+
+    /**
+     * 获取对应的 fragment，如果当前页面是一个 fragment 的话
+     * @return
+     */
+    @Nullable
+    Fragment getFragment();
 
     /**
      * flutter route 事件

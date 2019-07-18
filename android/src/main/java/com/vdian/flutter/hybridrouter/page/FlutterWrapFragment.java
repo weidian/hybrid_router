@@ -364,6 +364,14 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     }
 
     @Override
+    public void route(@NonNull String url, Bundle bundle, int requestCode) {
+        Intent intent = new Intent();
+        intent.setData(Uri.parse(url));
+        intent.putExtras(bundle);
+        startActivityForResult(intent, requestCode);
+    }
+
+    @Override
     public void onFlutterRouteEvent(String name, int eventId, Map extra) {
     }
 
@@ -373,6 +381,11 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return delegate.isTab(this);
         }
         return true;
+    }
+
+    @Override
+    public Fragment getFragment() {
+        return this;
     }
 
     // 当前页面的 id
