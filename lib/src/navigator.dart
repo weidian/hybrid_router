@@ -166,7 +166,7 @@ class HybridNavigator extends Navigator {
           settings = settings.copyWith(arguments: initRouteArgs);
         }
       }
-      return builder(settings);
+      return builder<dynamic>(settings);
     };
   }
 }
@@ -219,11 +219,6 @@ class HybridNavigatorState extends NavigatorState {
       HybridPushType pushType,
       NativePageTransitionType transitionType}) {
     pushType = pushType ?? HybridNavigator.defaultPushType;
-
-    if(widget.isTab) {
-      pushType = HybridPushType.Native;
-    }
-
     assert(routeName != null);
     assert(pushType != null);
     if (pushType == HybridPushType.Native) {
@@ -258,9 +253,6 @@ class HybridNavigatorState extends NavigatorState {
       // 否则使用默认的跳转
       pushType = HybridNavigator.defaultPushType;
     }
-    if(widget.isTab && !route.settings.isInitialRoute) {
-      pushType = HybridPushType.Native;
-    }
     if (pushType == HybridPushType.Native) {
       return _parseFlutterNativeResult(
           NativeContainerManager.openFlutterRouteInNative(
@@ -274,7 +266,7 @@ class HybridNavigatorState extends NavigatorState {
   @override
   bool pop<T extends Object>([T result]) {
     if (canPop()) {
-      return super.pop(result);
+      return super.pop<T>(result);
     }
     // 是否可以退出
     bool canExit = this.canExit ?? !(widget.isTab == true);
@@ -286,6 +278,28 @@ class HybridNavigatorState extends NavigatorState {
           nativePageId: widget.nativePageId, result: result);
     }
     return canExit;
+  }
+
+  @override
+  Future<bool> maybePop<T extends Object>([ T result ]) async {
+    final Route<dynamic> route = _observable._routeHistory.last;
+    final RoutePopDisposition disposition = await route.willPop();
+    if (disposition != RoutePopDisposition.bubble && mounted) {
+      // 不需要冒泡的，走原先策略
+      if (disposition == RoutePopDisposition.pop){
+        pop(result);
+      }
+      return true;
+    }
+    // 是否可以退出
+    bool canExit = this.canExit ?? !(widget.isTab == true);
+    if (canExit && !canPop()) {
+      // 可以退出 native 页面
+      await NativeContainerManager.removeNamed(
+          nativePageId: widget.nativePageId, result: result);
+      return true;
+    }
+    return false;
   }
 
   /// open a native page

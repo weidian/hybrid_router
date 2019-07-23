@@ -26,7 +26,6 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:hybrid_router/src/back_pressed.dart';
 
 import 'hybrid_plugin.dart';
 import 'model.dart';
@@ -200,11 +199,8 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     // get last navigate container
     NativeContainer container =
         _containerHistory.isEmpty ? null : _containerHistory.last;
-    if (await container.emmiter.emmit()) {
-      return true;
-    }
     try {
-      return container.pop();
+      return await container.maybePop();
     } catch (e) {
       FlutterError.onError(e);
     }
@@ -485,8 +481,6 @@ class NativeContainer extends StatefulWidget {
 
   final HybridRouteFactory unknownBuilder;
 
-  final BackPressedEmmiter emmiter = BackPressedEmmiter();
-
   final GlobalKey<HybridNavigatorState> navKey = GlobalKey();
 
   final List<HybridNavigatorObserver> observers;
@@ -502,6 +496,13 @@ class NativeContainer extends StatefulWidget {
     assert(
         navKey.currentState != null, "The key of Navigator return null state");
     return navKey.currentState.pop(result);
+  }
+
+  /// call maybe pop
+  Future<bool> maybePop<T extends Object>({T result}) {
+    assert(
+        navKey.currentState != null, "The key of Navigator return null state");
+    return navKey.currentState.maybePop<T>(result);
   }
 
   NativeContainer(
@@ -546,19 +547,16 @@ class NativeContainerState extends State<NativeContainer>
 
   @override
   Widget build(BuildContext context) {
-    return BackPressed(
-      emmiter: widget.emmiter,
-      child: HybridNavigator(
-        key: widget.navKey,
-        nativePageId: widget.nativePageId,
-        initialRoute: widget.initRouteName,
-        initRoute: widget.initRoute,
-        initRouteArgs: widget.args,
-        isTab: widget.isTab,
-        generateBuilder: widget.generateBuilder,
-        unknownBuilder: widget.unknownBuilder,
-        observers: [this],
-      ),
+    return HybridNavigator(
+      key: widget.navKey,
+      nativePageId: widget.nativePageId,
+      initialRoute: widget.initRouteName,
+      initRoute: widget.initRoute,
+      initRouteArgs: widget.args,
+      isTab: widget.isTab,
+      generateBuilder: widget.generateBuilder,
+      unknownBuilder: widget.unknownBuilder,
+      observers: [this],
     );
   }
 

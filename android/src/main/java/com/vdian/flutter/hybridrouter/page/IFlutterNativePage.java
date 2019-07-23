@@ -78,12 +78,12 @@ public interface IFlutterNativePage {
     void requestDetachFromWindow();
 
     /**
-     * 请求打开 native page
+     * flutter 内 请求打开 native page
      */
     void openNativePage(@NonNull NativeRouteOptions routeOptions, @NonNull MethodChannel.Result result);
 
     /**
-     * 通过一个新的 native 页面打开一个 flutter 页面
+     * flutter 内请求通过一个新的 native 页面打开一个 flutter 页面
      * @param routeOptions 打开 flutter 页面需要的路由参数
      * @param result channel 回调方法
      */
@@ -124,14 +124,6 @@ public interface IFlutterNativePage {
      * @param requestCode
      */
     void startActivityForResult(Intent intent, int requestCode);
-
-    /**
-     * 路由跳转页面
-     * @param url 路由地址
-     * @param bundle 数据参数
-     * @param requestCode 请求码
-     */
-    void route(@NonNull String url, Bundle bundle, int requestCode);
 
     /**
      * 获取 android 上下文环境

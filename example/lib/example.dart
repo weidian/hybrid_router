@@ -52,7 +52,7 @@ class _TabExamplePageState extends State<TabExamplePage> with NativeContainerExi
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop("I am message from flutter example");
+            Navigator.of(context).maybePop("I am message from flutter example");
           },
         ),
       ),

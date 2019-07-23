@@ -26,6 +26,5 @@
 export 'src/navigator.dart';
 export 'src/model.dart';
 export 'src/observer.dart';
-export 'src/back_pressed.dart';
 export 'src/utils.dart';
 export 'src/manager.dart';
