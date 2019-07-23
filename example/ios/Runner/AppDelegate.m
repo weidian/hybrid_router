@@ -30,7 +30,7 @@
     return [UIApplication sharedApplication].delegate.window.rootViewController;
 }
 
-- (void)openNativePage:(NSString *)page params:(NSDictionary *)params {
+- (void)openNativePage:(NSString *)page params:(NSDictionary *)params transitionType:(WDFlutterRouterTransitionType)type {
     [(UINavigationController *)[self flutterCurrentController] pushViewController:[[DemoViewController alloc] init] animated:YES];
 }
 

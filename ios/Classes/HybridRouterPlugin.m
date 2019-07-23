@@ -126,7 +126,7 @@
 
 #pragma mark - open native page
 - (void)openNativePage:(NSDictionary *)arguments result:(FlutterResult)result {
-    [WDFlutterURLRouter openNativePage:arguments[@"url"] params:arguments[@"args"]];
+    [WDFlutterURLRouter openNativePage:arguments[@"url"] params:arguments[@"args"] transitionType:[arguments[@"transitionType"] intValue]];
 }
 
 #pragma mark - invoke method

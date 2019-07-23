@@ -33,6 +33,12 @@
 @class UIViewController, WDFlutterViewWrapperController, WDFlutterRouteOptions;
 typedef void(^FlutterToNativeCallback)(NSDictionary *dic);
 
+typedef NS_ENUM(int, WDFlutterRouterTransitionType) {
+    WDFlutterRouterTransitionTypeDefault = 0,
+    WDFlutterRouterTransitionTypeBottomToTop = 1,
+    WDFlutterRouterTransitionTypeRightToLeft = 2,
+};
+
 @protocol WDFlutterURLRouterDelegate <NSObject>
     
 @required
@@ -51,7 +57,7 @@ typedef void(^FlutterToNativeCallback)(NSDictionary *dic);
  @param page native的页面名
  @param params 页面参数
  */
-- (void)openNativePage:(NSString *)page params:(id)params;
+- (void)openNativePage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type;
 
 @optional
 
@@ -81,7 +87,7 @@ typedef void(^FlutterToNativeCallback)(NSDictionary *dic);
 
 + (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result;
 
-+ (void)openNativePage:(NSString *)page params:(id)params;
++ (void)openNativePage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type;
 
 + (void)beforeNativePagePop:(NSString *)pageId result:(id)result;
 

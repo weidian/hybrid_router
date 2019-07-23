@@ -89,9 +89,9 @@ static long long fTag = 0;
     return nil;
 }
 
-- (void)openNativePage:(NSString *)page params:(id)paramsDic {
-    if ([self.delegate respondsToSelector:@selector(openNativePage:params:)]) {
-        [self.delegate openNativePage:page params:paramsDic];
+- (void)openNativePage:(NSString *)page params:(id)paramsDic transitionType:(WDFlutterRouterTransitionType)type {
+    if ([self.delegate respondsToSelector:@selector(openNativePage:params:transitionType:)]) {
+        [self.delegate openNativePage:page params:paramsDic transitionType:type];
     }
 }
 
@@ -137,8 +137,8 @@ static long long fTag = 0;
     }
 }
 
-+ (void)openNativePage:(NSString *)page params:(id)params {
-    [[WDFlutterURLRouter sharedInstance] openNativePage:page params:params];
++ (void)openNativePage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type {
+    [[WDFlutterURLRouter sharedInstance] openNativePage:page params:params transitionType:type];
 }
 
 + (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result {
