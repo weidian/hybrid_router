@@ -59,13 +59,13 @@ import io.flutter.embedding.engine.FlutterJNI;
  */
 public class FixFlutterEngine extends FlutterEngine {
 
-    private FixFlutterPluginRegistry pluginRegistry;
     private FlutterJNI flutterJNI;
+    private FixFlutterPluginRegistry fixPluginRegistry;
 
     public FixFlutterEngine(@NonNull Context context) {
         super(context);
-        pluginRegistry = new FixFlutterPluginRegistry(this, context);
         flutterJNI = reflectFlutterJNI();
+        fixPluginRegistry = new FixFlutterPluginRegistry(this, context);
     }
 
     /**
@@ -80,10 +80,8 @@ public class FixFlutterEngine extends FlutterEngine {
         return flutterJNI.getBitmap();
     }
 
-    @NonNull
-    @Override
-    public FixFlutterPluginRegistry getPluginRegistry() {
-        return pluginRegistry;
+    public FixFlutterPluginRegistry getFixPluginRegistry() {
+        return fixPluginRegistry;
     }
 
     private FlutterJNI reflectFlutterJNI() {
