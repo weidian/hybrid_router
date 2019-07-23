@@ -33,6 +33,12 @@
 @class WDFlutterViewContainer, WDFlutterViewContainerManager;
 @class UIViewController, WDFlutterViewContainer, WDFlutterRouteOptions;
 
+typedef NS_ENUM(int, WDFlutterRouterTransitionType) {
+    WDFlutterRouterTransitionTypeDefault = 0,
+    WDFlutterRouterTransitionTypeBottomToTop = 1,
+    WDFlutterRouterTransitionTypeRightToLeft = 2,
+};
+
 @protocol WDFlutterRouterDelegate <NSObject>
 
 @required
@@ -42,7 +48,7 @@
  @param page native的页面名
  @param params 页面参数
  */
-- (void)openNativePage:(NSString *)page params:(id)params;
+- (void)openNativePage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type;
 
 - (UINavigationController *)appNavigationController;
 
@@ -64,7 +70,7 @@
 
 - (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result;
 
-- (void)openNativePage:(NSString *)page params:(id)params;
+- (void)openNativePage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type;
 
 #pragma mark -- container
 

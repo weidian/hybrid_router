@@ -54,9 +54,9 @@
     return self;
 }
 
-- (void)openNativePage:(NSString *)page params:(id)paramsDic {
-    if ([self.delegate respondsToSelector:@selector(openNativePage:params:)]) {
-        [self.delegate openNativePage:page params:paramsDic];
+- (void)openNativePage:(NSString *)page params:(id)paramsDic transitionType:(WDFlutterRouterTransitionType)type {
+    if ([self.delegate respondsToSelector:@selector(openNativePage:params:transitionType:)]) {
+        [self.delegate openNativePage:page params:paramsDic transitionType:type];
     }
 }
 
