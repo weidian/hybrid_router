@@ -53,6 +53,7 @@ import com.vdian.flutter.hybridrouter.FlutterStackManagerUtil;
 import com.vdian.flutter.hybridrouter.HybridRouterPlugin;
 import com.vdian.flutter.hybridrouter.ScreenshotManager;
 import com.vdian.flutter.hybridrouter.engine.FixFlutterEngine;
+import com.vdian.flutter.hybridrouter.engine.FixFlutterView;
 import com.vdian.flutter.hybridrouter.engine.FixPlatformPlugin;
 
 import java.util.HashMap;
@@ -389,7 +390,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     @Nullable
     protected FixFlutterEngine flutterEngine;
     @Nullable
-    protected FlutterView flutterView;
+    protected FixFlutterView flutterView;
     @Nullable
     protected FixPlatformPlugin platformPlugin;
     protected FrameLayout container;
@@ -747,8 +748,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     }
 
     @NonNull
-    protected FlutterView createFlutterView(ViewGroup container) {
-        return new FlutterView(container.getContext(), getRenderMode(), getTransparencyMode());
+    protected FixFlutterView createFlutterView(ViewGroup container) {
+        return new FixFlutterView(container.getContext(), getRenderMode(), getTransparencyMode());
     }
 
     // 创建遮罩层
@@ -784,7 +785,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     /**
      * 配置flutter 页面
      */
-    protected void setupFlutterView(ViewGroup container, final FlutterView flutterView,
+    protected void setupFlutterView(ViewGroup container, final FixFlutterView flutterView,
                                                     View maskView) {
         // 这里先移除不是当前 flutter view 的 flutter view，因为 flutter view 只有在创建的时候才会 attach
         // 所以在 attach 的时候会重新创建
