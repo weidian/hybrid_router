@@ -10,7 +10,7 @@
 #import "WDFlutterPluginRigstrant.h"
 
 @interface WDFlutterEngine ()
-@property(nonatomic, strong) WDFlutterViewController *viewController;
+@property(nonatomic, strong) FlutterViewController *viewController;
 @end
 
 @implementation WDFlutterEngine
