@@ -3,7 +3,6 @@ version '1.0-SNAPSHOT'
 
 buildscript {
     ext.support_version = '27.1.1'
-    ext.lifecycle_version = '1.1.1'
     repositories {
         google()
         jcenter()
@@ -39,5 +38,4 @@ android {
 
 dependencies {
     api "com.android.support:appcompat-v7:$support_version"
-    api "android.arch.lifecycle:common-java8:$lifecycle_version"
 }

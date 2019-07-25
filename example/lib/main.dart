@@ -36,6 +36,11 @@ void main() {
           });
     },
   ));
+  var errorCallback = FlutterError.onError;
+  FlutterError.onError = (details) {
+    FlutterError.resetErrorCount();
+    errorCallback(details);
+  };
 }
 
 class EmptyPage extends StatelessWidget {
