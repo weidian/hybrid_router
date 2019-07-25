@@ -4,6 +4,7 @@ import 'package:hybrid_router/hybrid_router.dart';
 import 'example.dart';
 
 void main() {
+  final GlobalKey<NativeContainerManagerState> managerKey = GlobalKey();
   runApp(MaterialApp(
     theme: ThemeData(
       brightness: Brightness.light,
@@ -11,6 +12,7 @@ void main() {
     home: EmptyPage(),
     builder: (context, child) {
       return HybridNavigator.init(
+          key: managerKey,
           backgroundBuilder: (context) {
             return EmptyPage();
           },

@@ -59,13 +59,15 @@ class HybridNavigator extends Navigator {
   }
 
   static NativeContainerManager init(
-      {@required Map<String, HybridWidgetBuilder> routes,
+      {Key key,
+      @required Map<String, HybridWidgetBuilder> routes,
       WidgetBuilder backgroundBuilder,
       HybridPushType defaultPushType,
       List<NativeContainerObserver> containerObserver = const [],
       List<HybridNavigatorObserver> pageObserver = const [],
       HybridRouteFactory unknownRouteBuilder}) {
     return NativeContainerManager(
+      key: key,
       routes: routes,
       defaultPushType: defaultPushType,
       containerObserver: containerObserver,
@@ -172,7 +174,6 @@ class HybridNavigator extends Navigator {
 }
 
 class HybridNavigatorState extends NavigatorState {
-
   /// 当前 native 混合栈是否可以退出，如果为 true 将会把当前页面从 [NavigatorContainerManager]
   /// 中移除，代码详见 [pop]
   bool canExit;
@@ -270,7 +271,7 @@ class HybridNavigatorState extends NavigatorState {
     }
     // 是否可以退出
     bool canExit = this.canExit ?? !(widget.isTab == true);
-    if(canExit) {
+    if (canExit) {
       /// pop 函数本来是非异步的，但是这里因为是当前 Navigator 最后一个页面了，所以可以放心
       /// 使用 channel 关闭页面
       /// 对于对应 route 的结束事件回调，交给 [NaviteContainerManager]
@@ -281,12 +282,12 @@ class HybridNavigatorState extends NavigatorState {
   }
 
   @override
-  Future<bool> maybePop<T extends Object>([ T result ]) async {
+  Future<bool> maybePop<T extends Object>([T result]) async {
     final Route<dynamic> route = _observable._routeHistory.last;
     final RoutePopDisposition disposition = await route.willPop();
     if (disposition != RoutePopDisposition.bubble && mounted) {
       // 不需要冒泡的，走原先策略
-      if (disposition == RoutePopDisposition.pop){
+      if (disposition == RoutePopDisposition.pop) {
         pop(result);
       }
       return true;
