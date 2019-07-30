@@ -142,7 +142,7 @@ class NativeContainerManager extends StatefulWidget {
     _checkState();
     for (NativeContainer container in state._containerHistory) {
       if (container.nativePageId == nativePageId) {
-        return container.navKey.currentState.routeHistoryCopy;
+        return container.navKey.currentState?.routeHistoryCopy ?? [];
       }
     }
     return [];
@@ -268,11 +268,16 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
 
   /// remove a native container by native page Id
   Future<bool> removeNamed({@required String nativePageId, dynamic result}) {
-    NativeContainer c = _containerHistory.firstWhere((c) {
-      return c.nativePageId == nativePageId;
-    });
-    c._result = result;
-    return remove(c);
+    try {
+      NativeContainer c = _containerHistory.firstWhere((c) {
+        return c.nativePageId == nativePageId;
+      });
+      c._result = result;
+      return remove(c);
+    } catch (e) {
+      FlutterError.dumpErrorToConsole(FlutterErrorDetails(exception: e));
+    }
+    return Future.value(false);
   }
 
   /// remove a native container
