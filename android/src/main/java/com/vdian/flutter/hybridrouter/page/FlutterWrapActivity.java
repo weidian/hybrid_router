@@ -26,6 +26,7 @@ package com.vdian.flutter.hybridrouter.page;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -103,7 +104,7 @@ public class FlutterWrapActivity extends AppCompatActivity {
         FlutterWrapFragment ret = new FlutterWrapFragment.Builder()
                 .renderMode(FlutterView.RenderMode.texture)
                 .pageDelegate(new FlutterWrapFragment.ActivityPageDelegate())
-                .extra(getIntent().getExtras())
+                .extra(getFlutterExtra())
                 .build();
         getSupportFragmentManager().beginTransaction()
                 .add(android.R.id.content, ret)
@@ -167,5 +168,25 @@ public class FlutterWrapActivity extends AppCompatActivity {
         } else {
             super.onBackPressed();
         }
+    }
+
+    /**
+     * 获取 flutter 页面的参数，参数里面包含了
+     * intent 过来的 uri 里面的 param
+     */
+    @Nullable
+    protected Bundle getFlutterExtra() {
+        Bundle ret = new Bundle();
+        if (getIntent() == null) {
+            return ret;
+        }
+        Uri data = getIntent().getData();
+        if (data != null) {
+            for (String key : data.getQueryParameterNames()) {
+                ret.putString(key, data.getQueryParameter(key));
+            }
+        }
+        ret.putAll(getIntent().getExtras());
+        return ret;
     }
 }

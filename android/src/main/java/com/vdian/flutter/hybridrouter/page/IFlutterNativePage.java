@@ -78,6 +78,12 @@ public interface IFlutterNativePage {
     void requestDetachFromWindow();
 
     /**
+     * 页面收到新的 intent 信息
+     * @param intent
+     */
+    void onNewIntent(Intent intent);
+
+    /**
      * flutter 内 请求打开 native page
      */
     void openNativePage(@NonNull NativeRouteOptions routeOptions, @NonNull MethodChannel.Result result);

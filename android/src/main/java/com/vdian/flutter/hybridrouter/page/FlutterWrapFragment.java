@@ -596,14 +596,12 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     // ----------------------  以下方法需要 activity 主动调用 ---------------------
     public void onNewIntent(@NonNull Intent intent) {
         if (flutterEngine != null && isAttachToFlutter()) {
-            // 这个方法有啥用?
             flutterEngine.getActivityControlSurface().onNewIntent(intent);
         }
     }
 
     public void onUserLeaveHint() {
         if (flutterEngine != null && isAttachToFlutter()) {
-            // 这个方法有啥用?
             flutterEngine.getActivityControlSurface().onUserLeaveHint();
         }
     }
