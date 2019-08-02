@@ -576,6 +576,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         if (flutterEngine != null) {
             flutterEngine.getActivityControlSurface()
                     .onActivityResult(requestCode, resultCode, data);
+            // 兼容老 plugin registry
+            flutterEngine.getFixPluginRegistry().onUserLeaveHint();
         }
         sendResult(requestCode, resultCode, data);
     }
@@ -587,6 +589,9 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         if (flutterEngine != null) {
             flutterEngine.getActivityControlSurface()
                     .onRequestPermissionsResult(requestCode, permissions, grantResults);
+            // 兼容老 plugin registry
+            flutterEngine.getFixPluginRegistry()
+                    .onRequestPermissionsResult(requestCode, permissions, grantResults);
         } else {
             Log.w("FlutterWrapFragment",
                     "onRequestPermissionResult() invoked before FlutterFragment was attached to an Activity.");
@@ -597,12 +602,16 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     public void onNewIntent(@NonNull Intent intent) {
         if (flutterEngine != null && isAttachToFlutter()) {
             flutterEngine.getActivityControlSurface().onNewIntent(intent);
+            // 兼容老 plugin registry
+            flutterEngine.getFixPluginRegistry().onNewIntent(intent);
         }
     }
 
     public void onUserLeaveHint() {
         if (flutterEngine != null && isAttachToFlutter()) {
             flutterEngine.getActivityControlSurface().onUserLeaveHint();
+            // 兼容老 plugin registry
+            flutterEngine.getFixPluginRegistry().onUserLeaveHint();
         }
     }
 
@@ -949,13 +958,14 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         assertNotNull(platformPlugin);
         // attach plugin registry
         flutterEngine.getActivityControlSurface().attachToActivity(getActivity(), getLifecycle());
+        // 兼容老 plugin registry
+        flutterEngine.getFixPluginRegistry().attach(getActivity());
         // attach platform plugin
         platformPlugin.attach(getActivity(), flutterEngine.getPlatformChannel());
         // register plugin
         if (!FlutterManager.getInstance().isPluginRegistry()) {
             onRegisterPlugin(flutterEngine.getFixPluginRegistry());
         }
-        flutterEngine.getFixPluginRegistry().attach(getActivity());
         // attach flutter view to engine
         flutterView.attachToFlutterEngine(flutterEngine);
         setupFlutterView(container, flutterView, maskView);
@@ -981,6 +991,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         // 生命周期通知
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
             flutterEngine.getActivityControlSurface().onUserLeaveHint();
+            // 兼容老 plugin registry
+            flutterEngine.getFixPluginRegistry().onUserLeaveHint();
             flutterEngine.getLifecycleChannel().appIsInactive();
         }
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
