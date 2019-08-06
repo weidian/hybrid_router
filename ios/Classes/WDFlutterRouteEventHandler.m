@@ -23,10 +23,24 @@
     WDFlutterViewContainer *container = [self find:pageId];
     UINavigationController *nav = container.navigationController;
 
-    if (!nav || !container) return;
+    static int _count = 0;
+
+    if (!nav || !container || !container.didAppear) {
+        _count++;
+        if (_count > 10) {
+            return;
+        }
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [WDFlutterRouteEventHandler beforeNativePagePop:pageId result:result];
+        });
+        return;
+    }
+
+    _count = 0;
+
+    [container nativePageWillRemove:result];
 
     if (nav.topViewController == container) {
-        [container nativePageWillRemove:result];
         [container.navigationController popViewControllerAnimated:YES];
     } else {
         [self removeContainer:container];
@@ -36,8 +50,8 @@
 + (void)onNativePageRemoved:(NSString *)pageId result:(id)result {
     WDFlutterViewContainer *container = [self find:pageId];
     if (container) {
-        [container nativePageWillRemove:result];
-        [self removeContainer:container];
+        //[container nativePageWillRemove:result];
+        //[self removeContainer:container];
     }
 }
 

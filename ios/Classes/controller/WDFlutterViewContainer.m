@@ -113,6 +113,7 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
+    _didAppear = YES;
     if (_lastSnapshot) {
         [self nativePageResume];
     }

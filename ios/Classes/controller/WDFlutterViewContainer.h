@@ -36,6 +36,7 @@
 
 @interface WDFlutterViewContainer : UIViewController <WDFlutterPageLifeCircle>
 
+@property(nonatomic, assign) BOOL didAppear;
 @property(nonatomic, strong) WDFlutterRouteOptions *routeOptions;
 
 - (void)nativePageWillRemove:(id)result;
