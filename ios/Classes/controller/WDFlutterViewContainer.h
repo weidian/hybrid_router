@@ -31,6 +31,7 @@
 #import <UIKit/UIKit.h>
 #import <Flutter/Flutter.h>
 #import "WDFlutterPageLifeCircle.h"
+#import "WDFlutterRouter.h"
 
 @class WDFlutterViewController, WDFlutterRouteOptions;
 
@@ -52,6 +53,8 @@
 @property(nonatomic, strong) id args;
 @property(nonatomic, strong) FlutterResult resultBlock;
 @property(nonatomic, assign) BOOL isTab;
+@property(nonatomic, assign) WDFlutterPageOpenType type;
+@property(nonatomic, assign) BOOL animated;
 
 - (NSDictionary *)toDictionary;
 

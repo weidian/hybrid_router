@@ -1,28 +1,26 @@
 #include "AppDelegate.h"
-#include "GeneratedPluginRegistrant.h"
 #include "DemoViewController.h"
 #import "WDFlutterViewContainer.h"
 #import "WDFlutterRouter.h"
-#import "WDFlutterEngine.h"
 
-@interface AppDelegate()<WDFlutterRouterDelegate>
+@interface AppDelegate () <WDFlutterRouterDelegate>
 
 @end
 
 @implementation AppDelegate
 
-- (BOOL)application:(UIApplication *)application
-    didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+- (BOOL)          application:(UIApplication *)application
+didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 //    [GeneratedPluginRegistrant registerWithRegistry:self];
 //    Override point for customization after application launch.
-  
+
     WDFlutterRouter.sharedInstance.delegate = self;
 
     WDFlutterRouteOptions *options = [[WDFlutterRouteOptions alloc] init];
     options.pageName = @"example";
     options.args = @"EXAMPLE";
     options.isTab = TRUE;
-  
+
     WDFlutterViewContainer *fvc = [[WDFlutterViewContainer alloc] init];
     fvc.hidesBottomBarWhenPushed = NO;
     fvc.routeOptions = options;
@@ -43,10 +41,10 @@
     fvc_.routeOptions = options_;
     UINavigationController *nav2 = [[UINavigationController alloc] initWithRootViewController:fvc_];
     nav2.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"flutter2" image:nil tag:2];
-    
+
     UITabBarController *tabVC = [[UITabBarController alloc] init];
-    tabVC.viewControllers = @[nav0,nav1,nav2];
-    
+    tabVC.viewControllers = @[nav0, nav1, nav2];
+
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.rootViewController = tabVC;
     [self.window makeKeyAndVisible];
@@ -54,13 +52,14 @@
 }
 
 #pragma mark -- WDFlutterRouterDelegate
+
 - (UINavigationController *)appNavigationController {
     UITabBarController *tabVC = (UITabBarController *) [UIApplication sharedApplication].delegate.window.rootViewController;
     return tabVC.viewControllers[tabVC.selectedIndex];
 }
 
-- (void)openNativePage:(NSString *)page params:(NSDictionary *)params {
-    [(UINavigationController *)[self appNavigationController] pushViewController:[[DemoViewController alloc] init] animated:YES];
+- (void)openNativePage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type {
+    [[self appNavigationController] pushViewController:[[DemoViewController alloc] init] animated:YES];
 }
 
 @end

@@ -24,11 +24,11 @@
 - (void)viewWillAppear:(BOOL)animated {
     self.navigationController.navigationBar.hidden = NO;
 }
-    
+
 - (void)loadView {
     [super loadView];
     self.title = @"native";
-    
+
     UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 200, 40)];
     [btn setTitle:@"Click to jump Flutter" forState:UIControlStateNormal];
     [self.view addSubview:btn];
@@ -37,14 +37,14 @@
     [btn addTarget:self action:@selector(onJumpFlutterPressed) forControlEvents:UIControlEventTouchUpInside];
 
     //[self onJumpFlutterPressed];
-    
+
     UIButton *btn_ = [[UIButton alloc] initWithFrame:CGRectMake(0, 150, self.view.frame.size.width, 40)];
     [btn_ setTitle:@"jump Flutter Tab" forState:UIControlStateNormal];
     [self.view addSubview:btn_];
     [btn_ setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     //[btn_ setCenter:self.view.center];
     [btn_ addTarget:self action:@selector(onJumpFlutterTabPressed) forControlEvents:UIControlEventTouchUpInside];
-    
+
 //    UIButton *btn__ = [[UIButton alloc] initWithFrame:CGRectMake(0, 200, self.view.frame.size.width, 40)];
 //    [btn__ setTitle:@"jump native Tab" forState:UIControlStateNormal];
 //    [self.view addSubview:btn__];
@@ -54,14 +54,23 @@
 }
 
 - (void)onJumpFlutterPressed {
-    [WDFlutterRouter.sharedInstance openFlutterPage:@"example" params:@"EXAMPLE" result:^(NSDictionary* data) {
-        NSLog(@"%@", data[@"data"]);
-    }];
+    [WDFlutterRouter.sharedInstance openFlutterPage:@"example"
+                                             params:@"EXAMPLE"
+                                             result:^(NSDictionary *data) {
+                                                 NSLog(@"%@", data[@"data"]);
+                                             }];
+
+    /*[WDFlutterRouter.sharedInstance openFlutterPage:@"example"
+                                             params:@"EXAMPLE"
+                                             result:^(NSDictionary *data) {
+                                                 NSLog(@"%@", data[@"data"]);
+                                             } type:WDFlutterPageOpenType_Modal
+                                           animated:YES];*/
 }
 
 - (void)onJumpFlutterTabPressed {
-     UITabBarController *tabVc = (UITabBarController *)[UIApplication sharedApplication].delegate.window.rootViewController;
-    
+    UITabBarController *tabVc = (UITabBarController *) [UIApplication sharedApplication].delegate.window.rootViewController;
+
     tabVc.selectedIndex = 0;
 }
 

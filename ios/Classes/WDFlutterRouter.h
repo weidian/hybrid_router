@@ -39,6 +39,12 @@ typedef NS_ENUM(int, WDFlutterRouterTransitionType) {
     WDFlutterRouterTransitionTypeRightToLeft = 2,
 };
 
+typedef NS_ENUM(int, WDFlutterPageOpenType) {
+    WDFlutterPageOpenType_Push = 0,
+    WDFlutterPageOpenType_Modal = 2
+};
+
+
 @protocol WDFlutterRouterDelegate <NSObject>
 
 @required
@@ -69,6 +75,9 @@ typedef NS_ENUM(int, WDFlutterRouterTransitionType) {
 + (instancetype)sharedInstance;
 
 - (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result;
+
+- (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result type:(WDFlutterPageOpenType)type animated:(BOOL)
+        animated;
 
 - (void)openNativePage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type;
 

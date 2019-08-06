@@ -61,10 +61,25 @@
 }
 
 - (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result {
+    [self openFlutterPage:page
+                   params:params
+                   result:result
+                     type:WDFlutterPageOpenType_Push
+                 animated:YES];
+}
+
+- (void)openFlutterPage:(NSString *)page
+                 params:(id)params
+                 result:(FlutterResult)result
+                   type:(WDFlutterPageOpenType)type
+               animated:(BOOL)animated {
+
     WDFlutterRouteOptions *options = [WDFlutterRouteOptions new];
     options.pageName = page;
     options.args = params;
     options.resultBlock = result;
+    options.type = type;
+    options.animated = animated;
 
     WDFlutterViewContainer *viewController = nil;
     if ([_delegate respondsToSelector:@selector(flutterViewContainer)]) {
@@ -77,7 +92,14 @@
 
     UINavigationController *nav = _delegate.appNavigationController;
     if (!nav) return;
-    [nav pushViewController:viewController animated:YES];
+
+    if (type == WDFlutterPageOpenType_Push) {
+        [nav pushViewController:viewController animated:animated];
+    } else if (type == WDFlutterPageOpenType_Modal) {
+        [nav presentViewController:[[UINavigationController alloc] initWithRootViewController:viewController]
+                          animated:animated
+                        completion:nil];
+    }
 }
 
 #pragma mark -- container

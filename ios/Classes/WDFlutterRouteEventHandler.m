@@ -21,11 +21,9 @@
 
 + (void)beforeNativePagePop:(NSString *)pageId result:(id)result {
     WDFlutterViewContainer *container = [self find:pageId];
-    UINavigationController *nav = container.navigationController;
-
     static int _count = 0;
 
-    if (!nav || !container || !container.didAppear) {
+    if (!container || !container.didAppear) {
         _count++;
         if (_count > 10) {
             return;
@@ -40,10 +38,15 @@
 
     [container nativePageWillRemove:result];
 
-    if (nav.topViewController == container) {
-        [container.navigationController popViewControllerAnimated:YES];
+    if (container.routeOptions.type == WDFlutterPageOpenType_Push) {
+        UINavigationController *nav = container.navigationController;
+        if (nav.topViewController == container) {
+            [container.navigationController popViewControllerAnimated:container.routeOptions.animated];
+        } else {
+            [self removeContainer:container];
+        }
     } else {
-        [self removeContainer:container];
+        [container dismissViewControllerAnimated:container.routeOptions.animated completion:nil];
     }
 }
 
