@@ -38,7 +38,7 @@
 
     [container nativePageWillRemove:result];
 
-    if (container.routeOptions.type == WDFlutterPageOpenType_Push) {
+    if (!container.routeOptions.modal) {
         UINavigationController *nav = container.navigationController;
         if (nav.topViewController == container) {
             [container.navigationController popViewControllerAnimated:container.routeOptions.animated];

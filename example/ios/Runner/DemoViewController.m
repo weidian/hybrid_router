@@ -64,7 +64,8 @@
                                              params:@"EXAMPLE"
                                              result:^(NSDictionary *data) {
                                                  NSLog(@"%@", data[@"data"]);
-                                             } type:WDFlutterPageOpenType_Modal
+                                             }
+                                              modal:YES
                                            animated:YES];*/
 }
 

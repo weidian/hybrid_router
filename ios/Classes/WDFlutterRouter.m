@@ -64,21 +64,21 @@
     [self openFlutterPage:page
                    params:params
                    result:result
-                     type:WDFlutterPageOpenType_Push
+                    modal:NO
                  animated:YES];
 }
 
 - (void)openFlutterPage:(NSString *)page
                  params:(id)params
                  result:(FlutterResult)result
-                   type:(WDFlutterPageOpenType)type
+                  modal:(BOOL)modal
                animated:(BOOL)animated {
 
     WDFlutterRouteOptions *options = [WDFlutterRouteOptions new];
     options.pageName = page;
     options.args = params;
     options.resultBlock = result;
-    options.type = type;
+    options.modal = modal;
     options.animated = animated;
 
     WDFlutterViewContainer *viewController = nil;
@@ -93,10 +93,11 @@
     UINavigationController *nav = _delegate.appNavigationController;
     if (!nav) return;
 
-    if (type == WDFlutterPageOpenType_Push) {
+    if (!modal) {
         [nav pushViewController:viewController animated:animated];
-    } else if (type == WDFlutterPageOpenType_Modal) {
-        [nav presentViewController:[[UINavigationController alloc] initWithRootViewController:viewController]
+    } else {
+        UIViewController *_viewController = [[UINavigationController alloc] initWithRootViewController:viewController];
+        [nav presentViewController:_viewController
                           animated:animated
                         completion:nil];
     }

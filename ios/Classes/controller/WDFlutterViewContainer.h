@@ -53,7 +53,7 @@
 @property(nonatomic, strong) id args;
 @property(nonatomic, strong) FlutterResult resultBlock;
 @property(nonatomic, assign) BOOL isTab;
-@property(nonatomic, assign) WDFlutterPageOpenType type;
+@property(nonatomic, assign) BOOL modal;
 @property(nonatomic, assign) BOOL animated;
 
 - (NSDictionary *)toDictionary;
