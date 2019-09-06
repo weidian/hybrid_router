@@ -125,13 +125,18 @@
 #pragma mark - open flutter page
 
 - (void)openFlutterPage:(NSDictionary *)arguments result:(FlutterResult)result {
-    [WDFlutterRouter.sharedInstance openFlutterPage:arguments[@"pageName"] params:arguments[@"args"] result:result];
+    [WDFlutterRouter.sharedInstance openFlutterPage:arguments[@"pageName"]
+                                             params:arguments[@"args"]
+                                     transitionType:(WDFlutterRouterTransitionType) [arguments[@"transitionType"] intValue]
+                                             result:result];
 }
 
 #pragma mark - open native page
 
 - (void)openNativePage:(NSDictionary *)arguments result:(FlutterResult)result {
-    [WDFlutterRouter.sharedInstance openNativePage:arguments[@"url"] params:arguments[@"args"] transitionType:[arguments[@"transitionType"] intValue]];
+    [WDFlutterRouter.sharedInstance openNativePage:arguments[@"url"]
+                                            params:arguments[@"args"]
+                                    transitionType:(WDFlutterRouterTransitionType) [arguments[@"transitionType"] intValue]];
 }
 
 #pragma mark - invoke method
