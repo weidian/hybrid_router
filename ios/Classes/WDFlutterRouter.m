@@ -60,11 +60,11 @@
     }
 }
 
-- (void)openFlutterPage:(NSString *)page params:(id)params result:(FlutterResult)result {
+- (void)openFlutterPage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type result:(FlutterResult)result {
     [self openFlutterPage:page
                    params:params
                    result:result
-                    modal:NO
+                    modal:type == WDFlutterRouterTransitionTypeBottomToTop
                  animated:YES];
 }
 
