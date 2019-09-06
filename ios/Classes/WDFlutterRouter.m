@@ -62,6 +62,16 @@
 
 - (void)openFlutterPage:(NSString *)page
                  params:(id)params
+                 result:(FlutterResult)result {
+
+    [self openFlutterPage:page
+                   params:params
+           transitionType:WDFlutterRouterTransitionTypeDefault
+                   result:result];
+}
+
+- (void)openFlutterPage:(NSString *)page
+                 params:(id)params
          transitionType:(WDFlutterRouterTransitionType)type
                  result:(FlutterResult)result {
 
