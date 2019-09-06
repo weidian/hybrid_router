@@ -77,6 +77,12 @@ typedef NS_ENUM(int, WDFlutterRouterTransitionType) {
          transitionType:(WDFlutterRouterTransitionType)type
                  result:(FlutterResult)result;
 
+- (void)openFlutterPage:(NSString *)page
+                 params:(id)params
+                 result:(FlutterResult)result
+                  modal:(BOOL)modal
+               animated:(BOOL)animated;
+
 - (void)openNativePage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type;
 
 #pragma mark -- container
