@@ -29,8 +29,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.vdian.flutter.hybridrouter.engine.FixFlutterEngine;
-import com.vdian.flutter.hybridrouter.engine.FixPlatformPlugin;
 import com.vdian.flutter.hybridrouter.page.IFlutterNativePage;
 import com.vdian.flutter.hybridrouter.page.IFlutterWrapConfig;
 
@@ -39,8 +37,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry;
 import io.flutter.plugin.common.PluginRegistry;
-import io.flutter.view.FlutterNativeView;
 
 /**
  * ┏┛ ┻━━━━━┛ ┻┓
@@ -147,43 +145,24 @@ public class FlutterManager {
         }
     }
 
-    public FlutterNativeView getFlutterNativeView() {
-        return flutterNativeView;
-    }
-
-    public FlutterNativeView getOrCreateNativeView(Context context) {
-        if (flutterNativeView == null) {
-            flutterNativeView = new FlutterNativeView(context instanceof Application ?
-                    context : context.getApplicationContext());
-        }
-        return flutterNativeView;
-    }
-
     @Nullable
-    public FixFlutterEngine getFlutterEngine() {
+    public FlutterEngine getFlutterEngine() {
         return flutterEngine;
     }
 
+    @Nullable
+    public ShimPluginRegistry getShimPluginRegistry() {
+        return shimPluginRegistry;
+    }
+
     @NonNull
-    public FixFlutterEngine getOrCreateFlutterEngine(@NonNull Context context) {
+    public FlutterEngine getOrCreateFlutterEngine(@NonNull Context context) {
         if (flutterEngine == null) {
-            flutterEngine = new FixFlutterEngine(context instanceof Application ? context
+            flutterEngine = new FlutterEngine(context instanceof Application ? context
                     : context.getApplicationContext());
+            shimPluginRegistry = new ShimPluginRegistry(flutterEngine);
         }
         return flutterEngine;
-    }
-
-    @Nullable
-    public FixPlatformPlugin getPlatformPlugin() {
-        return platformPlugin;
-    }
-
-    @NonNull
-    public FixPlatformPlugin getOrCreatePlatformPlugin() {
-        if (platformPlugin == null) {
-            platformPlugin = new FixPlatformPlugin();
-        }
-        return platformPlugin;
     }
 
     @Nullable
@@ -220,9 +199,8 @@ public class FlutterManager {
     private IFlutterNativePage curNativePage;
     private Map<String, IFlutterNativePage> nativePageMap = new HashMap<>();
     private AtomicLong growNativePageId = new AtomicLong(1);
-    private FlutterNativeView flutterNativeView;
-    private FixFlutterEngine flutterEngine;
-    private FixPlatformPlugin platformPlugin;
+    private FlutterEngine flutterEngine;
+    private ShimPluginRegistry shimPluginRegistry;
     // flutter init route 是否已经执行完毕
     private boolean isFlutterRouteStart = false;
     private IFlutterWrapConfig flutterWrapConfig;

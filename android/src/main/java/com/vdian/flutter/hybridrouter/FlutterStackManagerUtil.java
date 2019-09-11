@@ -25,6 +25,7 @@
 package com.vdian.flutter.hybridrouter;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 import android.util.Log;
@@ -36,6 +37,7 @@ import java.util.Map;
 
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.embedding.engine.FlutterJNI;
 import io.flutter.embedding.engine.systemchannels.TextInputChannel;
 import io.flutter.plugin.editing.TextInputPlugin;
 import io.flutter.view.AccessibilityBridge;
@@ -106,6 +108,17 @@ public class FlutterStackManagerUtil {
                 }
             }
         }
+    }
+
+    public static FlutterJNI getJNIFromFlutterEngine(FlutterEngine flutterEngine) {
+        try {
+            Field flutterJNIField = FlutterEngine.class.getDeclaredField("flutterJNI");
+            flutterJNIField.setAccessible(true);
+            return (FlutterJNI) flutterJNIField.get(flutterEngine);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static void detachFlutterFromEngine(FlutterView flutterView, FlutterEngine flutterEngine) {

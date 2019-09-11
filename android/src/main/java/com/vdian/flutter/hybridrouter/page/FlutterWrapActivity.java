@@ -100,6 +100,14 @@ public class FlutterWrapActivity extends AppCompatActivity {
         flutterWrapFragment = createAndSetupFragment();
     }
 
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        if (flutterWrapFragment != null) {
+            flutterWrapFragment.onPostResume();
+        }
+    }
+
     protected FlutterWrapFragment createAndSetupFragment() {
         FlutterWrapFragment ret = new FlutterWrapFragment.Builder()
                 .renderMode(FlutterView.RenderMode.texture)

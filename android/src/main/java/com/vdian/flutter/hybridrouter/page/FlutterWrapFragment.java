@@ -60,11 +60,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.flutter.embedding.android.FlutterView;
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.embedding.engine.FlutterJNI;
 import io.flutter.embedding.engine.FlutterShellArgs;
 import io.flutter.embedding.engine.dart.DartExecutor;
 import io.flutter.embedding.engine.renderer.OnFirstFrameRenderedListener;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
+import io.flutter.plugin.platform.PlatformPlugin;
 import io.flutter.view.FlutterMain;
 
 import static android.app.Activity.RESULT_OK;
@@ -103,6 +106,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
         /**
          * 判断是否是 tab
+         *
          * @return
          */
         boolean isTab(FlutterWrapFragment page);
@@ -181,6 +185,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
         /**
          * 路由参数
+         *
          * @param routeOptions
          * @return
          */
@@ -193,6 +198,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
         /**
          * 引擎初始化信息
+         *
          * @param args
          * @return
          */
@@ -205,6 +211,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
         /**
          * app bundle 启动路径
+         *
          * @param appBundlePath
          * @return
          */
@@ -217,6 +224,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
         /**
          * dart 虚拟机主函数入口
+         *
          * @param dartEntrypoint
          * @return
          */
@@ -229,6 +237,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
         /**
          * fragment arguments 额外参数
+         *
          * @param arguments
          * @return
          */
@@ -239,6 +248,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
         /**
          * 是否启用截屏功能，实验性，默认关闭，后续可能会移除
+         *
          * @param openScreenshot
          * @return
          */
@@ -388,11 +398,11 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
      */
     protected FlutterRouteOptions routeOptions;
     @Nullable
-    protected FixFlutterEngine flutterEngine;
+    protected FlutterEngine flutterEngine;
     @Nullable
     protected FixFlutterView flutterView;
     @Nullable
-    protected FixPlatformPlugin platformPlugin;
+    protected PlatformPlugin platformPlugin;
     protected FrameLayout container;
     protected View maskView;
     // 当前 native page 是否是首次启动的 flutter native page
@@ -443,7 +453,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             initializeFlutter(context);
             setupFlutterEngine(context);
             assertNotNull(flutterEngine);
-            assertNotNull(platformPlugin);
             flag |= FLAG_ENGINE_INIT;
         } catch (Throwable t) {
             // engine init error
@@ -488,25 +497,30 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         if (hasFlag(flag, FLAG_ENGINE_INIT)) {
             // 检查链接到 flutter
             attachFlutter();
-            // 主题修复
-            innerPreFlutterApplyTheme();
-            if (flutterEngine != null) {
-                flutterEngine.getLifecycleChannel().appIsResumed();
-            }
-            if (platformPlugin != null) {
-                // 此方法会同步 flutter 主题到 native
-                platformPlugin.onPostResume();
-            }
-            innerPostFlutterApplyTheme();
-            if (flutterView != null) {
-                // 此处修复 flutter 和 native 沉浸式同步的问题
-                ViewCompat.requestApplyInsets(flutterView);
-            }
             // 通知 flutter，native page resume 了
             if (HybridRouterPlugin.isRegistered()) {
                 HybridRouterPlugin.getInstance().onNativePageResumed(this);
             }
         }
+    }
+
+    /// activity 主动调用
+    public void onPostResume() {
+       if (hasFlag(flag, FLAG_ENGINE_INIT)) {
+           // 主题修复
+           innerPreFlutterApplyTheme();
+           if (flutterEngine != null) {
+               flutterEngine.getLifecycleChannel().appIsResumed();
+           }
+           if (platformPlugin != null) {
+               platformPlugin.updateSystemUiOverlays();
+           }
+           innerPostFlutterApplyTheme();
+           if (flutterView != null) {
+               // 此处修复 flutter 和 native 沉浸式同步的问题
+               ViewCompat.requestApplyInsets(flutterView);
+           }
+       }
     }
 
     @Override
@@ -576,8 +590,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         if (flutterEngine != null) {
             flutterEngine.getActivityControlSurface()
                     .onActivityResult(requestCode, resultCode, data);
-            // 兼容老 plugin registry
-            flutterEngine.getFixPluginRegistry().onUserLeaveHint();
         }
         sendResult(requestCode, resultCode, data);
     }
@@ -589,9 +601,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         if (flutterEngine != null) {
             flutterEngine.getActivityControlSurface()
                     .onRequestPermissionsResult(requestCode, permissions, grantResults);
-            // 兼容老 plugin registry
-            flutterEngine.getFixPluginRegistry()
-                    .onRequestPermissionsResult(requestCode, permissions, grantResults);
         } else {
             Log.w("FlutterWrapFragment",
                     "onRequestPermissionResult() invoked before FlutterFragment was attached to an Activity.");
@@ -602,16 +611,12 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     public void onNewIntent(@NonNull Intent intent) {
         if (flutterEngine != null && isAttachToFlutter()) {
             flutterEngine.getActivityControlSurface().onNewIntent(intent);
-            // 兼容老 plugin registry
-            flutterEngine.getFixPluginRegistry().onNewIntent(intent);
         }
     }
 
     public void onUserLeaveHint() {
         if (flutterEngine != null && isAttachToFlutter()) {
             flutterEngine.getActivityControlSurface().onUserLeaveHint();
-            // 兼容老 plugin registry
-            flutterEngine.getFixPluginRegistry().onUserLeaveHint();
         }
     }
 
@@ -659,7 +664,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         assertNotNull(flutterEngine != null);
         if (!flutterEngine.getDartExecutor().isExecutingDart()) {
             DartExecutor.DartEntrypoint entrypoint = new DartExecutor.DartEntrypoint(
-                    getResources().getAssets(),
                     getAppBundlePath(),
                     getEntrypoint()
             );
@@ -670,9 +674,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     protected void setupFlutterEngine(@NonNull Context context) {
         if (flutterEngine == null) {
             flutterEngine = FlutterManager.getInstance().getOrCreateFlutterEngine(context);
-        }
-        if (platformPlugin == null) {
-            platformPlugin = FlutterManager.getInstance().getOrCreatePlatformPlugin();
         }
     }
 
@@ -725,7 +726,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     /**
      * Returns the desired {@link FlutterView.RenderMode} for the {@link FlutterView} displayed in
      * this {@code FlutterFragment}.
-     *
+     * <p>
      * Defaults to {@link FlutterView.RenderMode#surface}.
      */
     @NonNull
@@ -749,7 +750,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         Bundle arguments = getArguments();
         String transparencyModeName = FlutterView.TransparencyMode.opaque.name();
         if (arguments != null) {
-            transparencyModeName= arguments.getString(EXTRA_FLUTTERVIEW_TRANSPARENCY_MOD, transparencyModeName);
+            transparencyModeName = arguments.getString(EXTRA_FLUTTERVIEW_TRANSPARENCY_MOD, transparencyModeName);
         }
         return FlutterView.TransparencyMode.valueOf(transparencyModeName);
     }
@@ -768,7 +769,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
     /**
      * 更新遮罩层内容
-     * @param maskView 遮罩层视图
+     *
+     * @param maskView   遮罩层视图
      * @param screenshot 截图，可能为 null
      */
     protected void updateMaskScreenshot(View maskView, @Nullable Bitmap screenshot) {
@@ -781,10 +783,11 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
     /**
      * 移除遮罩层的 screen shot
+     *
      * @param maskView
      */
     protected void removeMaskScreenshot(View maskView) {
-        if (maskView.getBackground() instanceof  BitmapDrawable) {
+        if (maskView.getBackground() instanceof BitmapDrawable) {
             maskView.setBackground(getLaunchScreenDrawableFromActivityTheme());
         }
     }
@@ -793,7 +796,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
      * 配置flutter 页面
      */
     protected void setupFlutterView(ViewGroup container, final FixFlutterView flutterView,
-                                                    View maskView) {
+                                    View maskView) {
         // 这里先移除不是当前 flutter view 的 flutter view，因为 flutter view 只有在创建的时候才会 attach
         // 所以在 attach 的时候会重新创建
         for (int i = 0; i < container.getChildCount(); ++i) {
@@ -844,7 +847,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             if (extras != null && data.hasExtra(EXTRA_RESULT_KEY)) {
                 // 从 flutter 过来的数据
                 result = extras.get(EXTRA_RESULT_KEY);
-            } else if (extras != null){
+            } else if (extras != null) {
                 HashMap<String, Object> retMap = new HashMap<>();
                 if (data.getExtras() != null) {
                     for (String key : data.getExtras().keySet()) {
@@ -955,16 +958,12 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         assertNotNull(maskView);
         assertNotNull(flutterEngine);
         assertNotNull(flutterView);
-        assertNotNull(platformPlugin);
         // attach plugin registry
         flutterEngine.getActivityControlSurface().attachToActivity(getActivity(), getLifecycle());
-        // 兼容老 plugin registry
-        flutterEngine.getFixPluginRegistry().attach(getActivity());
-        // attach platform plugin
-        platformPlugin.attach(getActivity(), flutterEngine.getPlatformChannel());
+        platformPlugin = new PlatformPlugin(getActivity(), flutterEngine.getPlatformChannel());
         // register plugin
         if (!FlutterManager.getInstance().isPluginRegistry()) {
-            onRegisterPlugin(flutterEngine.getFixPluginRegistry());
+            onRegisterPlugin(FlutterManager.getInstance().getShimPluginRegistry());
         }
         // attach flutter view to engine
         flutterView.attachToFlutterEngine(flutterEngine);
@@ -991,18 +990,21 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         // 生命周期通知
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
             flutterEngine.getActivityControlSurface().onUserLeaveHint();
-            // 兼容老 plugin registry
-            flutterEngine.getFixPluginRegistry().onUserLeaveHint();
             flutterEngine.getLifecycleChannel().appIsInactive();
         }
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
             flutterEngine.getLifecycleChannel().appIsPaused();
         }
+        Activity activity = getActivity();
+        if (activity != null && activity.isChangingConfigurations()) {
+            flutterEngine.getActivityControlSurface().detachFromActivityForConfigChanges();
+        } else {
+            flutterEngine.getActivityControlSurface().detachFromActivity();
+        }
         //
-//        FlutterStackManagerUtil.detachFlutterFromEngine(flutterView, flutterEngine);
         flutterView.detachFromFlutterEngine();
-        flutterEngine.getFixPluginRegistry().detach();
-        platformPlugin.detach();
+        platformPlugin.destroy();
+        platformPlugin = null;
     }
 
     @Nullable
@@ -1049,7 +1051,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         }
         ScreenshotManager screenshotManager = checkScreenshotManager();
         if (flutterEngine != null && screenshotManager != null) {
-            Bitmap bitmap = flutterEngine.getFlutterBitmap();
+            FlutterJNI jni = FlutterStackManagerUtil.getJNIFromFlutterEngine(flutterEngine);
+            Bitmap bitmap = jni == null ? null : jni.getBitmap();
             if (bitmap != null) {
                 screenshotManager.addBitmap(nativePageId, bitmap);
             }
