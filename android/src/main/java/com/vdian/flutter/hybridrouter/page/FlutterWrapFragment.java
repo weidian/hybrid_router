@@ -497,6 +497,11 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         if (hasFlag(flag, FLAG_ENGINE_INIT)) {
             // 检查链接到 flutter
             attachFlutter();
+            if (flutterEngine != null) {
+                flutterEngine.getLifecycleChannel().appIsResumed();
+            }
+            // FIXME 这里官方是放到 onPostResume 的，但是我放到了 onResume 中
+            onPostResume();
             // 通知 flutter，native page resume 了
             if (HybridRouterPlugin.isRegistered()) {
                 HybridRouterPlugin.getInstance().onNativePageResumed(this);
@@ -509,9 +514,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
        if (hasFlag(flag, FLAG_ENGINE_INIT)) {
            // 主题修复
            innerPreFlutterApplyTheme();
-           if (flutterEngine != null) {
-               flutterEngine.getLifecycleChannel().appIsResumed();
-           }
            if (platformPlugin != null) {
                platformPlugin.updateSystemUiOverlays();
            }
