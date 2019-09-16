@@ -54,16 +54,16 @@ import io.flutter.embedding.android.FlutterView.TransparencyMode;
  * <p>
  * A {@code FlutterView} can operate in 2 different {@link RenderMode}s:
  * <ol>
- *   <li>{@link RenderMode#surface}, which paints a Flutter UI to a {@link android.view.SurfaceView}.
- *   This mode has the best performance, but a {@code FlutterView} in this mode cannot be positioned
- *   between 2 other Android {@code View}s in the z-index, nor can it be animated/transformed.
- *   Unless the special capabilities of a {@link android.graphics.SurfaceTexture} are required,
- *   developers should strongly prefer this render mode.</li>
- *   <li>{@link RenderMode#texture}, which paints a Flutter UI to a {@link android.graphics.SurfaceTexture}.
- *   This mode is not as performant as {@link RenderMode#surface}, but a {@code FlutterView} in this
- *   mode can be animated and transformed, as well as positioned in the z-index between 2+ other
- *   Android {@code Views}. Unless the special capabilities of a {@link android.graphics.SurfaceTexture}
- *   are required, developers should strongly prefer the {@link RenderMode#surface} render mode.</li>
+ * <li>{@link RenderMode#surface}, which paints a Flutter UI to a {@link android.view.SurfaceView}.
+ * This mode has the best performance, but a {@code FlutterView} in this mode cannot be positioned
+ * between 2 other Android {@code View}s in the z-index, nor can it be animated/transformed.
+ * Unless the special capabilities of a {@link android.graphics.SurfaceTexture} are required,
+ * developers should strongly prefer this render mode.</li>
+ * <li>{@link RenderMode#texture}, which paints a Flutter UI to a {@link android.graphics.SurfaceTexture}.
+ * This mode is not as performant as {@link RenderMode#surface}, but a {@code FlutterView} in this
+ * mode can be animated and transformed, as well as positioned in the z-index between 2+ other
+ * Android {@code Views}. Unless the special capabilities of a {@link android.graphics.SurfaceTexture}
+ * are required, developers should strongly prefer the {@link RenderMode#surface} render mode.</li>
  * </ol>
  * See <a>https://source.android.com/devices/graphics/arch-tv#surface_or_texture</a> for more
  * information comparing {@link android.view.SurfaceView} and {@link android.view.TextureView}.
@@ -100,7 +100,12 @@ public class FixFlutterView extends FrameLayout {
     private AndroidKeyProcessor androidKeyProcessor;
     @Nullable
     private AndroidTouchProcessor androidTouchProcessor;
+    /**
+     * FIXME 这个目前不支持，会导致 crash，在 FlutterWrapFragment 出现在不同 id 的容器中时，比如 demo 的
+     * tab 页面
+     */
     @Nullable
+    @Deprecated
     private AccessibilityBridge accessibilityBridge;
 
     // Directly implemented View behavior that communicates with Flutter.
@@ -128,8 +133,8 @@ public class FixFlutterView extends FrameLayout {
      * Constructs a {@code FlutterView} programmatically, without any XML attributes.
      * <p>
      * <ul>
-     *   <li>{@link #renderMode} defaults to {@link RenderMode#surface}.</li>
-     *   <li>{@link #transparencyMode} defaults to {@link TransparencyMode#opaque}.</li>
+     * <li>{@link #renderMode} defaults to {@link RenderMode#surface}.</li>
+     * <li>{@link #transparencyMode} defaults to {@link TransparencyMode#opaque}.</li>
      * </ul>
      * {@code FlutterView} requires an {@code Activity} instead of a generic {@code Context}
      * to be compatible with {@link PlatformViewsController}.
@@ -225,11 +230,11 @@ public class FixFlutterView extends FrameLayout {
      * This flag is specific to a given {@link FlutterEngine}. The following hypothetical timeline
      * demonstrates how this flag changes over time.
      * <ol>
-     *   <li>{@code flutterEngineA} is attached to this {@code FlutterView}: returns false</li>
-     *   <li>{@code flutterEngineA} renders its first frame to this {@code FlutterView}: returns true</li>
-     *   <li>{@code flutterEngineA} is detached from this {@code FlutterView}: returns false</li>
-     *   <li>{@code flutterEngineB} is attached to this {@code FlutterView}: returns false</li>
-     *   <li>{@code flutterEngineB} renders its first frame to this {@code FlutterView}: returns true</li>
+     * <li>{@code flutterEngineA} is attached to this {@code FlutterView}: returns false</li>
+     * <li>{@code flutterEngineA} renders its first frame to this {@code FlutterView}: returns true</li>
+     * <li>{@code flutterEngineA} is detached from this {@code FlutterView}: returns false</li>
+     * <li>{@code flutterEngineB} is attached to this {@code FlutterView}: returns false</li>
+     * <li>{@code flutterEngineB} renders its first frame to this {@code FlutterView}: returns true</li>
      * </ol>
      */
     public boolean hasRenderedFirstFrame() {
@@ -253,10 +258,11 @@ public class FixFlutterView extends FrameLayout {
     }
 
     //------- Start: Process View configuration that Flutter cares about. ------
+
     /**
      * Sends relevant configuration data from Android to Flutter when the Android
      * {@link Configuration} changes.
-     *
+     * <p>
      * The Android {@link Configuration} might change as a result of device orientation
      * change, device language change, device text scale factor change, etc.
      */
@@ -271,9 +277,9 @@ public class FixFlutterView extends FrameLayout {
     /**
      * Invoked when this {@code FlutterView} changes size, including upon initial
      * measure.
-     *
+     * <p>
      * The initial measure reports an {@code oldWidth} and {@code oldHeight} of zero.
-     *
+     * <p>
      * Flutter cares about the width and height of the view that displays it on the host
      * platform. Therefore, when this method is invoked, the new width and height are
      * communicated to Flutter as the "physical size" of the view that displays Flutter's
@@ -292,11 +298,11 @@ public class FixFlutterView extends FrameLayout {
 
     /**
      * Invoked when Android's desired window insets change, i.e., padding.
-     *
+     * <p>
      * Flutter does not use a standard {@code View} hierarchy and therefore Flutter is
      * unaware of these insets. Therefore, this method calculates the viewport metrics
      * that Flutter should use and then sends those metrics to Flutter.
-     *
+     * <p>
      * This callback is not present in API < 20, which means lower API devices will see
      * the wider than expected padding when the status and navigation bars are hidden.
      */
@@ -346,7 +352,7 @@ public class FixFlutterView extends FrameLayout {
 
     /**
      * Invoked when Android's desired window insets change, i.e., padding.
-     *
+     * <p>
      * {@code fitSystemWindows} is an earlier version of
      * {@link #onApplyWindowInsets(WindowInsets)}. See that method for more details
      * about how window insets relate to Flutter.
@@ -382,14 +388,15 @@ public class FixFlutterView extends FrameLayout {
     //------- End: Process View configuration that Flutter cares about. --------
 
     //-------- Start: Process UI I/O that Flutter cares about. -------
+
     /**
      * Creates an {@link InputConnection} to work with a {@link android.view.inputmethod.InputMethodManager}.
-     *
+     * <p>
      * Any {@code View} that can take focus or process text input must implement this
      * method by returning a non-null {@code InputConnection}. Flutter may render one or
      * many focusable and text-input widgets, therefore {@code FlutterView} must support
      * an {@code InputConnection}.
-     *
+     * <p>
      * The {@code InputConnection} returned from this method comes from a
      * {@link TextInputPlugin}, which is owned by this {@code FlutterView}. A
      * {@link TextInputPlugin} exists to encapsulate the nuances of input communication,
@@ -422,12 +429,12 @@ public class FixFlutterView extends FrameLayout {
 
     /**
      * Invoked when key is released.
-     *
+     * <p>
      * This method is typically invoked in response to the release of a physical
      * keyboard key or a D-pad button. It is generally not invoked when a virtual
      * software keyboard is used, though a software keyboard may choose to invoke
      * this method in some situations.
-     *
+     * <p>
      * {@link KeyEvent}s are sent from Android to Flutter. {@link AndroidKeyProcessor}
      * may do some additional work with the given {@link KeyEvent}, e.g., combine this
      * {@code keyCode} with the previous {@code keyCode} to generate a unicode combined
@@ -445,12 +452,12 @@ public class FixFlutterView extends FrameLayout {
 
     /**
      * Invoked when key is pressed.
-     *
+     * <p>
      * This method is typically invoked in response to the press of a physical
      * keyboard key or a D-pad button. It is generally not invoked when a virtual
      * software keyboard is used, though a software keyboard may choose to invoke
      * this method in some situations.
-     *
+     * <p>
      * {@link KeyEvent}s are sent from Android to Flutter. {@link AndroidKeyProcessor}
      * may do some additional work with the given {@link KeyEvent}, e.g., combine this
      * {@code keyCode} with the previous {@code keyCode} to generate a unicode combined
@@ -468,7 +475,7 @@ public class FixFlutterView extends FrameLayout {
 
     /**
      * Invoked by Android when a user touch event occurs.
-     *
+     * <p>
      * Flutter handles all of its own gesture detection and processing, therefore this
      * method forwards all {@link MotionEvent} data from Android to Flutter.
      */
@@ -493,7 +500,7 @@ public class FixFlutterView extends FrameLayout {
     /**
      * Invoked by Android when a generic motion event occurs, e.g., joystick movement, mouse hover,
      * track pad touches, scroll wheel movements, etc.
-     *
+     * <p>
      * Flutter handles all of its own gesture detection and processing, therefore this
      * method forwards all {@link MotionEvent} data from Android to Flutter.
      */
@@ -505,27 +512,29 @@ public class FixFlutterView extends FrameLayout {
 
     /**
      * Invoked by Android when a hover-compliant input system causes a hover event.
-     *
+     * <p>
      * An example of hover events is a stylus sitting near an Android screen. As the
      * stylus moves from outside a {@code View} to hover over a {@code View}, or move
      * around within a {@code View}, or moves from over a {@code View} to outside a
      * {@code View}, a corresponding {@link MotionEvent} is reported via this method.
-     *
+     * <p>
      * Hover events can be used for accessibility touch exploration and therefore are
      * processed here for accessibility purposes.
      */
     @Override
     public boolean onHoverEvent(@NonNull MotionEvent event) {
-        if (!isAttachedToFlutterEngine()) {
-            return super.onHoverEvent(event);
-        }
-
-        boolean handled = accessibilityBridge.onAccessibilityHoverEvent(event);
-        if (!handled) {
-            // TODO(ianh): Expose hover events to the platform,
-            // implementing ADD, REMOVE, etc.
-        }
-        return handled;
+        return super.onHoverEvent(event);
+        // FIXME 先弃用了 accessibility
+//        if (!isAttachedToFlutterEngine()) {
+//            return super.onHoverEvent(event);
+//        }
+//
+//        boolean handled = accessibilityBridge.onAccessibilityHoverEvent(event);
+//        if (!handled) {
+//            // TODO(ianh): Expose hover events to the platform,
+//            // implementing ADD, REMOVE, etc.
+//        }
+//        return handled;
     }
     //-------- End: Process UI I/O that Flutter cares about. ---------
 
@@ -555,12 +564,12 @@ public class FixFlutterView extends FrameLayout {
 
     /**
      * Connects this {@code FlutterView} to the given {@link FlutterEngine}.
-     *
+     * <p>
      * This {@code FlutterView} will begin rendering the UI painted by the given {@link FlutterEngine}.
      * This {@code FlutterView} will also begin forwarding interaction events from this
      * {@code FlutterView} to the given {@link FlutterEngine}, e.g., user touch events, accessibility
      * events, keyboard events, and others.
-     *
+     * <p>
      * See {@link #detachFromFlutterEngine()} for information on how to detach from a
      * {@link FlutterEngine}.
      */
@@ -601,22 +610,25 @@ public class FixFlutterView extends FrameLayout {
                 textInputPlugin
         );
         androidTouchProcessor = new AndroidTouchProcessor(this.flutterEngine.getRenderer());
-        accessibilityBridge = new AccessibilityBridge(
-                this,
-                flutterEngine.getAccessibilityChannel(),
-                (AccessibilityManager) getContext().getSystemService(Context.ACCESSIBILITY_SERVICE),
-                getContext().getContentResolver(),
-                this.flutterEngine.getPlatformViewsController()
-        );
-        accessibilityBridge.setOnAccessibilityChangeListener(onAccessibilityChangeListener);
-        resetWillNotDraw(
-                accessibilityBridge.isAccessibilityEnabled(),
-                accessibilityBridge.isTouchExplorationEnabled()
-        );
+        // FIXME 先弃用 accessibility
+//        accessibilityBridge = new AccessibilityBridge(
+//                this,
+//                flutterEngine.getAccessibilityChannel(),
+//                (AccessibilityManager) getContext().getSystemService(Context.ACCESSIBILITY_SERVICE),
+//                getContext().getContentResolver(),
+//                this.flutterEngine.getPlatformViewsController()
+//        );
+//        accessibilityBridge.setOnAccessibilityChangeListener(onAccessibilityChangeListener);
+//        resetWillNotDraw(
+//                accessibilityBridge.isAccessibilityEnabled(),
+//                accessibilityBridge.isTouchExplorationEnabled()
+//        );
+        resetWillNotDraw(false, false);
 
         // Connect AccessibilityBridge to the PlatformViewsController within the FlutterEngine.
         // This allows platform Views to hook into Flutter's overall accessibility system.
-        this.flutterEngine.getPlatformViewsController().attachAccessibilityBridge(accessibilityBridge);
+        // FIXME 先禁用 accessibility
+//        this.flutterEngine.getPlatformViewsController().attachAccessibilityBridge(accessibilityBridge);
 
         // Inform the Android framework that it should retrieve a new InputConnection
         // now that an engine is attached.
@@ -643,11 +655,11 @@ public class FixFlutterView extends FrameLayout {
 
     /**
      * Disconnects this {@code FlutterView} from a previously attached {@link FlutterEngine}.
-     *
+     * <p>
      * This {@code FlutterView} will clear its UI and stop forwarding all events to the previously-attached
      * {@link FlutterEngine}. This includes touch events, accessibility events, keyboard events,
      * and others.
-     *
+     * <p>
      * See {@link #attachToFlutterEngine(FlutterEngine)} for information on how to attach a
      * {@link FlutterEngine}.
      */
@@ -667,7 +679,8 @@ public class FixFlutterView extends FrameLayout {
         flutterEngine.getPlatformViewsController().detachAccessibiltyBridge();
 
         // Disconnect and clean up the AccessibilityBridge.
-        accessibilityBridge.release();
+        // FIXME 先禁用 accessibility
+//        accessibilityBridge.release();
         accessibilityBridge = null;
 
         // Inform the Android framework that it should retrieve a new InputConnection
@@ -723,7 +736,7 @@ public class FixFlutterView extends FrameLayout {
 
     /**
      * Send the current {@link Locale} configuration to Flutter.
-     *
+     * <p>
      * FlutterEngine must be non-null when this method is invoked.
      */
     @SuppressWarnings("deprecation")
@@ -744,10 +757,10 @@ public class FixFlutterView extends FrameLayout {
 
     /**
      * Send various user preferences of this Android device to Flutter.
-     *
+     * <p>
      * For example, sends the user's "text scale factor" preferences, as well as the user's clock
      * format preference.
-     *
+     * <p>
      * FlutterEngine must be non-null when this method is invoked.
      */
     private void sendUserSettingsToFlutter() {
