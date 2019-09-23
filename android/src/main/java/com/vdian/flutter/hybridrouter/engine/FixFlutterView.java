@@ -257,6 +257,10 @@ public class FixFlutterView extends FrameLayout {
         onFirstFrameRenderedListeners.remove(listener);
     }
 
+    public void removeAllFirstFrameRenderedListener() {
+        onFirstFrameRenderedListeners.clear();
+    }
+
     //------- Start: Process View configuration that Flutter cares about. ------
 
     /**
