@@ -384,11 +384,6 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         return true;
     }
 
-    @Override
-    public Fragment getFragment() {
-        return this;
-    }
-
     // 当前页面的 id
     protected final String nativePageId = FlutterManager.getInstance().generateNativePageId();
     /**

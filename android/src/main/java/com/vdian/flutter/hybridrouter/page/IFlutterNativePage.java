@@ -26,10 +26,8 @@ package com.vdian.flutter.hybridrouter.page;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 
 import java.util.Map;
 
@@ -137,13 +135,6 @@ public interface IFlutterNativePage {
      */
     @Nullable
     Context getContext();
-
-    /**
-     * 获取对应的 fragment，如果当前页面是一个 fragment 的话
-     * @return
-     */
-    @Nullable
-    Fragment getFragment();
 
     /**
      * flutter route 事件
