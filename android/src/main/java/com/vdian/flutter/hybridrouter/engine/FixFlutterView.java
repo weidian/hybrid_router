@@ -426,6 +426,8 @@ public class FixFlutterView extends FrameLayout {
      */
     @Override
     public boolean checkInputConnectionProxy(View view) {
+        // The 金立 phone will call this method with null view
+        if (view == null) return false;
         return flutterEngine != null
                 ? flutterEngine.getPlatformViewsController().checkInputConnectionProxy(view)
                 : super.checkInputConnectionProxy(view);
