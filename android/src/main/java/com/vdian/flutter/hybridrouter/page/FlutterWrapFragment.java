@@ -995,6 +995,10 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             flutterEngine.getActivityControlSurface().detachFromActivityForConfigChanges();
         } else {
             flutterEngine.getActivityControlSurface().detachFromActivity();
+            // 这里不这么做会内存泄漏，因为 ShimPluginRegistry 没有在 onDetachFromActivity 的时候
+            // 把 activityPluginBinding 置为空
+            FlutterStackManagerUtil.detachShimPluginRegistryFromActivity(FlutterManager
+                    .getInstance().getShimPluginRegistry());
         }
         flutterView.detachFromFlutterEngine();
         // 这里需要移除所有的 onFirstFrame 时间，否则下次 firstView 可能会重新 add，导致重复

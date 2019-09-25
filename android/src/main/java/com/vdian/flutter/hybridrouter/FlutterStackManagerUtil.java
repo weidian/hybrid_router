@@ -38,6 +38,7 @@ import java.util.Map;
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.FlutterJNI;
+import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry;
 import io.flutter.embedding.engine.systemchannels.TextInputChannel;
 import io.flutter.plugin.editing.TextInputPlugin;
 import io.flutter.view.AccessibilityBridge;
@@ -119,6 +120,23 @@ public class FlutterStackManagerUtil {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static void detachShimPluginRegistryFromActivity(ShimPluginRegistry registry) {
+        try {
+            Field shimRegistrarAggregateField = ShimPluginRegistry.class
+                    .getDeclaredField("shimRegistrarAggregate");
+            shimRegistrarAggregateField.setAccessible(true);
+            Object shimRegistrarAggregate = shimRegistrarAggregateField.get(registry);
+            if (shimRegistrarAggregate != null) {
+                Field activityPluginBindingField = shimRegistrarAggregate.getClass()
+                        .getDeclaredField("activityPluginBinding");
+                activityPluginBindingField.setAccessible(true);
+                activityPluginBindingField.set(shimRegistrarAggregate, null);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void detachFlutterFromEngine(FlutterView flutterView, FlutterEngine flutterEngine) {
