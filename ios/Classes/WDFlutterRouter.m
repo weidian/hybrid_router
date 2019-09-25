@@ -111,6 +111,7 @@
         [nav pushViewController:viewController animated:animated];
     } else {
         UIViewController *_viewController = [[UINavigationController alloc] initWithRootViewController:viewController];
+        _viewController.modalPresentationStyle = UIModalPresentationFullScreen;
         [nav presentViewController:_viewController
                           animated:animated
                         completion:nil];
