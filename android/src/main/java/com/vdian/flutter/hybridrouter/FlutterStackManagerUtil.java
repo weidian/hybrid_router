@@ -25,7 +25,6 @@
 package com.vdian.flutter.hybridrouter;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 import android.util.Log;
@@ -139,22 +138,24 @@ public class FlutterStackManagerUtil {
         }
     }
 
-    public static void detachFlutterFromEngine(FlutterView flutterView, FlutterEngine flutterEngine) {
+    public static void detachFlutterFromEngine(Object flutterView, FlutterEngine flutterEngine) {
         // 1.5.4 版本 FlutterView 的内存泄漏修复
         // 释放 AccessibilityBridge
         flutterEngine.getAccessibilityChannel().setAccessibilityMessageHandler(null);
         try {
-            Field accessibilityBridgeField = FlutterView.class.getDeclaredField("accessibilityBridge");
+            Field accessibilityBridgeField = flutterView.getClass().getDeclaredField("accessibilityBridge");
             accessibilityBridgeField.setAccessible(true);
             AccessibilityBridge accessibilityBridge = (AccessibilityBridge) accessibilityBridgeField.get(flutterView);
-            accessibilityBridge.release();
-            accessibilityBridgeField.set(flutterView, null);
+            if (accessibilityBridge != null) {
+                accessibilityBridge.release();
+                accessibilityBridgeField.set(flutterView, null);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
         // 释放 text input plugin
         try {
-            Field textInputPluginField = FlutterView.class.getDeclaredField("textInputPlugin");
+            Field textInputPluginField = flutterView.getClass().getDeclaredField("textInputPlugin");
             textInputPluginField.setAccessible(true);
             Field textInputChannelField = TextInputPlugin.class.getDeclaredField("textInputChannel");
             textInputChannelField.setAccessible(true);

@@ -1004,6 +1004,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         // 这里需要移除所有的 onFirstFrame 时间，否则下次 firstView 可能会重新 add，导致重复
         // 因为 detach 不等于 flutterView  destroy
         flutterView.removeAllFirstFrameRenderedListener();
+        // 修复内存泄漏
+        FlutterStackManagerUtil.detachFlutterFromEngine(flutterView, flutterEngine);
         platformPlugin.destroy();
         platformPlugin = null;
     }
