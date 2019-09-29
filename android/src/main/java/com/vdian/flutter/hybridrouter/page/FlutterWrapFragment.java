@@ -30,6 +30,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -255,6 +258,17 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             return this;
         }
 
+        /**
+         * 如果截屏，限制的截屏大小
+         *
+         * @param size
+         * @return
+         */
+        public Builder screenshotSize(int size) {
+            this.arguments.putInt(EXTRA_SCREENSHOT_SIZE, size);
+            return this;
+        }
+
         public FlutterWrapFragment build() {
             FlutterWrapFragment ret = new FlutterWrapFragment();
             ret.delegate = delegate;
@@ -268,9 +282,13 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     public static final String EXTRA_INITIALIZATION_ARGS = "ext_initialization_args";
     public static final String EXTRA_APP_BUNDLE_PATH = "ext_app_bundle_path";
     public static final String EXTRA_DART_ENTRYPOINT = "ext_dart_entrypoint";
+    // 内部视图渲染模式
     public static final String EXTRA_FLUTTERVIEW_RENDER_MODE = "ext_flutterview_render_mode";
     public static final String EXTRA_FLUTTERVIEW_TRANSPARENCY_MOD = "ext_flutterview_transparency_mode";
+    // 是否启用截屏
     public static final String EXTRA_ENABLE_SCREENSHOT = "ext_enable_screenshot";
+    // 截屏保存的 bitmap 大小
+    public static final String EXTRA_SCREENSHOT_SIZE = "ext_screenshot_size";
 
     private static final int FLAG_ATTACH = 1;
     private static final int FLAG_ENGINE_INIT = 2;
@@ -431,6 +449,7 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
         Bundle arguments = getArguments();
         if (arguments != null) {
             openScreenshot = arguments.getBoolean(EXTRA_ENABLE_SCREENSHOT, openScreenshot);
+            screenshotSize = arguments.getInt(EXTRA_SCREENSHOT_SIZE, screenshotSize);
         }
         if (routeOptions == null) {
             // 如果没有路由信息，默认打开根路径
@@ -504,18 +523,18 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
 
     /// activity 主动调用
     public void onPostResume() {
-       if (hasFlag(flag, FLAG_ENGINE_INIT)) {
-           // 主题修复
-           innerPreFlutterApplyTheme();
-           if (platformPlugin != null) {
-               platformPlugin.updateSystemUiOverlays();
-           }
-           innerPostFlutterApplyTheme();
-           if (flutterView != null) {
-               // 此处修复 flutter 和 native 沉浸式同步的问题
-               ViewCompat.requestApplyInsets(flutterView);
-           }
-       }
+        if (hasFlag(flag, FLAG_ENGINE_INIT)) {
+            // 主题修复
+            innerPreFlutterApplyTheme();
+            if (platformPlugin != null) {
+                platformPlugin.updateSystemUiOverlays();
+            }
+            innerPostFlutterApplyTheme();
+            if (flutterView != null) {
+                // 此处修复 flutter 和 native 沉浸式同步的问题
+                ViewCompat.requestApplyInsets(flutterView);
+            }
+        }
     }
 
     @Override
@@ -1036,6 +1055,8 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
     private static ScreenshotManager screenshotManager;
     // 是否开启截图
     private boolean openScreenshot = false;
+    // 截屏大小限制
+    private int screenshotSize = 0;
 
     @Nullable
     private Bitmap getScreenshot() {
@@ -1057,6 +1078,21 @@ public class FlutterWrapFragment extends Fragment implements IFlutterNativePage 
             FlutterJNI jni = FlutterStackManagerUtil.getJNIFromFlutterEngine(flutterEngine);
             Bitmap bitmap = jni == null ? null : jni.getBitmap();
             if (bitmap != null) {
+                if (screenshotSize > 0) {
+                    float scale = Math.min(screenshotSize * 1f / bitmap.getWidth(),
+                            screenshotSize * 1f / bitmap.getHeight());
+                    scale = scale > 1 ? 1 : scale;
+                    if (scale < 1) {
+                        Bitmap newBitmap = Bitmap.createBitmap((int) (bitmap.getWidth() * scale),
+                                (int) (bitmap.getHeight() * scale), Bitmap.Config.ARGB_8888);
+                        Canvas canvas = new Canvas(newBitmap);
+                        Matrix m = new Matrix();
+                        m.postScale(scale, scale);
+                        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+                        canvas.drawBitmap(bitmap, m, p);
+                        bitmap = newBitmap;
+                    }
+                }
                 screenshotManager.addBitmap(nativePageId, bitmap);
             }
         }

@@ -18,6 +18,8 @@ import android.widget.TextView;
 import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
 import com.vdian.flutter.hybridrouter.page.FlutterWrapFragment;
 
+import io.flutter.embedding.android.FlutterView;
+
 public class TabExampleActivity extends AppCompatActivity {
 
     public static class NativeFragment extends Fragment {
@@ -50,11 +52,14 @@ public class TabExampleActivity extends AppCompatActivity {
         setContentView(R.layout.activity_tab_example);
         flutterWrapFragmentA = new FlutterWrapFragment.Builder()
                 .screenshot(true)
+                .renderMode(FlutterView.RenderMode.texture)
+                .screenshotSize(300)
                 .pageDelegate(new FlutterWrapFragment.ActivityPageDelegate().tab(true))
                 .route(new FlutterRouteOptions.Builder("tab_example").build())
                 .build();
         flutterWrapFragmentB = new FlutterWrapFragment.Builder()
                 .screenshot(true)
+                .renderMode(FlutterView.RenderMode.texture)
                 .pageDelegate(new FlutterWrapFragment.ActivityPageDelegate().tab(true))
                 .route(new FlutterRouteOptions.Builder("tab_example").build())
                 .build();

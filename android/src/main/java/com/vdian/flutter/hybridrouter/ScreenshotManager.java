@@ -3,6 +3,7 @@ package com.vdian.flutter.hybridrouter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
 
@@ -45,7 +46,8 @@ public class ScreenshotManager {
     // 允许的 flutter 保存截图最大个数，默认是 2
     private LruCache<String, Bitmap> screenshotCache = new LruCache<String, Bitmap>(2) {
         @Override
-        protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue) {
+        protected void entryRemoved(boolean evicted, @NonNull String key,
+                                    @NonNull Bitmap oldValue, Bitmap newValue) {
             super.entryRemoved(evicted, key, oldValue, newValue);
             if (evicted) {
                 // need save bitmap to local file
