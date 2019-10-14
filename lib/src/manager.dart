@@ -237,7 +237,9 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     NativeContainer lastContainer =
         _containerHistory.isEmpty ? null : _containerHistory.last;
     _containerHistory.add(container);
-    OverlayEntry overlayEntry = OverlayEntry(builder: (context) => container);
+    /// 这里通过设置 overlay 不透明来拦截 select widget mode
+    OverlayEntry overlayEntry = OverlayEntry(
+        builder: (context) => container, opaque: true, maintainState: true);
     container._overlayEntry = overlayEntry;
     container._manager = this;
     overlay.insert(overlayEntry, above: lastContainer?._overlayEntry);
@@ -316,7 +318,12 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
   Widget build(BuildContext context) {
     List<OverlayEntry> initEntry;
     if (widget.backgroundBuilder != null) {
-      initEntry = [OverlayEntry(builder: widget.backgroundBuilder)];
+      initEntry = [
+        OverlayEntry(
+            builder: widget.backgroundBuilder,
+            opaque: false,
+            maintainState: true)
+      ];
     } else {
       initEntry = [];
     }
