@@ -12,7 +12,7 @@ import android.view.Window;
 import com.vdian.flutter.hybridrouter.FlutterManager;
 import com.vdian.flutter.hybridrouter.page.BaseFlutterWrapConfig;
 import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
-import com.vdian.flutter.hybridrouter.page.FlutterWrapActivity;
+import com.vdian.flutter.hybridrouter.page.HybridFlutterActivity;
 import com.vdian.flutter.hybridrouter.page.IFlutterNativePage;
 
 import io.flutter.view.FlutterMain;
@@ -61,7 +61,8 @@ public class FlutterDemoApp extends Application {
             public boolean onFlutterPageRoute(@NonNull IFlutterNativePage nativePage,
                                               @Nullable FlutterRouteOptions routeOptions, int requestCode) {
                 // 自定义flutter 页面的跳转
-                Intent intent = FlutterWrapActivity.startIntent(nativePage.getContext(), routeOptions);
+                Intent intent = HybridFlutterActivity.newBuilder().route(routeOptions)
+                        .buildIntent(nativePage.getContext());
                 nativePage.startActivityForResult(intent, requestCode);
                 return true;
             }

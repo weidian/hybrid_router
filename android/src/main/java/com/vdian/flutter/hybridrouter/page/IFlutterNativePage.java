@@ -160,11 +160,6 @@ public interface IFlutterNativePage {
     FlutterRouteOptions getStartRouteOptions();
 
     /**
-     * 获取到当前页面带有的参数
-     */
-    Bundle getArguments();
-
-    /**
      * Returns the {@link Lifecycle} that backs the host {@link Activity} or {@code Fragment}.
      */
     @NonNull

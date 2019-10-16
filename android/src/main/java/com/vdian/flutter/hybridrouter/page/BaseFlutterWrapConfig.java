@@ -53,11 +53,6 @@ import android.support.annotation.Nullable;
 public class BaseFlutterWrapConfig implements IFlutterWrapConfig {
 
     @Override
-    public void preFlutterApplyTheme(@NonNull IFlutterNativePage nativePage) {
-
-    }
-
-    @Override
     public void postFlutterApplyTheme(@NonNull IFlutterNativePage nativePage) {
 
     }
@@ -73,7 +68,7 @@ public class BaseFlutterWrapConfig implements IFlutterWrapConfig {
     }
 
     @Override
-    public FlutterRouteOptions parseFlutterRouteFromBundle(@NonNull IFlutterNativePage nativePage, Bundle bundle) {
+    public FlutterRouteOptions parseFlutterRouteFromBundle(@NonNull IFlutterNativePage nativePage) {
         return null;
     }
 }

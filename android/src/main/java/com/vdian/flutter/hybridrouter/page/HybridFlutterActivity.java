@@ -1,41 +1,15 @@
-// MIT License
-// -----------
-
-// Copyright (c) 2019 WeiDian Group
-// Permission is hereby granted, free of charge, to any person
-// obtaining a copy of this software and associated documentation
-// files (the "Software"), to deal in the Software without
-// restriction, including without limitation the rights to use,
-// copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following
-// conditions:
-
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-// OTHER DEALINGS IN THE SOFTWARE.
 package com.vdian.flutter.hybridrouter.page;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.view.LayoutInflater;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.ViewGroup;
 
 import java.util.Map;
 
@@ -65,17 +39,33 @@ import io.flutter.view.FlutterMain;
  * * * ┗━┻━┛   ┗━┻━┛
  *
  * @author qigengxin
- * @since 2019-06-19 10:23
+ * @since 2019-10-16 19:12
  */
-public class HybridFlutterFragment extends Fragment implements IFlutterNativePage {
+public class HybridFlutterActivity extends AppCompatActivity implements IFlutterNativePage {
 
-    public static class Builder extends GenericBuilder<Builder> {
-        public Builder() {
-            super(HybridFlutterFragment.class);
+    /**
+     * 获取 flutter 返回的页面结果
+     */
+    public static Object getFlutterResule(@NonNull Intent data) {
+        return FlutterNativePageDelegate.getFlutterResult(data);
+    }
+
+    /**
+     * return a new intent builder
+     * @return
+     */
+    public static IntentBuilder newBuilder() {
+        return new IntentBuilder();
+    }
+
+    public static class IntentBuilder extends GenericIntentBuilder<IntentBuilder> {
+
+        protected IntentBuilder() {
+            super(HybridFlutterActivity.class);
         }
     }
 
-    public abstract static class GenericBuilder<T extends GenericBuilder<T>> {
+    public abstract static class GenericIntentBuilder<T extends GenericIntentBuilder<T>> {
 
         private FlutterView.RenderMode renderMode;
         private FlutterView.TransparencyMode transparencyMode;
@@ -84,10 +74,10 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
         private String dartEntrypoint = "main";
         private String appBundlePath = null;
         private Bundle arguments;
-        private final Class<? extends HybridFlutterFragment> fragmentClass;
+        private final Class<? extends HybridFlutterActivity> activityClass;
 
-        protected GenericBuilder(Class<? extends HybridFlutterFragment> fragmentClass) {
-            this.fragmentClass = fragmentClass;
+        protected GenericIntentBuilder(Class<? extends HybridFlutterActivity> activityClass) {
+            this.activityClass = activityClass;
         }
 
         /**
@@ -147,40 +137,25 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
         }
 
         @NonNull
-        public Bundle createArgs() {
-            Bundle ret = new Bundle();
-            ret.putString(ARG_APP_BUNDLE_PATH, appBundlePath);
-            ret.putString(ARG_DART_ENTRYPOINT, dartEntrypoint);
+        public Intent buildIntent(@NonNull Context context) {
+            Intent ret = new Intent(context, activityClass);
+            ret.putExtra(ARG_APP_BUNDLE_PATH, appBundlePath);
+            ret.putExtra(ARG_DART_ENTRYPOINT, dartEntrypoint);
             if (null != shellArgs) {
-                ret.putStringArray(ARG_FLUTTER_SHELL_ARGS, shellArgs.toArray());
+                ret.putExtra(ARG_FLUTTER_SHELL_ARGS, shellArgs.toArray());
             }
             if (routeOptions != null) {
-                ret.putParcelable(ARG_FLUTTER_ROUTE, routeOptions);
+                ret.putExtra(ARG_FLUTTER_ROUTE, routeOptions);
             }
-            ret.putString(ARG_FLUTTERVIEW_RENDER_MODE, renderMode != null ? renderMode.name()
+            ret.putExtra(ARG_FLUTTERVIEW_RENDER_MODE, renderMode != null ? renderMode.name()
                     : FlutterView.RenderMode.surface.name());
-            ret.putString(ARG_FLUTTERVIEW_TRANSPARENCY_MOD, transparencyMode != null ?
+            ret.putExtra(ARG_FLUTTERVIEW_TRANSPARENCY_MOD, transparencyMode != null ?
                     transparencyMode.name() : FlutterView.TransparencyMode.transparent.name());
             if (arguments != null) {
-                ret.putAll(arguments);
+                ret.getExtras().putAll(arguments);
             }
             return ret;
 
-        }
-
-        public <B extends HybridFlutterFragment> B build() {
-            try {
-                @SuppressWarnings("unchecked")
-                B frag = (B) fragmentClass.getDeclaredConstructor().newInstance();
-
-                Bundle args = createArgs();
-                frag.setArguments(args);
-
-                return frag;
-            } catch (Exception e) {
-                throw new RuntimeException("Could not instantiate FlutterFragment subclass ("
-                        + fragmentClass.getName() + ")", e);
-            }
         }
     }
 
@@ -191,6 +166,7 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     // 内部视图渲染模式
     private static final String ARG_FLUTTERVIEW_RENDER_MODE = "arg_flutterview_render_mode";
     private static final String ARG_FLUTTERVIEW_TRANSPARENCY_MOD = "arg_flutterview_transparency_mode";
+
 
     @Override
     public boolean isAttachToFlutter() {
@@ -227,13 +203,8 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     public void finishNativePage(@Nullable Object result) {
         // 先让 flutter 脱离渲染
         detachFlutter();
-        // 结束当前 native 页面，移除当前的 fragment
-        FragmentManager fm = getFragmentManager();
-        if (fm != null) {
-            fm.beginTransaction()
-                    .remove(this)
-                    .commit();
-        }
+        pageDelegate.setPageResult(result);
+        finish();
     }
 
     @Override
@@ -257,6 +228,19 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     @Override
     public int generateRequestCodeByCallback(@NonNull IPageResultCallback callback) {
         return pageDelegate.generateRequestCodeByCallback(callback);
+    }
+
+    @Nullable
+    @Override
+    public Context getContext() {
+        return this;
+    }
+
+    @Nullable
+    @Override
+    public Activity getActivity() {
+        return this
+                ;
     }
 
     @Override
@@ -340,13 +324,8 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         pageDelegate.onCreate(savedInstanceState);
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        return pageDelegate.onCreateView(inflater, container, savedInstanceState);
+        setContentView(pageDelegate.onCreateView(null, null,
+                savedInstanceState));
     }
 
     @Override
@@ -374,14 +353,9 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        pageDelegate.onDestroyView();
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
+        pageDelegate.onDestroyView();
         pageDelegate.onDestroy();
     }
 
@@ -405,14 +379,17 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     }
 
     // ----------------------  以下方法需要 activity 主动调用 ---------------------
+    @Override
     public void onNewIntent(@NonNull Intent intent) {
         pageDelegate.onNewIntent(intent);
     }
 
+    @Override
     public void onUserLeaveHint() {
         pageDelegate.onUserLeaveHint();
     }
 
+    @Override
     public void onTrimMemory(int level) {
         pageDelegate.onTrimMemory(level);
     }
@@ -421,5 +398,9 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     public void onLowMemory() {
         super.onLowMemory();
         pageDelegate.onLowMemory();
+    }
+
+    private Bundle getArguments() {
+        return getIntent().getExtras();
     }
 }

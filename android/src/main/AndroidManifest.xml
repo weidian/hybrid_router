@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.vdian.flutter.hybridrouter">
     <application>
-        <activity android:name=".page.FlutterWrapActivity"
+        <activity android:name=".page.HybridFlutterActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
             android:hardwareAccelerated="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"

@@ -55,11 +55,6 @@ import android.support.annotation.Nullable;
 public interface IFlutterWrapConfig {
 
     /**
-     * 在 flutter 更新 native 状态栏主题前调用
-     */
-    void preFlutterApplyTheme(@NonNull IFlutterNativePage nativePage);
-
-    /**
      * 在 flutter 更新 native 状态栏主题之后调用
      */
     void postFlutterApplyTheme(@NonNull IFlutterNativePage nativePage);

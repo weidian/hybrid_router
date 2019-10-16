@@ -51,16 +51,11 @@ public class TabExampleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tab_example);
         hybridFlutterFragmentA = new HybridFlutterFragment.Builder()
-                .screenshot(true)
                 .renderMode(FlutterView.RenderMode.texture)
-                .screenshotSize(300)
-                .pageDelegate(new HybridFlutterFragment.ActivityPageDelegate().tab(true))
                 .route(new FlutterRouteOptions.Builder("tab_example").build())
                 .build();
         hybridFlutterFragmentB = new HybridFlutterFragment.Builder()
-                .screenshot(true)
                 .renderMode(FlutterView.RenderMode.texture)
-                .pageDelegate(new HybridFlutterFragment.ActivityPageDelegate().tab(true))
                 .route(new FlutterRouteOptions.Builder("tab_example").build())
                 .build();
         nativeFragment = new NativeFragment();

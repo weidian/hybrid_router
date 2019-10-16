@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
-import com.vdian.flutter.hybridrouter.page.FlutterWrapActivity;
+import com.vdian.flutter.hybridrouter.page.HybridFlutterActivity;
 
 import org.voiddog.android.lib.base.recycler.adapter.ListMultiTypeBindAdapter;
 import org.voiddog.android.lib.base.recycler.adapter.MultiTypeBindAdapter;
@@ -42,7 +42,8 @@ public class MainActivity extends AppCompatActivity {
             this.clickListener = clickListener;
         }
 
-        public MenuItem() {}
+        public MenuItem() {
+        }
 
         public MenuItem(String title, View.OnClickListener clickListener) {
             this.title = title;
@@ -84,9 +85,11 @@ public class MainActivity extends AppCompatActivity {
                 "跳转到 flutter 页面", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FlutterWrapActivity.start(MainActivity.this, new FlutterRouteOptions.Builder("example")
-                        .setArgs("Jump From Main")
-                        .build());
+                Intent intent = HybridFlutterActivity.newBuilder()
+                        .route(new FlutterRouteOptions.Builder("example")
+                                .setArgs("Jump From Main").build())
+                        .buildIntent(MainActivity.this);
+                startActivity(intent);
             }
         }));
         dataList.add(new MenuItem(

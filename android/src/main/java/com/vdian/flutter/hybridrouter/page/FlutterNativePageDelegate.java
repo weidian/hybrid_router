@@ -58,13 +58,22 @@ import static com.vdian.flutter.hybridrouter.FlutterStackManagerUtil.assertNotNu
 
 public class FlutterNativePageDelegate {
 
+    /**
+     * 获取 flutter 返回的页面结果
+     */
+    public static Object getFlutterResult(@NonNull Intent data) {
+        if (data.getExtras() == null) return null;
+        return data.getExtras().get(ARG_RESULT_KEY);
+    }
+
     private static final int FLAG_ATTACH = 1;
     private static final int FLAG_ENGINE_INIT = 2;
     private static final int MAX_REQUEST_CODE = 100;
 
-    private final String TAG = "FlutterDelegate";
-    private final String ARG_RESULT_KEY = "arg_flutter_result";
-    private final String ARG_SAVED_START_ROUTE_OPTIONS = "arg_flutter_saved_start_route_options";
+    private static final String TAG = "FlutterDelegate";
+    private static final String ARG_RESULT_KEY = "arg_flutter_result";
+    private static final String ARG_SAVED_START_ROUTE_OPTIONS = "arg_flutter_saved_start_route_options";
+
     private final IFlutterNativePage page;
     private final String nativePageId = FlutterManager.getInstance().generateNativePageId();
 
@@ -161,6 +170,22 @@ public class FlutterNativePageDelegate {
         }
         pageCallbackMap.put(requestCode, callback);
         return requestCode;
+    }
+
+    /**
+     * 设置 activity 的页面结果
+     */
+    public void setPageResult(@Nullable Object result) {
+        Activity activity = page.getActivity();
+        if (activity != null) {
+            if (result == null) {
+                activity.setResult(Activity.RESULT_OK);
+            } else {
+                Intent data = new Intent();
+                FlutterStackManagerUtil.updateIntent(data, ARG_RESULT_KEY, result);
+                activity.setResult(Activity.RESULT_OK, data);
+            }
+        }
     }
 
     // ==================== 生命周期回调 ====================
@@ -263,6 +288,10 @@ public class FlutterNativePageDelegate {
                         platformPlugin.updateSystemUiOverlays();
                         if (page instanceof IFlutterHook) {
                             ((IFlutterHook) page).afterUpdateSystemUiOverlays(flutterView);
+                        }
+                        IFlutterWrapConfig wrapConfig = FlutterManager.getInstance().getFlutterWrapConfig();
+                        if (wrapConfig != null) {
+                            wrapConfig.postFlutterApplyTheme(page);
                         }
                     }
                 }
@@ -515,7 +544,8 @@ public class FlutterNativePageDelegate {
                 routeOptions, requestCode)) {
             Context context = page.getContext();
             if (context != null) {
-                Intent intent = FlutterWrapActivity.startIntent(context, routeOptions);
+                Intent intent = new HybridFlutterActivity.IntentBuilder()
+                        .route(routeOptions).buildIntent(context);
                 page.startActivityForResult(intent, requestCode);
             } else {
                 throw new IllegalStateException("The context of current fragment is null");
