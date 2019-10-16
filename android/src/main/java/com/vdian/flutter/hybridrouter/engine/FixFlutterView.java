@@ -101,7 +101,7 @@ public class FixFlutterView extends FrameLayout {
     @Nullable
     private AndroidTouchProcessor androidTouchProcessor;
     /**
-     * FIXME 这个目前不支持，会导致 crash，在 FlutterWrapFragment 出现在不同 id 的容器中时，比如 demo 的
+     * FIXME 这个目前不支持，会导致 crash，在 HybridFlutterFragment 出现在不同 id 的容器中时，比如 demo 的
      * tab 页面
      */
     @Nullable

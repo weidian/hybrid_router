@@ -37,7 +37,7 @@ import com.vdian.flutter.hybridrouter.HybridRouterPlugin;
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.plugin.common.MethodChannel;
 
-import static com.vdian.flutter.hybridrouter.page.FlutterWrapFragment.EXTRA_FLUTTER_ROUTE;
+import static com.vdian.flutter.hybridrouter.page.HybridFlutterFragment.EXTRA_FLUTTER_ROUTE;
 
 /**
  * ┏┛ ┻━━━━━┛ ┻┓
@@ -88,22 +88,22 @@ public class FlutterWrapActivity extends AppCompatActivity {
         return intent;
     }
 
-    public FlutterWrapFragment getFlutterWrapFragment() {
-        return flutterWrapFragment;
+    public HybridFlutterFragment getHybridFlutterFragment() {
+        return hybridFlutterFragment;
     }
 
-    private FlutterWrapFragment flutterWrapFragment;
+    private HybridFlutterFragment hybridFlutterFragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        flutterWrapFragment = createAndSetupFragment();
+        hybridFlutterFragment = createAndSetupFragment();
     }
 
-    protected FlutterWrapFragment createAndSetupFragment() {
-        FlutterWrapFragment ret = new FlutterWrapFragment.Builder()
+    protected HybridFlutterFragment createAndSetupFragment() {
+        HybridFlutterFragment ret = new HybridFlutterFragment.Builder()
                 .renderMode(FlutterView.RenderMode.texture)
-                .pageDelegate(new FlutterWrapFragment.ActivityPageDelegate())
+                .pageDelegate(new HybridFlutterFragment.ActivityPageDelegate())
                 .extra(getFlutterExtra())
                 .build();
         getSupportFragmentManager().beginTransaction()
@@ -115,32 +115,32 @@ public class FlutterWrapActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        if (flutterWrapFragment != null) {
-            flutterWrapFragment.onNewIntent(intent);
+        if (hybridFlutterFragment != null) {
+            hybridFlutterFragment.onNewIntent(intent);
         }
     }
 
     @Override
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
-        if (flutterWrapFragment != null) {
-            flutterWrapFragment.onUserLeaveHint();
+        if (hybridFlutterFragment != null) {
+            hybridFlutterFragment.onUserLeaveHint();
         }
     }
 
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
-        if (flutterWrapFragment != null) {
-            flutterWrapFragment.onTrimMemory(level);
+        if (hybridFlutterFragment != null) {
+            hybridFlutterFragment.onTrimMemory(level);
         }
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        if (flutterWrapFragment != null) {
-            flutterWrapFragment.onLowMemory();
+        if (hybridFlutterFragment != null) {
+            hybridFlutterFragment.onLowMemory();
         }
     }
 

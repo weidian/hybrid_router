@@ -24,14 +24,22 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 package com.vdian.flutter.hybridrouter.page;
 
+import android.app.Activity;
+import android.arch.lifecycle.Lifecycle;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.View;
 
 import java.util.Map;
 
+import io.flutter.embedding.android.FlutterView;
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.embedding.engine.FlutterShellArgs;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.platform.PlatformPlugin;
 
 /**
  * ┏┛ ┻━━━━━┛ ┻┓
@@ -130,11 +138,37 @@ public interface IFlutterNativePage {
     void startActivityForResult(Intent intent, int requestCode);
 
     /**
-     * 获取 android 上下文环境
+     * 获取当前页面的上下文环境, 如果当前容器是 activity 的话这里就是本身
      * @return
      */
     @Nullable
     Context getContext();
+
+
+    /**
+     * 获取当前页面所在的 activity，如果当前容器是 activity 的话这里就是本身
+     * @return
+     */
+    @Nullable
+    Activity getActivity();
+
+
+    /**
+     * 获取到当前页面的路由信息
+     * must call after onCreate
+     */
+    FlutterRouteOptions getStartRouteOptions();
+
+    /**
+     * 获取到当前页面带有的参数
+     */
+    Bundle getArguments();
+
+    /**
+     * Returns the {@link Lifecycle} that backs the host {@link Activity} or {@code Fragment}.
+     */
+    @NonNull
+    Lifecycle getLifecycle();
 
     /**
      * flutter route 事件
@@ -147,4 +181,47 @@ public interface IFlutterNativePage {
      * 当前页面是否是一个 tab 页面
      */
     boolean isTab();
+
+    /**
+     * Returns the {@link FlutterShellArgs} that should be used when initializing Flutter.
+     */
+    @NonNull
+    FlutterShellArgs getFlutterShellArgs();
+
+    /**
+     * Returns the Dart entrypoint that should run when a new {@link FlutterEngine} is
+     * created.
+     */
+    @NonNull
+    String getDartEntrypointFunctionName();
+
+    /**
+     * Returns the path to the app bundle where the Dart code exists.
+     */
+    @NonNull
+    String getAppBundlePath();
+
+    /**
+     * Returns the {@link FlutterView.RenderMode} used by the {@link FlutterView} that
+     * displays the {@link FlutterEngine}'s content.
+     */
+    @NonNull
+    FlutterView.RenderMode getRenderMode();
+
+    /**
+     * Returns the {@link FlutterView.TransparencyMode} used by the {@link FlutterView} that
+     * displays the {@link FlutterEngine}'s content.
+     */
+    @NonNull
+    FlutterView.TransparencyMode getTransparencyMode();
+
+    /**
+     * Hook for the host to create/provide a {@link PlatformPlugin} if the associated
+     * Flutter experience should control system chrome.
+     */
+    @Nullable
+    PlatformPlugin providePlatformPlugin(@Nullable Activity activity, @NonNull FlutterEngine flutterEngine);
+
+    @Nullable
+    View provideSplashScreen();
 }

@@ -13,7 +13,6 @@ import com.vdian.flutter.hybridrouter.FlutterManager;
 import com.vdian.flutter.hybridrouter.page.BaseFlutterWrapConfig;
 import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
 import com.vdian.flutter.hybridrouter.page.FlutterWrapActivity;
-import com.vdian.flutter.hybridrouter.page.FlutterWrapFragment;
 import com.vdian.flutter.hybridrouter.page.IFlutterNativePage;
 
 import io.flutter.view.FlutterMain;

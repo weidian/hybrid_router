@@ -81,10 +81,7 @@ public interface IFlutterWrapConfig {
                               @NonNull NativeRouteOptions routeOptions, int requestCode);
 
     /**
-     * 从 intent 中解析 flutterRouteOptions
-     * @param bundle
-     * @return
+     * 从 FlutterNativePage 中解析 flutterRouteOptions
      */
-    FlutterRouteOptions parseFlutterRouteFromBundle(@NonNull IFlutterNativePage nativePage,
-                                                    Bundle bundle);
+    FlutterRouteOptions parseFlutterRouteFromBundle(@NonNull IFlutterNativePage nativePage);
 }

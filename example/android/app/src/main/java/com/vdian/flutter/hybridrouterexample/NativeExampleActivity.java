@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
 import com.vdian.flutter.hybridrouter.page.FlutterWrapActivity;
-import com.vdian.flutter.hybridrouter.page.FlutterWrapFragment;
+import com.vdian.flutter.hybridrouter.page.HybridFlutterFragment;
 
 public class NativeExampleActivity extends AppCompatActivity {
 
@@ -93,8 +93,8 @@ public class NativeExampleActivity extends AppCompatActivity {
             }
             case REQUEST_FLUTTER: {
                 String message = null;
-                if (data != null && data.hasExtra(FlutterWrapFragment.EXTRA_RESULT_KEY)) {
-                    message = data.getStringExtra(FlutterWrapFragment.EXTRA_RESULT_KEY);
+                if (data != null && data.hasExtra(HybridFlutterFragment.EXTRA_RESULT_KEY)) {
+                    message = data.getStringExtra(HybridFlutterFragment.EXTRA_RESULT_KEY);
                 }
                 message = message == null ? "No message from flutter example" : message;
                 txtRet.setText(message);

@@ -141,6 +141,7 @@ public class FlutterStackManagerUtil {
     public static void detachFlutterFromEngine(Object flutterView, FlutterEngine flutterEngine) {
         // 1.5.4 版本 FlutterView 的内存泄漏修复
         // 释放 AccessibilityBridge
+        // TODO 检查内存泄漏是否还存在
         flutterEngine.getAccessibilityChannel().setAccessibilityMessageHandler(null);
         try {
             Field accessibilityBridgeField = flutterView.getClass().getDeclaredField("accessibilityBridge");
