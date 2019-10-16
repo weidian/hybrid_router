@@ -5,6 +5,7 @@
 //  Created by blackox626 on 2019/6/27.
 //
 
+#import <Flutter/Flutter.h>
 #import "WDFlutterEngine.h"
 #import "WDFlutterViewController.h"
 #import "WDFlutterPluginRigstrant.h"
@@ -29,16 +30,22 @@
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
     if (self = [super init]) {
-        _viewController = [[WDFlutterViewController alloc] initWithProject:nil nibName:nil bundle:nil];
-        [_viewController view];
+        
+        FlutterEngine *engine = [[FlutterEngine alloc] initWithName:@"share_engine" project:nil];
+        [engine runWithEntrypoint:nil];
+        
+        _engine = engine;
+        
+//        _viewController = [[WDFlutterViewController alloc] initWithProject:nil nibName:nil bundle:nil];
+//        [_viewController view];
         Class clazz = NSClassFromString(@"GeneratedPluginRegistrant");
         if (clazz) {
             if ([clazz respondsToSelector:NSSelectorFromString(@"registerWithRegistry:")]) {
                 [clazz performSelector:NSSelectorFromString(@"registerWithRegistry:")
-                            withObject:_viewController];
+                            withObject:_engine];
             }
         }
-        [WDFlutterPluginRigstrant registerWithRegistry:_viewController];
+        [WDFlutterPluginRigstrant registerWithRegistry:_engine];
     }
 
     return self;

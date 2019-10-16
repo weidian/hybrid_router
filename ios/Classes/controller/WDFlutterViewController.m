@@ -57,6 +57,11 @@ static BOOL onceDisplaySplashView = NO;
     if (self.enableViewWillAppear == FALSE) return;
     [super viewWillAppear:animated];
     self.enableViewWillAppear = FALSE;
+    
+    if(self.viewWillAppearBlock){
+        self.viewWillAppearBlock();
+        self.viewWillAppearBlock = nil;
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated {

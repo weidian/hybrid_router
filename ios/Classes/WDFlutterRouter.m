@@ -30,6 +30,9 @@
 #import "WDFlutterRouter.h"
 #import "WDFlutterViewContainer.h"
 #import "WDFlutterViewContainerManager.h"
+#import "WDFlutterEngine.h"
+#import "WDFlutterViewController.h"
+#import "HybridRouterPlugin.h"
 
 @interface WDFlutterRouter ()
 @property(nonatomic, strong) WDFlutterViewContainerManager *manager;
@@ -81,15 +84,35 @@
     options.modal = modal;
     options.animated = animated;
 
-    WDFlutterViewContainer *viewController = nil;
-    if ([_delegate respondsToSelector:@selector(flutterViewContainer)]) {
-        viewController = [_delegate flutterViewContainer];
-    }
-    if (viewController == nil) {
-        viewController = [[WDFlutterViewContainer alloc] init];
-    }
-    viewController.routeOptions = options;
+//    WDFlutterViewContainer *viewController = nil;
+//    if ([_delegate respondsToSelector:@selector(flutterViewContainer)]) {
+//        viewController = [_delegate flutterViewContainer];
+//    }
+//    if (viewController == nil) {
+//        viewController = [[WDFlutterViewContainer alloc] init];
+//    }
+//    viewController.routeOptions = options;
 
+    static long long fTag = 0;
+    long long _pageId = fTag++;
+
+    WDFlutterViewController *viewController = [[WDFlutterViewController alloc] initWithEngine:WDFlutterEngine.sharedInstance.engine
+                                                                                      nibName:nil
+                                                                                       bundle:nil];
+
+
+    viewController.viewWillAppearBlock = ^() {
+        static BOOL sIsFirstPush = YES;
+
+        options.nativePageId = @(_pageId).stringValue;
+
+        if (sIsFirstPush) {
+            [HybridRouterPlugin sharedInstance].mainEntryParams = [options toDictionary];
+            sIsFirstPush = NO;
+        } else {
+            [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"pushFlutterPage" arguments:[options toDictionary]];
+        }
+    };
     UINavigationController *nav = _delegate.appNavigationController;
     if (!nav) return;
 

@@ -30,6 +30,10 @@
 #import <Foundation/Foundation.h>
 #import <Flutter/Flutter.h>
 
+typedef void (^FlutterViewWillAppearBlock) (void);
+
 @interface WDFlutterViewController : FlutterViewController
+
+@property(nonatomic,copy) FlutterViewWillAppearBlock viewWillAppearBlock;
 
 @end
