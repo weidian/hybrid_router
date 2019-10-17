@@ -73,4 +73,9 @@ public interface IFlutterHook {
      * @param flutterView
      */
     void afterUpdateSystemUiOverlays(FlutterView flutterView);
+
+    /**
+     * FlutterView 首帧渲染完毕
+     */
+    void onFirstFrameRendered(@NonNull FlutterView flutterView);
 }

@@ -5,6 +5,7 @@ import android.arch.lifecycle.Lifecycle;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -18,7 +19,6 @@ import android.view.ViewGroup;
 import com.vdian.flutter.hybridrouter.FlutterManager;
 import com.vdian.flutter.hybridrouter.FlutterStackManagerUtil;
 import com.vdian.flutter.hybridrouter.HybridRouterPlugin;
-import com.vdian.flutter.hybridrouter.R;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,6 +68,7 @@ public class FlutterNativePageDelegate {
 
     private static final int FLAG_ATTACH = 1;
     private static final int FLAG_ENGINE_INIT = 2;
+    private static final int FLAG_PUSH_PAGE = 4;
     private static final int MAX_REQUEST_CODE = 100;
 
     private static final String TAG = "FlutterDelegate";
@@ -114,6 +115,7 @@ public class FlutterNativePageDelegate {
      */
     public Map<String, Object> getInitRoute() {
         // 这里获取 initRoute 可以认为 push 了 page
+        flag |= FLAG_PUSH_PAGE;
         Map<String, Object> ret = new HashMap<>();
         if (routeOptions != null) {
             ret.put("pageName", routeOptions.pageName);
@@ -236,12 +238,21 @@ public class FlutterNativePageDelegate {
         }
     }
 
+    /**
+     * 用于保存数据
+     * 这里保存了初始路由信息 {@link #routeOptions}
+     */
     public void onSaveInstance(@NonNull Bundle outState) {
+        Log.v(TAG, "obSaveInstance");
         if (routeOptions != null) {
             outState.putParcelable(ARG_SAVED_START_ROUTE_OPTIONS, routeOptions);
         }
     }
 
+    /**
+     * 创建带 SplashScreen 的 {@link FlutterSplashView}
+     * @return {@link FlutterSplashView}
+     */
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup container, Bundle savedInstanceState) {
         Log.v(TAG, "Creating FlutterView.");
         if (!hasFlag(flag, FLAG_ENGINE_INIT)) {
@@ -281,17 +292,31 @@ public class FlutterNativePageDelegate {
             attachEngine();
             flutterEngine.getLifecycleChannel().appIsResumed();
 
+            // 通知 flutter native page resume 了
+            if (HybridRouterPlugin.isRegistered()) {
+                HybridRouterPlugin.getInstance().onNativePageResumed(page);
+            }
+
+            // 这里模拟 postResume()
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
                     if (flutterEngine != null && platformPlugin != null) {
                         platformPlugin.updateSystemUiOverlays();
-                        if (page instanceof IFlutterHook) {
-                            ((IFlutterHook) page).afterUpdateSystemUiOverlays(flutterView);
+                        if (flutterView != null &&
+                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                            // 用于修复 tab 切换时候状态栏 inset 变化的问题
+                            flutterView.requestApplyInsets();
                         }
+
+                        // hook update system ui overlays
+                        // 可以用来自定义系统状态栏样式
                         IFlutterWrapConfig wrapConfig = FlutterManager.getInstance().getFlutterWrapConfig();
                         if (wrapConfig != null) {
                             wrapConfig.postFlutterApplyTheme(page);
+                        }
+                        if (page instanceof IFlutterHook) {
+                            ((IFlutterHook) page).afterUpdateSystemUiOverlays(flutterView);
                         }
                     }
                 }
@@ -337,13 +362,18 @@ public class FlutterNativePageDelegate {
                 ((IFlutterHook) page).cleanUpFlutterEngine(flutterEngine);
             }
         }
-        // 通知 flutter naitive 容器被移除
+        // 通知 flutter native 容器被移除
         if (HybridRouterPlugin.isRegistered()) {
             HybridRouterPlugin.getInstance().onNativePageFinished(nativePageId);
         }
         flutterEngine = null;
+        flag = 0;
     }
 
+    /**
+     * Call from {@code Activity#onActivtyResult(int, int, Intent)} or
+     * {@code Fragment#onActivtyResult(int, int, Intent)}
+     */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (flutterEngine != null) {
             flutterEngine.getActivityControlSurface().onActivityResult(requestCode, resultCode, data);
@@ -351,6 +381,10 @@ public class FlutterNativePageDelegate {
         sendResult(requestCode, resultCode, data);
     }
 
+    /**
+     * Call from {@code Activity#onActivtyResult(int, String[], int[])} or
+     * {@code Fragment#onRequestPermissionsResult(int, String[], int[])}
+     */
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         if (flutterEngine != null && isAttachToFlutter()) {
@@ -362,6 +396,10 @@ public class FlutterNativePageDelegate {
         }
     }
 
+    /**
+     * Call from {@code Activity#onNewIntent}
+     * {@code Fragment#onNewIntent}
+     */
     public void onNewIntent(@NonNull Intent intent) {
         Log.v(TAG, "onNewIntent");
         if (isAttachToFlutter() && flutterEngine != null) {
@@ -369,6 +407,9 @@ public class FlutterNativePageDelegate {
         }
     }
 
+    /**
+     * Call from {@code Activity#onUserLeaveHint}
+     */
     public void onUserLeaveHint() {
         Log.v(TAG, "onUserLeaveHint");
         if (flutterEngine != null && isAttachToFlutter()) {
@@ -376,6 +417,9 @@ public class FlutterNativePageDelegate {
         }
     }
 
+    /**
+     * Call from {@code Activity#onTrimMemory}
+     */
     public void onTrimMemory(int level) {
         Log.v(TAG, "onTrimMemory");
         if (flutterEngine != null && isAttachToFlutter()) {
@@ -388,6 +432,10 @@ public class FlutterNativePageDelegate {
         }
     }
 
+    /**
+     * Call from {@code Activity#onLowMemory}
+     * {@code Fragment#onLowMemory}
+     */
     public void onLowMemory() {
         Log.v(TAG, "onLowMemory");
         if (flutterEngine != null && isAttachToFlutter()) {
@@ -395,8 +443,47 @@ public class FlutterNativePageDelegate {
         }
     }
 
-    // ==================== engine attach and detach====================
+    /**
+     * 返回按钮点击
+     * @param nativeBackPressed native 测的返回按钮事件，比如 {@link Activity#onBackPressed()}
+     */
+    public void onBackPressed(final Runnable nativeBackPressed) {
+        if (HybridRouterPlugin.isRegistered()) {
+            HybridRouterPlugin.getInstance().onBackPressed(new MethodChannel.Result() {
+                @Override
+                public void success(@Nullable Object o) {
+                    if (!(o instanceof Boolean) || !((Boolean)o)) {
+                       // 如果返回类型不是 boolean ，或者返回了 false
+                       nativeBackPressed.run();
+                    }
+                }
 
+                @Override
+                public void error(String s, @Nullable String s1, @Nullable Object o) {
+                    nativeBackPressed.run();
+                }
+
+                @Override
+                public void notImplemented() {
+                    nativeBackPressed.run();
+                }
+            });
+        } else {
+            nativeBackPressed.run();
+        }
+    }
+
+    // ==================== engine attach and detach====================
+    /**
+     * Attach to the engine
+     * 会进行以下步骤：
+     * - 设置 {@link FlutterManager} 的当前 {@link IFlutterNativePage} 页面为当前页面
+     * - Attach {@link FlutterEngine#getActivityControlSurface()}
+     * - Create {@link #platformPlugin}
+     * - Registered plugins
+     * - Attach flutter engine to FlutterView
+     * - Run dart VM or push start page
+     */
     public void attachEngine() {
         if (hasFlag(flag, FLAG_ATTACH) || !hasFlag(flag, FLAG_ENGINE_INIT)) {
             return;
@@ -438,6 +525,19 @@ public class FlutterNativePageDelegate {
         }
     }
 
+    /**
+     * detach from engine
+     * 会进行以下步骤：
+     * - 如果生命周期是 resumed 的，调用: {@link #onUserLeaveHint()} 和
+     *      {@code flutterEngine.getLifecycleChannel().appIsInactive()}
+     * - 如果生命周期是 started 的，调用 {@code flutterEngine.getLifecycleChannel().appIsPaused()}
+     * - 如果不是 configurations change 造成的 detach
+     *      执行 Detach {@link FlutterEngine#getActivityControlSurface()}
+     * - 如果是 configurations change 造成的 detach
+     *      执行 {@code flutterEngine.getActivityControlSurface().detachFromActivityForConfigChanges()}
+     * - Detach flutter engine from FlutterView
+     * - Destroy {@link #platformPlugin}
+     */
     public void detachEngine() {
         if (!hasFlag(flag, FLAG_ATTACH) || !hasFlag(flag, FLAG_ENGINE_INIT)) {
             return;
@@ -485,7 +585,7 @@ public class FlutterNativePageDelegate {
     }
 
     /**
-     * 并持有一个 flutter engine，如果没有 flutter engine 创建过的话重新创建一个
+     * 持有一个 flutter engine，如果没有 flutter engine 创建过的话重新创建一个
      */
     private void setupFlutterEngine(@NonNull Context context) {
         if (flutterEngine == null) {
@@ -499,7 +599,9 @@ public class FlutterNativePageDelegate {
      * if current engine is running, it does nothing
      */
     private void doInitialRunOrPushPage() {
-        if (flutterEngine.getDartExecutor().isExecutingDart()) {
+        assertNotNull(flutterEngine);
+        if (flutterEngine.getDartExecutor().isExecutingDart() && !hasFlag(flag, FLAG_PUSH_PAGE)) {
+            flag |= FLAG_PUSH_PAGE;
             // push page
             HybridRouterPlugin.getInstance().pushFlutterPager(routeOptions.pageName,
                     routeOptions.args, nativePageId, page.isTab(), null);
@@ -516,7 +618,9 @@ public class FlutterNativePageDelegate {
     private OnFirstFrameRenderedListener firstFrameListener = new OnFirstFrameRenderedListener() {
         @Override
         public void onFirstFrameRendered() {
-
+            if (page instanceof IFlutterHook && flutterView != null) {
+                ((IFlutterHook) page).onFirstFrameRendered(flutterView);
+            }
         }
     };
 
@@ -598,7 +702,7 @@ public class FlutterNativePageDelegate {
         if (resultChannel != null) {
             resultChannelMap.remove(requestCode);
             HashMap<String, Object> ret = new HashMap<>();
-            // 次数据 key 定义在 dart 测
+            // 此数据 key 定义在 dart 测
             ret.put("resultCode", resultCode);
             Object result = null;
             Bundle extras = data == null ? null : data.getExtras();
@@ -614,7 +718,7 @@ public class FlutterNativePageDelegate {
                 }
                 result = retMap;
             }
-            // 次数据 key 定义在 dart 测
+            // 此数据 key 定义在 dart 测
             ret.put("data", result);
             resultChannel.success(ret);
         }

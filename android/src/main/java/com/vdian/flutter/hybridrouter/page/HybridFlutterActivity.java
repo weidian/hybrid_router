@@ -52,6 +52,7 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
 
     /**
      * return a new intent builder
+     *
      * @return
      */
     public static IntentBuilder newBuilder() {
@@ -239,8 +240,7 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
     @Nullable
     @Override
     public Activity getActivity() {
-        return this
-                ;
+        return this;
     }
 
     @Override
@@ -258,7 +258,7 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
 
     @Override
     public boolean isTab() {
-        return true;
+        return false;
     }
 
     @NonNull
@@ -266,7 +266,7 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
     public FlutterShellArgs getFlutterShellArgs() {
         String[] flutterShellArgsArray = getArguments().getStringArray(ARG_FLUTTER_SHELL_ARGS);
         return new FlutterShellArgs(
-                flutterShellArgsArray != null ? flutterShellArgsArray : new String[] {}
+                flutterShellArgsArray != null ? flutterShellArgsArray : new String[]{}
         );
     }
 
@@ -376,6 +376,16 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         pageDelegate.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
+    public void onBackPressed() {
+        pageDelegate.onBackPressed(new Runnable() {
+            @Override
+            public void run() {
+                HybridFlutterActivity.super.onBackPressed();
+            }
+        });
     }
 
     // ----------------------  以下方法需要 activity 主动调用 ---------------------

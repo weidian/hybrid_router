@@ -409,10 +409,16 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
         pageDelegate.onNewIntent(intent);
     }
 
+    /**
+     * Call from Activity
+     */
     public void onUserLeaveHint() {
         pageDelegate.onUserLeaveHint();
     }
 
+    /**
+     * Call from Activity
+     */
     public void onTrimMemory(int level) {
         pageDelegate.onTrimMemory(level);
     }
