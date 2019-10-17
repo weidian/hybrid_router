@@ -47,37 +47,28 @@ import android.support.annotation.Nullable;
  * * * ┃ ┫ ┫   ┃ ┫ ┫
  * * * ┗━┻━┛   ┗━┻━┛
  *
- * flutter wrap activity 的一些配置信息
- *
  * @author qigengxin
- * @since 2019/3/23 3:29 PM
+ * @since 2019-04-25 15:22
  */
-public interface IFlutterWrapConfig {
+public class EmptyFlutterWrapConfig implements IFlutterWrapConfig {
 
-    /**
-     * 在 flutter 更新 native 状态栏主题之后调用
-     */
-    void postFlutterApplyTheme(@NonNull IFlutterNativePage nativePage);
+    @Override
+    public void postFlutterApplyTheme(@NonNull IFlutterNativePage nativePage) {
 
-    /**
-     * 请求打开 flutter page route
-     * @param routeOptions
-     * @param requestCode
-     */
-    boolean onFlutterPageRoute(@NonNull IFlutterNativePage nativePage,
-                               @Nullable FlutterRouteOptions routeOptions, int requestCode);
+    }
 
-    /**
-     * 请求打开 native 页面
-     * @param routeOptions
-     * @param requestCode
-     */
-    boolean onNativePageRoute(@NonNull IFlutterNativePage nativePage,
-                              @NonNull NativeRouteOptions routeOptions, int requestCode);
+    @Override
+    public boolean onFlutterPageRoute(@NonNull IFlutterNativePage nativePage, @Nullable FlutterRouteOptions routeOptions, int requestCode) {
+        return false;
+    }
 
-    /**
-     * 从 FlutterNativePage 中解析 flutterRouteOptions
-     */
-    @Nullable
-    FlutterRouteOptions parseFlutterRouteFromBundle(@NonNull IFlutterNativePage nativePage);
+    @Override
+    public boolean onNativePageRoute(@NonNull IFlutterNativePage nativePage, @NonNull NativeRouteOptions routeOptions, int requestCode) {
+        return false;
+    }
+
+    @Override
+    public FlutterRouteOptions parseFlutterRouteFromBundle(@NonNull IFlutterNativePage nativePage) {
+        return null;
+    }
 }

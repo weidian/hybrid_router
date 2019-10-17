@@ -337,7 +337,7 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     }
 
     @NonNull
-    private FlutterNativePageDelegate pageDelegate = new FlutterNativePageDelegate(this);
+    private FlutterNativePageDelegate pageDelegate = createPageDelegate();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -430,6 +430,10 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     public void onLowMemory() {
         super.onLowMemory();
         pageDelegate.onLowMemory();
+    }
+
+    protected FlutterNativePageDelegate createPageDelegate() {
+        return new FlutterNativePageDelegate(this);
     }
 
     @Nullable

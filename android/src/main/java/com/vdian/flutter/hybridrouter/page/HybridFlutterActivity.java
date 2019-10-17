@@ -1,3 +1,27 @@
+// MIT License
+// -----------
+
+// Copyright (c) 2019 WeiDian Group
+// Permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without
+// restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following
+// conditions:
+
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
 package com.vdian.flutter.hybridrouter.page;
 
 import android.app.Activity;
@@ -320,14 +344,16 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
     }
 
     @NonNull
-    private FlutterNativePageDelegate pageDelegate = new FlutterNativePageDelegate(this);
+    private FlutterNativePageDelegate pageDelegate = createPageDelegate();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         pageDelegate.onCreate(savedInstanceState);
-        setContentView(pageDelegate.onCreateView(null, null,
-                savedInstanceState));
+        View view = pageDelegate.onCreateView(null, null,
+                savedInstanceState);
+        view = view == null ? new View(this) : view;
+        setContentView(view);
     }
 
     @Override
@@ -390,7 +416,6 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
         });
     }
 
-    // ----------------------  以下方法需要 activity 主动调用 ---------------------
     @Override
     public void onNewIntent(@NonNull Intent intent) {
         pageDelegate.onNewIntent(intent);
@@ -410,6 +435,10 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
     public void onLowMemory() {
         super.onLowMemory();
         pageDelegate.onLowMemory();
+    }
+
+    protected FlutterNativePageDelegate createPageDelegate() {
+        return new FlutterNativePageDelegate(this);
     }
 
     private Bundle getArguments() {
