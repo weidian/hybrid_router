@@ -25,14 +25,18 @@
 package com.vdian.flutter.hybridrouter.page;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -327,9 +331,8 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     @Nullable
     @Override
     public View provideSplashScreen() {
-        // TODO 优化占位组件
         View background = new View(getContext());
-        background.setBackground(new ColorDrawable(Color.WHITE));
+        background.setBackground(getLaunchScreenDrawableFromActivityTheme());
         return background;
     }
 
@@ -427,5 +430,27 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     public void onLowMemory() {
         super.onLowMemory();
         pageDelegate.onLowMemory();
+    }
+
+    @Nullable
+    private Drawable getLaunchScreenDrawableFromActivityTheme() {
+        Context context = getContext();
+        if (context == null) return null;
+        TypedValue typedValue = new TypedValue();
+        if (!context.getTheme().resolveAttribute(
+                android.R.attr.windowBackground,
+                typedValue,
+                true)) {
+            return null;
+        }
+        if (typedValue.resourceId == 0) {
+            return null;
+        }
+        try {
+            return getResources().getDrawable(typedValue.resourceId);
+        } catch (Resources.NotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
