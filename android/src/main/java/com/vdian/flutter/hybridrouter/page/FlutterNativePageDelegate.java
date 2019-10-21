@@ -299,48 +299,65 @@ public class FlutterNativePageDelegate {
     public void onStart() {
         Log.v(TAG, "onStart()");
         if (hasFlag(flag, FLAG_ENGINE_INIT)) {
-            // 官方这里放到了 post 中，为了防止启动的时候卡住，有必要吗？
-            Log.v(TAG, "Attaching FlutterEngine to FlutterView.");
             assertNotNull(flutterView);
             assertNotNull(flutterEngine);
-            attachEngine();
+            flutterView.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (page.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
+                        // 如果在 onStart 的时候 attachEngine，会让 FlutterView
+                        // sendViewportMetricsToFlutter，导致 flutter 端收到 width=0 和 height = 0 的
+                        // viewportMetrics
+                        Log.v(TAG, "Attaching FlutterEngine to FlutterView.");
+                        attachEngine();
+                    }
+                }
+            });
         }
     }
 
     public void onResume() {
         Log.v(TAG, "onResume");
         if (hasFlag(flag, FLAG_ENGINE_INIT)) {
-            Log.v(TAG, "Resume flutter engine");
-            assertNotNull(flutterEngine);
-            // make sure the flutter is attach
-            attachEngine();
-            flutterEngine.getLifecycleChannel().appIsResumed();
 
             // 通知 flutter native page resume 了
             if (HybridRouterPlugin.isRegistered()) {
                 HybridRouterPlugin.getInstance().onNativePageResumed(page);
             }
 
-            // 这里模拟 postResume()
-            new Handler().post(new Runnable() {
+            // resume 逻辑处理放到 post 中
+            assertNotNull(flutterView);
+            flutterView.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (flutterEngine != null && platformPlugin != null) {
-                        platformPlugin.updateSystemUiOverlays();
-                        if (flutterView != null &&
-                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-                            // 用于修复 tab 切换时候状态栏 inset 变化的问题
-                            flutterView.requestApplyInsets();
-                        }
+                    if (page.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
+                        // make sure the flutter is attach
+                        attachEngine();
+                    }
+                    // 这里模拟 postResume()
+                    if (page.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
+                        Log.v(TAG, "Resume flutter engine");
+                        // if is attach, resume the flutter engine
+                        assertNotNull(flutterEngine);
+                        flutterEngine.getLifecycleChannel().appIsResumed();
 
-                        // hook update system ui overlays
-                        // 可以用来自定义系统状态栏样式
-                        IFlutterWrapConfig wrapConfig = FlutterManager.getInstance().getFlutterWrapConfig();
-                        if (wrapConfig != null) {
-                            wrapConfig.postFlutterApplyTheme(page);
-                        }
-                        if (page instanceof IFlutterHook) {
-                            ((IFlutterHook) page).afterUpdateSystemUiOverlays(flutterView);
+                        if (platformPlugin != null) {
+                            platformPlugin.updateSystemUiOverlays();
+                            if (flutterView != null &&
+                                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                                // 用于修复 tab 切换时候状态栏 inset 变化的问题
+                                flutterView.requestApplyInsets();
+                            }
+
+                            // hook update system ui overlays
+                            // 可以用来自定义系统状态栏样式
+                            IFlutterWrapConfig wrapConfig = FlutterManager.getInstance().getFlutterWrapConfig();
+                            if (wrapConfig != null) {
+                                wrapConfig.postFlutterApplyTheme(page);
+                            }
+                            if (page instanceof IFlutterHook) {
+                                ((IFlutterHook) page).afterUpdateSystemUiOverlays(flutterView);
+                            }
                         }
                     }
                 }
@@ -363,6 +380,8 @@ public class FlutterNativePageDelegate {
             assertNotNull(flutterEngine);
             Log.v(TAG, "Paused flutter engine");
             flutterEngine.getLifecycleChannel().appIsPaused();
+
+            Log.v(TAG, "Detach flutter engine from flutter view.");
             // page is invisible, detach flutter engine
             detachEngine();
         }
@@ -625,11 +644,13 @@ public class FlutterNativePageDelegate {
      */
     private void doInitialRunOrPushPage() {
         assertNotNull(flutterEngine);
-        if (flutterEngine.getDartExecutor().isExecutingDart() && !hasFlag(flag, FLAG_PUSH_PAGE)) {
-            flag |= FLAG_PUSH_PAGE;
-            // push page
-            HybridRouterPlugin.getInstance().pushFlutterPager(routeOptions.pageName,
-                    routeOptions.args, nativePageId, page.isTab(), null);
+        if (flutterEngine.getDartExecutor().isExecutingDart()) {
+            if (!hasFlag(flag, FLAG_PUSH_PAGE)) {
+                flag |= FLAG_PUSH_PAGE;
+                // push page
+                HybridRouterPlugin.getInstance().pushFlutterPager(routeOptions.pageName,
+                        routeOptions.args, nativePageId, page.isTab(), null);
+            }
             return;
         }
 

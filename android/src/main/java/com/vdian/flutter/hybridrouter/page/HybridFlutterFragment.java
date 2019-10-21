@@ -28,8 +28,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -161,8 +159,9 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
             if (routeOptions != null) {
                 ret.putParcelable(ARG_FLUTTER_ROUTE, routeOptions);
             }
+            // 默认使用 texture
             ret.putString(ARG_FLUTTERVIEW_RENDER_MODE, renderMode != null ? renderMode.name()
-                    : FlutterView.RenderMode.surface.name());
+                    : FlutterView.RenderMode.texture.name());
             ret.putString(ARG_FLUTTERVIEW_TRANSPARENCY_MOD, transparencyMode != null ?
                     transparencyMode.name() : FlutterView.TransparencyMode.transparent.name());
             if (arguments != null) {
