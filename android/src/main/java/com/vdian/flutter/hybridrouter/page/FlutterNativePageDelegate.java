@@ -31,7 +31,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -114,12 +113,20 @@ public class FlutterNativePageDelegate {
     // 当前 flutter 的状态
     private int flag;
 
+    // 因为 engine 没有 attach 收到的信息
+    private Intent pendingNewIntent;
+    private Integer pendingTrimMemoryLevel;
+    private Boolean pendingLowMemory;
+    private PendingActivityResult pendingActivityResult;
+    private PendingPermissionResult pendingPermissionResult;
+
     public FlutterNativePageDelegate(IFlutterNativePage page) {
         this.page = page;
     }
 
     /**
      * Current native page's page id
+     *
      * @return
      */
     public String getNativePageId() {
@@ -128,6 +135,7 @@ public class FlutterNativePageDelegate {
 
     /**
      * If the native container is attach to flutter
+     *
      * @return
      */
     public boolean isAttachToFlutter() {
@@ -175,6 +183,7 @@ public class FlutterNativePageDelegate {
 
     /**
      * 通过 result 生成一个对应的 result code
+     *
      * @param result
      * @return
      */
@@ -218,6 +227,7 @@ public class FlutterNativePageDelegate {
 
     /**
      * Invoke this method from {@code Activity#onCreate(Bundle)} or {@code Fragment#onCreate(Context)}
+     *
      * @param saveInstanceState
      */
     public void onCreate(@Nullable Bundle saveInstanceState) {
@@ -275,6 +285,7 @@ public class FlutterNativePageDelegate {
 
     /**
      * 创建带 SplashScreen 的 {@link FlutterSplashView}
+     *
      * @return {@link FlutterSplashView}
      */
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup container, Bundle savedInstanceState) {
@@ -396,6 +407,8 @@ public class FlutterNativePageDelegate {
     }
 
     public void onDestroy() {
+        // 清理 pending action
+        clearPendingAction();
         // 如果结束了，取消所有的结果
         cancelAllResult();
         // 从 manager 中移除当前页
@@ -418,8 +431,12 @@ public class FlutterNativePageDelegate {
      * {@code Fragment#onActivtyResult(int, int, Intent)}
      */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (flutterEngine != null) {
+        if (flutterEngine != null && isAttachToFlutter()) {
             flutterEngine.getActivityControlSurface().onActivityResult(requestCode, resultCode, data);
+        } else {
+            pendingActivityResult = new PendingActivityResult(requestCode, resultCode, data);
+            Log.w(TAG,
+                    "onRequestPermissionResult() invoked before FlutterFragment was attached to an Activity.");
         }
         sendResult(requestCode, resultCode, data);
     }
@@ -434,6 +451,8 @@ public class FlutterNativePageDelegate {
             flutterEngine.getActivityControlSurface()
                     .onRequestPermissionsResult(requestCode, permissions, grantResults);
         } else {
+            pendingPermissionResult = new PendingPermissionResult(requestCode, permissions,
+                    grantResults);
             Log.w(TAG,
                     "onRequestPermissionResult() invoked before FlutterFragment was attached to an Activity.");
         }
@@ -447,6 +466,9 @@ public class FlutterNativePageDelegate {
         Log.v(TAG, "onNewIntent");
         if (isAttachToFlutter() && flutterEngine != null) {
             flutterEngine.getActivityControlSurface().onNewIntent(intent);
+        } else {
+            pendingNewIntent = intent;
+            Log.w(TAG, "onNewIntent() invoked before FlutterFragment was attached to an Activity.");
         }
     }
 
@@ -470,8 +492,8 @@ public class FlutterNativePageDelegate {
                 flutterEngine.getSystemChannel().sendMemoryPressureWarning();
             }
         } else {
+            pendingTrimMemoryLevel = level;
             Log.w(TAG, "onTrimMemory() invoked before FlutterFragment was attached to an Activity.");
-
         }
     }
 
@@ -483,11 +505,15 @@ public class FlutterNativePageDelegate {
         Log.v(TAG, "onLowMemory");
         if (flutterEngine != null && isAttachToFlutter()) {
             flutterEngine.getSystemChannel().sendMemoryPressureWarning();
+        } else {
+            pendingLowMemory = true;
+            Log.w(TAG, "onLowMemory() invoked before FlutterFragment was attached to an Activity.");
         }
     }
 
     /**
      * 返回按钮点击
+     *
      * @param nativeBackPressed native 测的返回按钮事件，比如 {@link Activity#onBackPressed()}
      */
     public void onBackPressed(final Runnable nativeBackPressed) {
@@ -495,9 +521,9 @@ public class FlutterNativePageDelegate {
             HybridRouterPlugin.getInstance().onBackPressed(new MethodChannel.Result() {
                 @Override
                 public void success(@Nullable Object o) {
-                    if (!(o instanceof Boolean) || !((Boolean)o)) {
-                       // 如果返回类型不是 boolean ，或者返回了 false
-                       nativeBackPressed.run();
+                    if (!(o instanceof Boolean) || !((Boolean) o)) {
+                        // 如果返回类型不是 boolean ，或者返回了 false
+                        nativeBackPressed.run();
                     }
                 }
 
@@ -517,6 +543,7 @@ public class FlutterNativePageDelegate {
     }
 
     // ==================== engine attach and detach====================
+
     /**
      * Attach to the engine
      * 会进行以下步骤：
@@ -572,12 +599,12 @@ public class FlutterNativePageDelegate {
      * detach from engine
      * 会进行以下步骤：
      * - 如果生命周期是 resumed 的，调用: {@link #onUserLeaveHint()} 和
-     *      {@code flutterEngine.getLifecycleChannel().appIsInactive()}
+     * {@code flutterEngine.getLifecycleChannel().appIsInactive()}
      * - 如果生命周期是 started 的，调用 {@code flutterEngine.getLifecycleChannel().appIsPaused()}
      * - 如果不是 configurations change 造成的 detach
-     *      执行 Detach {@link FlutterEngine#getActivityControlSurface()}
+     * 执行 Detach {@link FlutterEngine#getActivityControlSurface()}
      * - 如果是 configurations change 造成的 detach
-     *      执行 {@code flutterEngine.getActivityControlSurface().detachFromActivityForConfigChanges()}
+     * 执行 {@code flutterEngine.getActivityControlSurface().detachFromActivityForConfigChanges()}
      * - Detach flutter engine from FlutterView
      * - Destroy {@link #platformPlugin}
      */
@@ -618,6 +645,58 @@ public class FlutterNativePageDelegate {
         FlutterStackManagerUtil.detachFlutterFromEngine(flutterView, flutterEngine);
         platformPlugin.destroy();
         platformPlugin = null;
+    }
+
+    /**
+     * 处理 pending action
+     */
+    private void checkPendingAction() {
+        if (isAttachToFlutter() && flutterEngine != null) {
+            if (pendingNewIntent != null) {
+                flutterEngine.getActivityControlSurface().onNewIntent(pendingNewIntent);
+                pendingNewIntent = null;
+            }
+
+            boolean isSendingMemoryPressure = false;
+            if (pendingTrimMemoryLevel != null) {
+                if (pendingTrimMemoryLevel == TRIM_MEMORY_RUNNING_LOW) {
+                    flutterEngine.getSystemChannel().sendMemoryPressureWarning();
+                    isSendingMemoryPressure = true;
+                    pendingTrimMemoryLevel = null;
+                }
+            }
+
+            if (pendingLowMemory == Boolean.TRUE && !isSendingMemoryPressure) {
+                flutterEngine.getSystemChannel().sendMemoryPressureWarning();
+                isSendingMemoryPressure = true;
+            }
+
+            if (pendingActivityResult != null) {
+                flutterEngine.getActivityControlSurface().onActivityResult(
+                        pendingActivityResult.requestCode,
+                        pendingActivityResult.resultCode,
+                        pendingActivityResult.data
+                );
+                pendingPermissionResult = null;
+            }
+
+            if (pendingPermissionResult != null) {
+                flutterEngine.getActivityControlSurface().onRequestPermissionsResult(
+                        pendingPermissionResult.requestCode,
+                        pendingPermissionResult.requestPermission,
+                        pendingPermissionResult.grantResult
+                );
+                pendingPermissionResult = null;
+            }
+        }
+    }
+
+    private void clearPendingAction() {
+        pendingPermissionResult = null;
+        pendingActivityResult = null;
+        pendingLowMemory = null;
+        pendingTrimMemoryLevel = null;
+        pendingNewIntent = null;
     }
 
     private void initializeFlutter(@NonNull Context context) {
@@ -772,6 +851,36 @@ public class FlutterNativePageDelegate {
         if (callback != null) {
             pageCallbackMap.remove(requestCode);
             callback.onPageResult(requestCode, resultCode, data);
+        }
+    }
+
+    /**
+     * pending activity result
+     */
+    private static class PendingActivityResult {
+        public final int requestCode;
+        public final int resultCode;
+        public final Intent data;
+
+        private PendingActivityResult(int requestCode, int resultCode, Intent data) {
+            this.requestCode = requestCode;
+            this.resultCode = resultCode;
+            this.data = data;
+        }
+    }
+
+    /**
+     * pending permission result
+     */
+    private static class PendingPermissionResult {
+        public final int requestCode;
+        public final String[] requestPermission;
+        public final int[] grantResult;
+
+        private PendingPermissionResult(int requestCode, String[] requestPermission, int[] grantResult) {
+            this.requestCode = requestCode;
+            this.requestPermission = requestPermission;
+            this.grantResult = grantResult;
         }
     }
 }
