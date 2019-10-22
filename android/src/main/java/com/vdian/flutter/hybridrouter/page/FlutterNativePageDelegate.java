@@ -593,6 +593,8 @@ public class FlutterNativePageDelegate {
         if (page instanceof IFlutterHook) {
             ((IFlutterHook) page).afterFlutterViewAttachToEngine(flutterView, flutterEngine);
         }
+        // do pending action
+        checkPendingAction();
     }
 
     /**
