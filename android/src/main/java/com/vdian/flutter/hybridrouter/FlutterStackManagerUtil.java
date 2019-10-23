@@ -139,24 +139,9 @@ public class FlutterStackManagerUtil {
     }
 
     public static void detachFlutterFromEngine(Object flutterView, FlutterEngine flutterEngine) {
-        // 1.5.4 版本 FlutterView 的内存泄漏修复
-        // 释放 AccessibilityBridge
-        // TODO 检查内存泄漏是否还存在
-        flutterEngine.getAccessibilityChannel().setAccessibilityMessageHandler(null);
-        try {
-            Field accessibilityBridgeField = flutterView.getClass().getDeclaredField("accessibilityBridge");
-            accessibilityBridgeField.setAccessible(true);
-            AccessibilityBridge accessibilityBridge = (AccessibilityBridge) accessibilityBridgeField.get(flutterView);
-            if (accessibilityBridge != null) {
-                accessibilityBridge.release();
-                accessibilityBridgeField.set(flutterView, null);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         // 释放 text input plugin
         try {
-            Field textInputPluginField = flutterView.getClass().getDeclaredField("textInputPlugin");
+            Field textInputPluginField = FlutterView.class.getDeclaredField("textInputPlugin");
             textInputPluginField.setAccessible(true);
             Field textInputChannelField = TextInputPlugin.class.getDeclaredField("textInputChannel");
             textInputChannelField.setAccessible(true);

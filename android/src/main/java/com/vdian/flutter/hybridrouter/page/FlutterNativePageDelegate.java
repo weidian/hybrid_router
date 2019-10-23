@@ -42,6 +42,7 @@ import android.view.ViewGroup;
 import com.vdian.flutter.hybridrouter.FlutterManager;
 import com.vdian.flutter.hybridrouter.FlutterStackManagerUtil;
 import com.vdian.flutter.hybridrouter.HybridRouterPlugin;
+import com.vdian.flutter.hybridrouter.engine.FixFlutterView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -298,7 +299,7 @@ public class FlutterNativePageDelegate {
 
         Context context = page.getContext();
         assertNotNull(context);
-        flutterView = new FlutterView(context, page.getRenderMode(),
+        flutterView = new FixFlutterView(context, page.getRenderMode(),
                 page.getTransparencyMode());
         flutterView.addOnFirstFrameRenderedListener(firstFrameListener);
 
