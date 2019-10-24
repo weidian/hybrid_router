@@ -262,6 +262,10 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
       if (!_containerHistory.contains(container)) {
         // need push
         push(container);
+        // log error to console
+        FlutterError.onError(FlutterErrorDetails(
+            exception: "Attempt to show page that "
+                "not pushed in stack: initRouteName: ${container.initRouteName}"));
       } else if (container != _containerHistory.last) {
         // need move to top
         overlay.rearrange([container._overlayEntry],
@@ -302,7 +306,8 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
         nativePageId: container.nativePageId,
         result: container._result);
 
-    container._overlayEntry.remove();
+    // maybe overlayEntry is empty
+    container._overlayEntry?.remove();
     int index = _containerHistory.indexOf(container);
     NativeContainer preContainer;
     if (index > 0) {
