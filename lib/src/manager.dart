@@ -237,6 +237,7 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     NativeContainer lastContainer =
         _containerHistory.isEmpty ? null : _containerHistory.last;
     _containerHistory.add(container);
+
     /// 这里通过设置 overlay 不透明来拦截 select widget mode
     OverlayEntry overlayEntry = OverlayEntry(
         builder: (context) => container, opaque: true, maintainState: true);
@@ -257,14 +258,20 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
 
   /// move the container to top
   void show(NativeContainer container) {
-    if (container != null && container != _containerHistory.last) {
-      overlay
-          .rearrange([container._overlayEntry], below: container._overlayEntry);
-      NativeContainer topContainer =
-          _containerHistory.isEmpty ? null : _containerHistory.last;
-      _containerHistory.remove(container);
-      _containerHistory.add(container);
-      _didShow(container, topContainer);
+    if (container != null) {
+      if (!_containerHistory.contains(container)) {
+        // need push
+        push(container);
+      } else if (container != _containerHistory.last) {
+        // need move to top
+        overlay.rearrange([container._overlayEntry],
+            below: container._overlayEntry);
+        NativeContainer topContainer =
+            _containerHistory.isEmpty ? null : _containerHistory.last;
+        _containerHistory.remove(container);
+        _containerHistory.add(container);
+        _didShow(container, topContainer);
+      }
     }
   }
 
