@@ -5,6 +5,7 @@ package com.vdian.flutter.hybridrouter.engine;
 // found in the LICENSE file.
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -78,6 +79,13 @@ public class FixFlutterView extends FlutterView {
             accessibilityBridge.set(this, nab);
         } catch (Throwable t) {
             t.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onConfigurationChanged(@NonNull Configuration newConfig) {
+        if (isAttachedToFlutterEngine()) {
+            super.onConfigurationChanged(newConfig);
         }
     }
 }
