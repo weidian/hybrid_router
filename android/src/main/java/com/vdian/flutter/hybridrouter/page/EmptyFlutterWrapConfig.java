@@ -58,12 +58,14 @@ public class EmptyFlutterWrapConfig implements IFlutterWrapConfig {
     }
 
     @Override
-    public boolean onFlutterPageRoute(@NonNull IFlutterNativePage nativePage, @Nullable FlutterRouteOptions routeOptions, int requestCode) {
+    public boolean onFlutterPageRoute(@NonNull IFlutterNativePage nativePage,
+                                      @Nullable FlutterRouteOptions routeOptions, int requestCode) {
         return false;
     }
 
     @Override
-    public boolean onNativePageRoute(@NonNull IFlutterNativePage nativePage, @NonNull NativeRouteOptions routeOptions, int requestCode) {
+    public boolean onNativePageRoute(@NonNull IFlutterNativePage nativePage,
+                                     @NonNull NativeRouteOptions routeOptions, int requestCode) {
         return false;
     }
 
