@@ -168,7 +168,8 @@ public class FlutterNativePageDelegate {
      * 此方法会优先判断 {@link IFlutterWrapConfig#onNativePageRoute(IFlutterNativePage, NativeRouteOptions, int)}
      * 如果上述方法返回 true ，则不处理
      */
-    public void openNativePage(@NonNull NativeRouteOptions routeOptions, @NonNull MethodChannel.Result result) {
+    public void openNativePage(@NonNull NativeRouteOptions routeOptions,
+                               @NonNull MethodChannel.Result result) {
         onNativePageRoute(routeOptions, generateRequestCodeByChannel(result));
     }
 
@@ -178,7 +179,8 @@ public class FlutterNativePageDelegate {
      * 此方法会优先判断 {@link IFlutterWrapConfig#onFlutterPageRoute(IFlutterNativePage, FlutterRouteOptions, int)}
      * 如果上述方法返回 true ，则不处理
      */
-    public void openFlutterPage(@NonNull FlutterRouteOptions routeOptions, @NonNull MethodChannel.Result result) {
+    public void openFlutterPage(@NonNull FlutterRouteOptions routeOptions,
+                                @NonNull MethodChannel.Result result) {
         onFlutterPageRoute(routeOptions, generateRequestCodeByChannel(result));
     }
 
@@ -757,7 +759,7 @@ public class FlutterNativePageDelegate {
     }
 
 
-    private void onNativePageRoute(NativeRouteOptions routeOptions, int requestCode) {
+    private void onNativePageRoute(@NonNull NativeRouteOptions routeOptions, int requestCode) {
         IFlutterWrapConfig wrapConfig = FlutterManager.getInstance().getFlutterWrapConfig();
         if (wrapConfig == null || !wrapConfig.onNativePageRoute(page,
                 routeOptions, requestCode)) {
@@ -770,7 +772,7 @@ public class FlutterNativePageDelegate {
     /**
      * 请求打开 新的 flutter page，借助新的 native page 容器
      */
-    private void onFlutterPageRoute(FlutterRouteOptions routeOptions, int requestCode) {
+    private void onFlutterPageRoute(@NonNull FlutterRouteOptions routeOptions, int requestCode) {
         IFlutterWrapConfig wrapConfig = FlutterManager.getInstance().getFlutterWrapConfig();
         if (wrapConfig == null || !wrapConfig.onFlutterPageRoute(page,
                 routeOptions, requestCode)) {

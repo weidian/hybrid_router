@@ -65,7 +65,7 @@ public interface IFlutterWrapConfig {
      * @param requestCode
      */
     boolean onFlutterPageRoute(@NonNull IFlutterNativePage nativePage,
-                               @Nullable FlutterRouteOptions routeOptions, int requestCode);
+                               @NonNull FlutterRouteOptions routeOptions, int requestCode);
 
     /**
      * 请求打开 native 页面
