@@ -25,6 +25,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'hybrid_plugin.dart';
@@ -290,7 +291,7 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     } catch (e) {
       FlutterError.dumpErrorToConsole(FlutterErrorDetails(exception: e));
     }
-    return Future.value(false);
+    return SynchronousFuture<bool>(false);
   }
 
   /// remove a native container
@@ -300,6 +301,17 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
       return false;
     }
 
+    // 优先查找 container 是否已经移除，因为下面的 await 是一个异步的处理
+    // 有可能会触发两次相同 container 的 remove，把 containerHistory
+    // 提前就不会了
+    int index = _containerHistory.indexOf(container);
+    if (index < 0) {
+      // 表明 container 已经移除或者在移除中，直接返回 false
+      return false;
+    }
+    // remove history
+    _containerHistory.removeAt(index);
+
     // 通知 native 组件，我将要 pop
     await HybridPlugin.singleton.onNativeRouteEvent(
         event: NativeRouteEvent.beforeDestroy,
@@ -308,13 +320,12 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
 
     // maybe overlayEntry is empty
     container._overlayEntry?.remove();
-    int index = _containerHistory.indexOf(container);
+    // set the overlayEntry to null that means container's overlay is removed
+    container._overlayEntry = null;
     NativeContainer preContainer;
     if (index > 0) {
       preContainer = _containerHistory[index - 1];
     }
-
-    _containerHistory.removeAt(index);
     _didRemove(container, preContainer);
     return true;
   }
