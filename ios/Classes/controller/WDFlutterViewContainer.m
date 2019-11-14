@@ -36,8 +36,12 @@
 #define FLUTTER_VIEWCONTROLLER_VIEW WDFlutterEngine.sharedInstance.viewController.view
 
 @interface WDFlutterViewContainer ()
+
 @property(nonatomic, strong) UIImageView *fakeSnapImgView;
 @property(nonatomic, strong) UIImage *lastSnapshot;
+
+@property (nonatomic, assign) BOOL snapWhenDidDisappear;
+
 @end
 
 @implementation WDFlutterViewContainer {
@@ -55,6 +59,8 @@
         _isFirstOpen = YES;
         _flutterPageCount = 0;
         self.hidesBottomBarWhenPushed = YES;
+        
+        self.snapWhenDidDisappear = NO;
     }
     return self;
 }
@@ -72,7 +78,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.fakeSnapImgView = [[UIImageView alloc] initWithFrame:self.view.bounds];
-    self.fakeSnapImgView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.fakeSnapImgView.contentMode = UIViewContentModeScaleAspectFill;
     [self.fakeSnapImgView setBackgroundColor:[UIColor whiteColor]];
     [self.view addSubview:self.fakeSnapImgView];
 }
@@ -124,7 +130,7 @@
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    [self saveSnapshot];
+    
     _changeTab = false;
     UIViewController *topViewController = self.navigationController.viewControllers.lastObject;
     if (topViewController == self) {
@@ -134,8 +140,24 @@
             _changeTab = topViewController.childViewControllers.lastObject == self;
         }
     }
+    
+    if (_changeTab || [topViewController isKindOfClass:self.class]) {
+        [self saveSnapshot:NO];
+    } else {
+        self.snapWhenDidDisappear = YES;
+    }
 
     [FLUTTER_VIEWCONTROLLER_VIEW setUserInteractionEnabled:FALSE];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    
+    if (self.snapWhenDidDisappear) {
+        self.snapWhenDidDisappear = NO;
+        
+        [self saveSnapshot:YES];
+    }
 }
 
 - (void)flutterPagePushed:(NSString *)pageName {
@@ -168,7 +190,7 @@
         }
     }
 
-    [self saveSnapshot];
+    [self saveSnapshot:NO];
     [WDFlutterRouter.sharedInstance remove:self];
 }
 
@@ -215,15 +237,26 @@
     [FLUTTER_VIEWCONTROLLER_VIEW removeFromSuperview];
 }
 
-- (void)saveSnapshot {
+- (void)saveSnapshot:(BOOL)offScreen {
     if (FLUTTER_VIEWCONTROLLER.parentViewController != self) {
         return;
     }
+    
     if (self.lastSnapshot == nil) {
-        UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, YES, 0);
-        [FLUTTER_VIEWCONTROLLER_VIEW drawViewHierarchyInRect:FLUTTER_VIEWCONTROLLER_VIEW.bounds afterScreenUpdates:NO];
+        if (offScreen) {
+            UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, YES, [UIScreen mainScreen].scale);
+            
+            [FLUTTER_VIEWCONTROLLER_VIEW.layer renderInContext:UIGraphicsGetCurrentContext()];
+        } else {
+            UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, YES, 0);
+            
+            [FLUTTER_VIEWCONTROLLER_VIEW drawViewHierarchyInRect:FLUTTER_VIEWCONTROLLER_VIEW.bounds afterScreenUpdates:NO];
+        }
+        
         self.lastSnapshot = UIGraphicsGetImageFromCurrentImageContext();
+        
         UIGraphicsEndImageContext();
+        
         [self.fakeSnapImgView setImage:self.lastSnapshot];
         [self.view bringSubviewToFront:self.fakeSnapImgView];
     }
