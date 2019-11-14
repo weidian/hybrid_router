@@ -40,6 +40,7 @@
 @property(nonatomic, strong) UIImageView *fakeSnapImgView;
 @property(nonatomic, strong) UIImage *lastSnapshot;
 
+@property (nonatomic, assign) BOOL resumeWillDidAppear;
 @property (nonatomic, assign) BOOL snapWhenDidDisappear;
 
 @end
@@ -60,6 +61,7 @@
         _flutterPageCount = 0;
         self.hidesBottomBarWhenPushed = YES;
         
+        self.resumeWillDidAppear = NO;
         self.snapWhenDidDisappear = NO;
     }
     return self;
@@ -77,9 +79,12 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
     self.fakeSnapImgView = [[UIImageView alloc] initWithFrame:self.view.bounds];
     self.fakeSnapImgView.contentMode = UIViewContentModeScaleAspectFill;
+
     [self.fakeSnapImgView setBackgroundColor:[UIColor whiteColor]];
+    
     [self.view addSubview:self.fakeSnapImgView];
 }
 
@@ -114,15 +119,23 @@
         if (_changeTab) {
             [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.routeOptions.nativePageId}];
         }
+        
+        if (_lastSnapshot && self.resumeWillDidAppear) {
+            self.resumeWillDidAppear = NO;
+            
+            [self nativePageResume];
+        }
     }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
+    
     _didAppear = YES;
     if (_lastSnapshot) {
         [self nativePageResume];
     }
+    
     [FLUTTER_VIEWCONTROLLER_VIEW setUserInteractionEnabled:TRUE];
     //只能在didAppear里调用，willAppear里调用会导致导航栈bug
     self.navigationController.interactivePopGestureRecognizer.enabled = (_flutterPageCount <= 1);
@@ -144,6 +157,7 @@
     if (_changeTab || [topViewController isKindOfClass:self.class]) {
         [self saveSnapshot:NO];
     } else {
+        self.resumeWillDidAppear = YES;
         self.snapWhenDidDisappear = YES;
     }
 
@@ -244,20 +258,29 @@
     
     if (self.lastSnapshot == nil) {
         if (offScreen) {
-            UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, YES, [UIScreen mainScreen].scale);
+            UIGraphicsBeginImageContextWithOptions(self.view.frame.size, YES, 0);
             
             [FLUTTER_VIEWCONTROLLER_VIEW.layer renderInContext:UIGraphicsGetCurrentContext()];
+            
+            self.lastSnapshot = UIGraphicsGetImageFromCurrentImageContext();
+            
+            UIGraphicsEndImageContext();
+            
+            [self.fakeSnapImgView setImage:self.lastSnapshot];
+            [self.fakeSnapImgView setFrame:CGRectZero];
         } else {
-            UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, YES, 0);
+            UIGraphicsBeginImageContextWithOptions(self.view.frame.size, YES, 0);
             
             [FLUTTER_VIEWCONTROLLER_VIEW drawViewHierarchyInRect:FLUTTER_VIEWCONTROLLER_VIEW.bounds afterScreenUpdates:NO];
+            
+            self.lastSnapshot = UIGraphicsGetImageFromCurrentImageContext();
+            
+            UIGraphicsEndImageContext();
+            
+            [self.fakeSnapImgView setImage:self.lastSnapshot];
+            [self.fakeSnapImgView setFrame:self.view.bounds];
         }
         
-        self.lastSnapshot = UIGraphicsGetImageFromCurrentImageContext();
-        
-        UIGraphicsEndImageContext();
-        
-        [self.fakeSnapImgView setImage:self.lastSnapshot];
         [self.view bringSubviewToFront:self.fakeSnapImgView];
     }
 }
