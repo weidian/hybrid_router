@@ -116,8 +116,6 @@ public class FlutterNativePageDelegate {
 
     // 因为 engine 没有 attach 收到的信息
     private Intent pendingNewIntent;
-    private Integer pendingTrimMemoryLevel;
-    private Boolean pendingLowMemory;
     private PendingActivityResult pendingActivityResult;
     private PendingPermissionResult pendingPermissionResult;
 
@@ -471,7 +469,7 @@ public class FlutterNativePageDelegate {
             flutterEngine.getActivityControlSurface().onNewIntent(intent);
         } else {
             pendingNewIntent = intent;
-            Log.w(TAG, "onNewIntent() invoked before FlutterFragment was attached to an Activity.");
+            Log.w(TAG, "onNewIntent() invoked before flutter engine is attached.");
         }
     }
 
@@ -482,6 +480,8 @@ public class FlutterNativePageDelegate {
         Log.v(TAG, "onUserLeaveHint");
         if (flutterEngine != null && isAttachToFlutter()) {
             flutterEngine.getActivityControlSurface().onUserLeaveHint();
+        } else {
+            Log.w(TAG, "onNewIntent() invoked before flutter engine is attached.");
         }
     }
 
@@ -490,13 +490,12 @@ public class FlutterNativePageDelegate {
      */
     public void onTrimMemory(int level) {
         Log.v(TAG, "onTrimMemory");
-        if (flutterEngine != null && isAttachToFlutter()) {
+        if (flutterEngine != null) {
             if (level == TRIM_MEMORY_RUNNING_LOW) {
                 flutterEngine.getSystemChannel().sendMemoryPressureWarning();
             }
         } else {
-            pendingTrimMemoryLevel = level;
-            Log.w(TAG, "onTrimMemory() invoked before FlutterFragment was attached to an Activity.");
+            Log.w(TAG, "onTrimMemory() invoked flutter engine is null.");
         }
     }
 
@@ -506,11 +505,10 @@ public class FlutterNativePageDelegate {
      */
     public void onLowMemory() {
         Log.v(TAG, "onLowMemory");
-        if (flutterEngine != null && isAttachToFlutter()) {
+        if (flutterEngine != null) {
             flutterEngine.getSystemChannel().sendMemoryPressureWarning();
         } else {
-            pendingLowMemory = true;
-            Log.w(TAG, "onLowMemory() invoked before FlutterFragment was attached to an Activity.");
+            Log.w(TAG, "onLowMemory() invoked flutter engine is null.");
         }
     }
 
@@ -662,20 +660,6 @@ public class FlutterNativePageDelegate {
                 pendingNewIntent = null;
             }
 
-            boolean isSendingMemoryPressure = false;
-            if (pendingTrimMemoryLevel != null) {
-                if (pendingTrimMemoryLevel == TRIM_MEMORY_RUNNING_LOW) {
-                    flutterEngine.getSystemChannel().sendMemoryPressureWarning();
-                    isSendingMemoryPressure = true;
-                    pendingTrimMemoryLevel = null;
-                }
-            }
-
-            if (pendingLowMemory == Boolean.TRUE && !isSendingMemoryPressure) {
-                flutterEngine.getSystemChannel().sendMemoryPressureWarning();
-                isSendingMemoryPressure = true;
-            }
-
             if (pendingActivityResult != null) {
                 flutterEngine.getActivityControlSurface().onActivityResult(
                         pendingActivityResult.requestCode,
@@ -699,8 +683,6 @@ public class FlutterNativePageDelegate {
     private void clearPendingAction() {
         pendingPermissionResult = null;
         pendingActivityResult = null;
-        pendingLowMemory = null;
-        pendingTrimMemoryLevel = null;
         pendingNewIntent = null;
     }
 

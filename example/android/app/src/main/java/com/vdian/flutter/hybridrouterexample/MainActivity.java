@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.vdian.flutter.hybridrouter.page.FlutterLaunchHelper;
 import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
 import com.vdian.flutter.hybridrouter.page.HybridFlutterActivity;
 
@@ -86,6 +87,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = HybridFlutterActivity.newBuilder()
+                        // flutter_tools 会把参数传递到 intent 中
+                        .initializationArgs(FlutterLaunchHelper.parseFlutterShellArgs(getIntent()))
+                        .dartEntrypoint(FlutterLaunchHelper.getDartEntrypointName(getIntent()))
                         .route(new FlutterRouteOptions.Builder("example")
                                 .setArgs("Jump From Main").build())
                         .buildIntent(MainActivity.this);

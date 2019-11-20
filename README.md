@@ -16,11 +16,16 @@ master 分支需要 `v1.3.0` 以上，`v1.2.2` 无法工作（flutter engine and
 void main() {
   // 创建 root navigator 需要的 observer，混合栈是根据此 observer 来完成
   // 一些生命周期监听的
-  NavigatorObserver observer = HybridNavigator.init(
+  final GlobalKey<NativeContainerManagerState> managerKey = GlobalKey();
+  NativeContainerManager manager = HybridNavigator.init(
+      key: managerKey,
+      backgroundBuilder: (context) {
+        return EmptyPage();
+      },
       // 调用系统 api 的默认打开行为（通过新的 native 容器打开）
       defaultPushType: HybridPushType.Native,
       // 可以监听所有 HybridNavigator 中的 Route
-      observers: [],
+      pageObserver: [],
       routes: {
         // 路由表
         "example": (context, argument) {
@@ -40,15 +45,12 @@ void main() {
       });
 
   runApp(MaterialApp(
-    // 这是关键，可以将 HybridNavigator 关联到 root Navigator
-    navigatorObservers: [observer],
     theme: ThemeData(
       brightness: Brightness.light,
     ),
-    home: EmptyPage(),
+    // 这里设置 home 为 创建好的 manager
+    home: manager,
   ));
-  // 启动初始路由页面
-  HybridNavigator.startInitRoute();
 }
 ```
 ## 使用
@@ -97,23 +99,26 @@ HybridNavigator.of(context)
 ## 接入
 初始化定制行为：用于定制一些行为，比如 Flutter 请求打开 native page route 的时候定制路由行为。不设置表示使用默认的配置
 ```java
-FlutterWrapActivity.setFlutterWrapConfig(new BaseFlutterWrapConfig() {
+// 可以添加一些自定义的行为
+FlutterManager.getInstance().setFlutterWrapConfig(new EmptyFlutterWrapConfig() {
+
     @Override
-    public void postFlutterApplyTheme(@NonNull FlutterWrapActivity activity) {
+    public void postFlutterApplyTheme(@NonNull IFlutterNativePage nativePage) {
         // 修改当前沉浸式主题的背景色为透明
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Window window = activity.getWindow();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
+                nativePage.getContext() instanceof Activity) {
+            Window window = ((Activity)nativePage.getContext()).getWindow();
             window.setStatusBarColor(Color.TRANSPARENT);
         }
     }
 
     @Override
-    public boolean onFlutterPageRoute(@NonNull FlutterWrapActivity activity,
+    public boolean onFlutterPageRoute(@NonNull IFlutterNativePage nativePage,
                                       @Nullable FlutterRouteOptions routeOptions, int requestCode) {
         // 自定义flutter 页面的跳转
-        Intent intent = new Intent(activity, FlutterWrapActivity.class);
-        intent.putExtra(FlutterWrapActivity.EXTRA_FLUTTER_ROUTE, routeOptions);
-        activity.startActivityForResult(intent, requestCode);
+        Intent intent = HybridFlutterActivity.newBuilder().route(routeOptions)
+                .buildIntent(nativePage.getContext());
+        nativePage.startActivityForResult(intent, requestCode);
         return true;
     }
 });
@@ -122,9 +127,11 @@ FlutterWrapActivity.setFlutterWrapConfig(new BaseFlutterWrapConfig() {
 ### 打开 flutter 页面
 ```java
 // example 为 flutter 中 routes 对应的 key
-FlutterWrapActivity.start(MainActivity.this, new FlutterRouteOptions.Builder("example")
-  .setArgs("Jump From Main")
-.build());
+Intent intent = HybridFlutterActivity.newBuilder()
+  .route(new FlutterRouteOptions.Builder("example")
+    .setArgs("Jump From Main").build())
+    .buildIntent(MainActivity.this);
+startActivity(intent);
 ```
 
 # iOS 集成
