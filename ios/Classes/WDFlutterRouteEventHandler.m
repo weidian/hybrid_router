@@ -20,7 +20,10 @@
 #pragma mark -- container page
 
 + (void)beforeNativePagePop:(NSString *)pageId result:(id)result {
-    WDFlutterViewContainer *container = [self find:pageId];
+
+    [[WDFlutterRouter.sharedInstance.delegate appNavigationController] popViewControllerAnimated:YES];
+    
+    /*WDFlutterViewContainer *container = [self find:pageId];
     static int _count = 0;
 
     if (!container || !container.didAppear) {
@@ -47,7 +50,7 @@
         }
     } else {
         [container dismissViewControllerAnimated:container.routeOptions.animated completion:nil];
-    }
+    }*/
 }
 
 + (void)onNativePageRemoved:(NSString *)pageId result:(id)result {

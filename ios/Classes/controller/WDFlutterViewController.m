@@ -32,7 +32,6 @@
 static BOOL onceDisplaySplashView = NO;
 
 @interface WDFlutterViewController ()
-@property(nonatomic, assign) BOOL enableViewWillAppear;
 @property(nonatomic, strong) UIView *splashView;
 @end
 
@@ -40,7 +39,6 @@ static BOOL onceDisplaySplashView = NO;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.enableViewWillAppear = TRUE;
     if (!onceDisplaySplashView) {
         if (!self.splashScreenView) {
             self.splashScreenView = self.splashView;
@@ -54,27 +52,35 @@ static BOOL onceDisplaySplashView = NO;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    if (self.enableViewWillAppear == FALSE) return;
+    NSLog(@"---viewWillAppear %@",self);
     [super viewWillAppear:animated];
-    self.enableViewWillAppear = FALSE;
-    
-    if(self.viewWillAppearBlock){
+
+    self.navigationController.navigationBar.hidden = YES;
+
+    if (self.viewWillAppearBlock) {
         self.viewWillAppearBlock();
         self.viewWillAppearBlock = nil;
     }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
+    NSLog(@"---viewDidAppear %@",self);
     [super viewDidAppear:animated];
+    [self performSelector:@selector(surfaceUpdated:) withObject:@(YES)];
+    
+    [self.view setUserInteractionEnabled:TRUE];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
+    NSLog(@"---viewWillDisappear %@",self);
     [super viewWillDisappear:animated];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
+    
+    NSLog(@"---viewDidDisappear %@",self);
+    
     [super viewDidDisappear:animated];
-    self.enableViewWillAppear = TRUE;
 }
 
 - (UIView *)splashView {
