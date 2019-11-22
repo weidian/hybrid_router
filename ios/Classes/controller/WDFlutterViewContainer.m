@@ -67,12 +67,6 @@
     return self;
 }
 
-- (void)loadView {
-    UIView *view = [[UIView alloc] init];
-    [view setBackgroundColor:[UIColor whiteColor]];
-    self.view = view;
-}
-
 - (BOOL)shouldAutomaticallyForwardAppearanceMethods {
     return true;
 }
