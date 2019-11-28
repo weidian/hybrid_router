@@ -93,8 +93,10 @@
     [super viewWillAppear:animated];
     self.navigationController.navigationBar.hidden = YES;
 
-    static BOOL sIsFirstPush = YES;
-
+    [FLUTTER_VIEWCONTROLLER setFlutterViewDidRenderCallback:^{
+        [self flutterViewDidRenderCallback];
+    }];
+    
     if (_isFirstOpen) {
         _routeOptions.nativePageId = @(_pageId).stringValue;
         [WDFlutterRouter.sharedInstance add:self];
@@ -116,7 +118,7 @@
         
         if (_lastSnapshot && self.resumeWillDidAppear) {
             self.resumeWillDidAppear = NO;
-            
+
             [self nativePageResume];
         }
     }
@@ -168,17 +170,24 @@
     }
 }
 
+- (void)flutterViewDidRenderCallback {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
+        self.lastSnapshot = nil;
+    });
+}
+
 - (void)flutterPagePushed:(NSString *)pageName {
     _flutterPageCount++;
     if (_flutterPageCount > 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = NO;
     } else {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
-            if (self.navigationController.topViewController == self) {
-                self.lastSnapshot = nil;
-            }
-        });
+//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//            [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
+//            if (self.navigationController.topViewController == self) {
+//                self.lastSnapshot = nil;
+//            }
+//        });
     }
 }
 
@@ -214,10 +223,10 @@
         [self.view bringSubviewToFront:self.fakeSnapImgView];
     }
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
-        self.lastSnapshot = nil;
-    });
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
+//        self.lastSnapshot = nil;
+//    });
 }
 
 #pragma mark - Child/Parent VC
