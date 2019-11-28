@@ -283,13 +283,23 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
   /// remove a native container by native page Id
   Future<bool> removeNamed({@required String nativePageId, dynamic result}) {
     try {
-      NativeContainer c = _containerHistory.firstWhere((c) {
-        return c.nativePageId == nativePageId;
-      });
+      // 此函数可能会在相同的 nativePageId 调用 2 次 （dart 层移除一次，native 页面结束后一次），
+      // 所以需要做好判定
+      NativeContainer c;
+      for (int i = 0; i < _containerHistory.length; ++i) {
+        NativeContainer cc = _containerHistory[i];
+        if (cc.nativePageId == nativePageId) {
+          c = cc;
+          break;
+        }
+      }
+      // 未找到，remove 失败
+      if (c == null) return Future.value(false);
       c._result = result;
       return remove(c);
-    } catch (e) {
-      FlutterError.dumpErrorToConsole(FlutterErrorDetails(exception: e));
+    } catch (e, stack) {
+      FlutterError.dumpErrorToConsole(
+          FlutterErrorDetails(exception: e, stack: stack));
     }
     return SynchronousFuture<bool>(false);
   }
