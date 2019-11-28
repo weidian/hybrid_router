@@ -173,6 +173,12 @@
 }
 
 - (void)flutterViewDidRenderCallback {
+    //首次进入不做延迟
+    if(!_lastSnapshot) {
+        [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
+        return;
+    }
+    
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
         self.lastSnapshot = nil;
