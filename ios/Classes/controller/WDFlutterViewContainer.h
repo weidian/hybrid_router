@@ -33,8 +33,6 @@
 #import "WDFlutterPageLifeCircle.h"
 #import "WDFlutterRouter.h"
 
-static BOOL sIsFirstPush = YES;
-
 @class WDFlutterViewController, WDFlutterRouteOptions;
 
 @interface WDFlutterViewContainer : UIViewController <WDFlutterPageLifeCircle>

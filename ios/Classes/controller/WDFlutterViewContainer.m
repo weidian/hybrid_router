@@ -93,6 +93,8 @@
     [super viewWillAppear:animated];
     self.navigationController.navigationBar.hidden = YES;
 
+    static BOOL sIsFirstPush = YES;
+    
     [FLUTTER_VIEWCONTROLLER setFlutterViewDidRenderCallback:^{
         [self flutterViewDidRenderCallback];
     }];
