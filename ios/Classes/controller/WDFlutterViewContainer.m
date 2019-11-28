@@ -265,7 +265,7 @@
         if (offScreen) {
             UIGraphicsBeginImageContextWithOptions(self.view.frame.size, YES, 0);
             
-            [FLUTTER_VIEWCONTROLLER_VIEW.layer renderInContext:UIGraphicsGetCurrentContext()];
+            [self.view.layer renderInContext:UIGraphicsGetCurrentContext()];
             
             self.lastSnapshot = UIGraphicsGetImageFromCurrentImageContext();
             
@@ -276,7 +276,7 @@
         } else {
             UIGraphicsBeginImageContextWithOptions(self.view.frame.size, YES, 0);
             
-            [FLUTTER_VIEWCONTROLLER_VIEW drawViewHierarchyInRect:FLUTTER_VIEWCONTROLLER_VIEW.bounds afterScreenUpdates:NO];
+            [self.view drawViewHierarchyInRect:FLUTTER_VIEWCONTROLLER_VIEW.bounds afterScreenUpdates:NO];
             
             self.lastSnapshot = UIGraphicsGetImageFromCurrentImageContext();
             
