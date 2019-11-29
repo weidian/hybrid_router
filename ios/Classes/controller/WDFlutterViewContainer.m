@@ -271,7 +271,7 @@
         if (offScreen) {
             UIGraphicsBeginImageContextWithOptions(self.view.frame.size, YES, 0);
             
-            [self.view.layer renderInContext:UIGraphicsGetCurrentContext()];
+            [FLUTTER_VIEWCONTROLLER_VIEW.layer renderInContext:UIGraphicsGetCurrentContext()];
             
             self.lastSnapshot = UIGraphicsGetImageFromCurrentImageContext();
             
