@@ -28,6 +28,10 @@
 
 @interface HybridRouterPlugin ()
 @property(nonatomic, strong) FlutterMethodChannel *methodChannel;
+@property(nonatomic, assign) BOOL *initialized;
+@property(nonatomic, copy) NSString *method;
+@property(nonatomic, strong) id arguments;
+
 @end
 
 @implementation HybridRouterPlugin
@@ -55,6 +59,10 @@
     if ([@"getInitRoute" isEqualToString:method]) {
         NSDictionary *params = self.mainEntryParams ?: @{};
         result(params);
+        _initialized = YES;
+        if(_method) {
+            [self.methodChannel invokeMethod:_method arguments:_arguments];
+        }
     } else if ([@"openNativePage" isEqualToString:method]) {
         [self openNativePage:call.arguments result:result];
         result(nil);
@@ -146,7 +154,13 @@
 }
 
 - (void)invokeFlutterMethod:(NSString *)method arguments:(id)arguments {
-    [self.methodChannel invokeMethod:method arguments:arguments];
+    if(_initialized) {
+        [self.methodChannel invokeMethod:method arguments:arguments];
+    } else {
+        _method = method;
+        _arguments = arguments;
+    }
+    
 }
 
 @end
