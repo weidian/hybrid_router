@@ -28,7 +28,7 @@
 
 @interface HybridRouterPlugin ()
 @property(nonatomic, strong) FlutterMethodChannel *methodChannel;
-@property(nonatomic, assign) BOOL *initialized;
+@property(nonatomic, assign) BOOL initialized;
 @property(nonatomic, copy) NSString *method;
 @property(nonatomic, strong) id arguments;
 
@@ -160,7 +160,6 @@
         _method = method;
         _arguments = arguments;
     }
-    
 }
 
 @end
