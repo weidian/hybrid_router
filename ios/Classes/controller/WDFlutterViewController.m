@@ -39,6 +39,7 @@ static BOOL onceDisplaySplashView = NO;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.view.backgroundColor = [UIColor whiteColor];
     if (!onceDisplaySplashView) {
         if (!self.splashScreenView) {
             self.splashScreenView = self.splashView;
