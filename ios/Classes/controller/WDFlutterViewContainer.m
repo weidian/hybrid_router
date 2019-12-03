@@ -50,6 +50,7 @@
     int _flutterPageCount;
     long long _pageId;
     BOOL _changeTab;
+    BOOL _offScreen;
 }
 
 - (instancetype)init {
@@ -189,13 +190,6 @@
     _flutterPageCount++;
     if (_flutterPageCount > 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = NO;
-    } else {
-//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//            [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
-//            if (self.navigationController.topViewController == self) {
-//                self.lastSnapshot = nil;
-//            }
-//        });
     }
 }
 
@@ -230,11 +224,6 @@
     if (_lastSnapshot) {
         [self.view bringSubviewToFront:self.fakeSnapImgView];
     }
-
-//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//        [self.view bringSubviewToFront:FLUTTER_VIEWCONTROLLER_VIEW];
-//        self.lastSnapshot = nil;
-//    });
 }
 
 #pragma mark - Child/Parent VC
