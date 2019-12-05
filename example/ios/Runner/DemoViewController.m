@@ -15,6 +15,14 @@
 
 @implementation DemoViewController
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        self.hidesBottomBarWhenPushed = YES;
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
@@ -22,7 +30,7 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    self.navigationController.navigationBar.hidden = NO;
+    self.navigationController.navigationBar.hidden = YES;
 }
 
 - (void)loadView {

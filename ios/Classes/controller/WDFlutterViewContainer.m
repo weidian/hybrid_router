@@ -50,7 +50,6 @@
     int _flutterPageCount;
     long long _pageId;
     BOOL _changeTab;
-    BOOL _offScreen;
 }
 
 - (instancetype)init {
@@ -70,6 +69,12 @@
 
 - (BOOL)shouldAutomaticallyForwardAppearanceMethods {
     return true;
+}
+
+- (void)loadView {
+    UIView *view = [[UIView alloc] init];
+    [view setBackgroundColor:[UIColor whiteColor]];
+    self.view = view;
 }
 
 - (void)viewDidLoad {
