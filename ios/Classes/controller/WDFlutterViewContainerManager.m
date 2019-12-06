@@ -8,41 +8,41 @@
 #import "WDFlutterViewContainerManager.h"
 
 @interface WDFlutterViewContainerManager ()
-@property(nonatomic, strong) NSMutableDictionary *containers;
+@property(nonatomic, strong) NSMutableDictionary *controllers;
 @end
 
 @implementation WDFlutterViewContainerManager
 
 - (instancetype)init {
     if (self = [super init]) {
-        _containers = [NSMutableDictionary dictionary];
+        _controllers = [NSMutableDictionary dictionary];
     }
     return self;
 }
 
-- (BOOL)contains:(WDFlutterViewController *)container {
-    if (container) {
-        return _containers[container.options.nativePageId] ? YES : NO;
+- (BOOL)contains:(WDFlutterViewController *)controller {
+    if (controller) {
+        return _controllers[controller.options.nativePageId] ? YES : NO;
     }
     return NO;
 }
 
-- (void)add:(WDFlutterViewController *)container {
-    if ([self contains:container]) {
+- (void)add:(WDFlutterViewController *)controller {
+    if ([self contains:controller]) {
         return;
     }
-    _containers[container.options.nativePageId] = container;
+    _controllers[controller.options.nativePageId] = controller;
 }
 
-- (void)remove:(WDFlutterViewController *)container {
-    if (![self contains:container]) {
+- (void)remove:(WDFlutterViewController *)controller {
+    if (![self contains:controller]) {
         return;
     }
-    [_containers removeObjectForKey:container.options.nativePageId];
+    [_controllers removeObjectForKey:controller.options.nativePageId];
 }
 
 - (WDFlutterViewContainer *)find:(NSString *)pageId {
-    return _containers[pageId];
+    return _controllers[pageId];
 }
 
 @end

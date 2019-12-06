@@ -30,6 +30,7 @@
 #import "WDFlutterViewController.h"
 #import "WDFlutterEngine.h"
 #import "HybridRouterPlugin.h"
+#import "WDFlutterRouter.h"
 
 static BOOL onceDisplaySplashView = NO;
 
@@ -53,10 +54,6 @@ static BOOL onceDisplaySplashView = NO;
     return self;
 }
 
-- (void)dealloc {
-    //[WDFlutterEngine.sharedInstance detach];
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     if (!onceDisplaySplashView) {
@@ -77,7 +74,6 @@ static BOOL onceDisplaySplashView = NO;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    NSLog(@"---viewWillAppear %@",self);
     [super viewWillAppear:animated];
 
     self.navigationController.navigationBar.hidden = YES;
@@ -91,8 +87,6 @@ static BOOL onceDisplaySplashView = NO;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
-    NSLog(@"---viewDidAppear %@",self);
-    
     FlutterViewController *fltvc = WDFlutterEngine.sharedInstance.engine.viewController;
     
     //fltvc 不是 当面页面  需要重新 atach 当面页面，并通知 flutter 当前页面resumed 否则会闪屏
@@ -108,21 +102,15 @@ static BOOL onceDisplaySplashView = NO;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
-    NSLog(@"---viewWillDisappear %@",self);
     [super viewWillDisappear:animated];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-    NSLog(@"---viewDidDisappear %@",self);
     [super viewDidDisappear:animated];
 }
 
-- (void)didMoveToParentViewController:(UIViewController *)parent {
-    [super didMoveToParentViewController:parent];
-    if (parent == nil) {
-        //当前controllere被remove
-        [self onNativePageFinished];
-    }
+- (void)dealloc {
+    [self onNativePageFinished];
 }
 
 - (void)onNativePageFinished {
@@ -139,6 +127,21 @@ static BOOL onceDisplaySplashView = NO;
         _splashView.backgroundColor = [UIColor whiteColor];
     }
     return _splashView;
+}
+
+@end
+
+@implementation WDFlutterRouteOptions
+
+- (NSDictionary *)toDictionary {
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+    if (_args) {
+        dictionary[@"args"] = _args;
+    }
+    dictionary[@"pageName"] = _pageName ?: @"";
+    dictionary[@"nativePageId"] = _nativePageId ?: @"";
+    dictionary[@"isTab"] = @(_isTab);
+    return dictionary;
 }
 
 @end

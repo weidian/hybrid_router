@@ -29,15 +29,31 @@
 
 #import <Foundation/Foundation.h>
 #import <Flutter/Flutter.h>
-#import "WDFlutterViewContainer.h"
 
 typedef void (^FlutterViewWillAppearBlock) (void);
+
+@class WDFlutterRouteOptions;
 
 @interface WDFlutterViewController : FlutterViewController
 
 @property(nonatomic,copy) FlutterViewWillAppearBlock viewWillAppearBlock;
 @property(nonatomic,strong) WDFlutterRouteOptions *options;
+@property(nonatomic,assign) NSUInteger flutterPageCount;
 
 - (void)surfaceUpdated:(BOOL)appeared;
+
+@end
+
+@interface WDFlutterRouteOptions : NSObject
+
+@property(nonatomic, copy) NSString *pageName;
+@property(nonatomic, copy) NSString *nativePageId;
+@property(nonatomic, strong) id args;
+@property(nonatomic, strong) FlutterResult resultBlock;
+@property(nonatomic, assign) BOOL isTab;
+@property(nonatomic, assign) BOOL modal;
+@property(nonatomic, assign) BOOL animated;
+
+- (NSDictionary *)toDictionary;
 
 @end

@@ -1,6 +1,5 @@
 #include "AppDelegate.h"
 #include "DemoViewController.h"
-#import "WDFlutterViewContainer.h"
 #import "WDFlutterRouter.h"
 
 @interface AppDelegate () <WDFlutterRouterDelegate>

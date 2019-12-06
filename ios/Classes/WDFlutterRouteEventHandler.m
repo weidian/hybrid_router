@@ -8,7 +8,7 @@
 #import "WDFlutterRouteEventHandler.h"
 #import "WDFlutterRouter.h"
 #import "WDFlutterViewContainerManager.h"
-#import "WDFlutterViewContainer.h"
+#import "WDFlutterViewController+FlutterPage.h"
 
 @implementation WDFlutterRouteEventHandler
 
@@ -70,42 +70,42 @@
 //    }
 }
 
-+ (void)removeContainer:(WDFlutterViewContainer *)container {
-    UINavigationController *nav = container.navigationController;
-    if (!nav) return;
-    NSMutableArray<UIViewController *> *viewControllers = nav.viewControllers.mutableCopy;
-    [viewControllers removeObject:container];
-    nav.viewControllers = viewControllers.copy;
-}
+//+ (void)removeContainer:(WDFlutterViewContainer *)container {
+//    UINavigationController *nav = container.navigationController;
+//    if (!nav) return;
+//    NSMutableArray<UIViewController *> *viewControllers = nav.viewControllers.mutableCopy;
+//    [viewControllers removeObject:container];
+//    nav.viewControllers = viewControllers.copy;
+//}
 
 #pragma mark -- flutter page
 
 + (void)onFlutterPagePushed:(NSString *)pageId name:(NSString *)name {
-//    WDFlutterViewContainer *container = [self find:pageId];
-//    if (container && [container respondsToSelector:@selector(flutterPagePushed:)]) {
-//        [container flutterPagePushed:name];
-//    }
+    WDFlutterViewController *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(flutterPagePushed:)]) {
+        [controller flutterPagePushed:name];
+    }
 }
 
 + (void)onFlutterPageRemoved:(NSString *)pageId name:(NSString *)name {
-//    WDFlutterViewContainer *container = [self find:pageId];
-//    if (container && [container respondsToSelector:@selector(flutterPageRemoved:)]) {
-//        [container flutterPageRemoved:name];
-//    }
+    WDFlutterViewController *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(flutterPageRemoved:)]) {
+        [controller flutterPageRemoved:name];
+    }
 }
 
 + (void)onFlutterPageResume:(NSString *)pageId name:(NSString *)name {
-//    WDFlutterViewContainer *container = [self find:pageId];
-//    if (container && [container respondsToSelector:@selector(flutterPageResume:)]) {
-//        [container flutterPageResume:name];
-//    }
+    WDFlutterViewController *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(flutterPageResume:)]) {
+        [controller flutterPageResume:name];
+    }
 }
 
 + (void)onFlutterPagePause:(NSString *)pageId name:(NSString *)name {
-//    WDFlutterViewContainer *container = [self find:pageId];
-//    if (container && [container respondsToSelector:@selector(flutterPagePause:)]) {
-//        [container flutterPagePause:name];
-//    }
+    WDFlutterViewController *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(flutterPagePause:)]) {
+        [controller flutterPagePause:name];
+    }
 }
 
 @end

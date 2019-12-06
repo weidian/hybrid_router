@@ -28,7 +28,6 @@
 //
 
 #import "WDFlutterRouter.h"
-#import "WDFlutterViewContainer.h"
 #import "WDFlutterViewContainerManager.h"
 #import "WDFlutterEngine.h"
 #import "HybridRouterPlugin.h"

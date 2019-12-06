@@ -36,9 +36,6 @@
         
         _engine = engine;
         
-//        _viewController = [[WDFlutterViewController alloc] initWithProject:nil nibName:nil bundle:nil];
-//        [_viewController view];
-        
         _dummy = [[WDFlutterViewController alloc] initWithEngine:_engine
                                                          nibName:nil
                                                           bundle:nil];
@@ -58,10 +55,6 @@
 }
 
 #pragma mark -- WDFlutterViewProvider
-
-- (nonnull FlutterViewController *)viewController {
-    return _dummy;
-}
 
 - (void)detach {
     if(_engine.viewController != _dummy){
