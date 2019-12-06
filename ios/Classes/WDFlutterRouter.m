@@ -31,8 +31,8 @@
 #import "WDFlutterViewContainer.h"
 #import "WDFlutterViewContainerManager.h"
 #import "WDFlutterEngine.h"
-#import "WDFlutterViewController.h"
 #import "HybridRouterPlugin.h"
+#import "WDFlutterViewController.h"
 
 @interface WDFlutterRouter ()
 @property(nonatomic, strong) WDFlutterViewContainerManager *manager;
@@ -96,11 +96,8 @@
     static long long fTag = 0;
     long long _pageId = fTag++;
 
-    WDFlutterViewController *viewController = [[WDFlutterViewController alloc] initWithEngine:WDFlutterEngine.sharedInstance.engine
-                                                                                      nibName:nil
-                                                                                       bundle:nil];
-
-
+    WDFlutterViewController *viewController = [[WDFlutterViewController alloc] init];
+    viewController.options = options;
     viewController.viewWillAppearBlock = ^() {
         static BOOL sIsFirstPush = YES;
 
@@ -128,11 +125,11 @@
 
 #pragma mark -- container
 
-- (void)add:(WDFlutterViewContainer *)container {
+- (void)add:(WDFlutterViewController *)container {
     [_manager add:container];
 }
 
-- (void)remove:(WDFlutterViewContainer *)container {
+- (void)remove:(WDFlutterViewController *)container {
     [_manager remove:container];
 }
 

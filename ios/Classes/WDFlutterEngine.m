@@ -11,7 +11,7 @@
 #import "WDFlutterPluginRigstrant.h"
 
 @interface WDFlutterEngine ()
-@property(nonatomic, strong) FlutterViewController *viewController;
+@property(nonatomic, strong) FlutterViewController *dummy;
 @end
 
 @implementation WDFlutterEngine
@@ -38,6 +38,11 @@
         
 //        _viewController = [[WDFlutterViewController alloc] initWithProject:nil nibName:nil bundle:nil];
 //        [_viewController view];
+        
+        _dummy = [[WDFlutterViewController alloc] initWithEngine:_engine
+                                                         nibName:nil
+                                                          bundle:nil];
+        
         Class clazz = NSClassFromString(@"GeneratedPluginRegistrant");
         if (clazz) {
             if ([clazz respondsToSelector:NSSelectorFromString(@"registerWithRegistry:")]) {
@@ -55,7 +60,13 @@
 #pragma mark -- WDFlutterViewProvider
 
 - (nonnull FlutterViewController *)viewController {
-    return _viewController;
+    return _dummy;
+}
+
+- (void)detach {
+    if(_engine.viewController != _dummy){
+        _engine.viewController = _dummy;
+    }
 }
 
 @end

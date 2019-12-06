@@ -92,7 +92,7 @@
 
     if (_isFirstOpen) {
         _routeOptions.nativePageId = @(_pageId).stringValue;
-        [WDFlutterRouter.sharedInstance add:self];
+        //[WDFlutterRouter.sharedInstance add:self];
         if (sIsFirstPush) {
             [HybridRouterPlugin sharedInstance].mainEntryParams = [_routeOptions toDictionary];
             sIsFirstPush = NO;
@@ -169,7 +169,7 @@
     }
 
     [self saveSnapshot];
-    [WDFlutterRouter.sharedInstance remove:self];
+    //[WDFlutterRouter.sharedInstance remove:self];
 }
 
 - (void)nativePageResume {

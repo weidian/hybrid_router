@@ -28,6 +28,8 @@
 //
 
 #import "WDFlutterViewController.h"
+#import "WDFlutterEngine.h"
+#import "HybridRouterPlugin.h"
 
 static BOOL onceDisplaySplashView = NO;
 
@@ -37,6 +39,25 @@ static BOOL onceDisplaySplashView = NO;
 
 @implementation WDFlutterViewController
 
+- (id)init {
+    
+    WDFlutterViewController *fvc = (WDFlutterViewController *) WDFlutterEngine.sharedInstance.engine.viewController;
+    
+    if(fvc) {
+        [fvc surfaceUpdated:NO];
+    }
+    
+    self = [super initWithEngine:WDFlutterEngine.sharedInstance.engine nibName:nil bundle:nil];
+    if (self) {
+       
+    }
+    return self;
+}
+
+- (void)dealloc {
+    //[WDFlutterEngine.sharedInstance detach];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     if (!onceDisplaySplashView) {
@@ -45,6 +66,11 @@ static BOOL onceDisplaySplashView = NO;
         }
         onceDisplaySplashView = YES;
     }
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    [[WDFlutterEngine.sharedInstance.engine lifecycleChannel] sendMessage:@"AppLifecycleState.resumed"];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -60,15 +86,28 @@ static BOOL onceDisplaySplashView = NO;
     if (self.viewWillAppearBlock) {
         self.viewWillAppearBlock();
         self.viewWillAppearBlock = nil;
+    } else {
+//        [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.options.nativePageId}];
     }
+    
+    [WDFlutterRouter.sharedInstance add:self];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     NSLog(@"---viewDidAppear %@",self);
-    [super viewDidAppear:animated];
-    [self performSelector:@selector(surfaceUpdated:) withObject:@(YES)];
     
-    [self.view setUserInteractionEnabled:TRUE];
+    [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.options.nativePageId}];
+
+    FlutterViewController *fltvc = WDFlutterEngine.sharedInstance.engine.viewController;
+    
+    if(fltvc != self) {
+        [(WDFlutterViewController *)fltvc surfaceUpdated:NO];
+        WDFlutterEngine.sharedInstance.engine.viewController = self;
+    }
+    
+    [self surfaceUpdated:YES];
+    
+    [super viewDidAppear:animated];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -77,10 +116,24 @@ static BOOL onceDisplaySplashView = NO;
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-    
     NSLog(@"---viewDidDisappear %@",self);
-    
     [super viewDidDisappear:animated];
+}
+
+- (void)didMoveToParentViewController:(UIViewController *)parent {
+    [super didMoveToParentViewController:parent];
+    if (parent == nil) {
+        //当前controllere被remove
+        [self onNativePageFinished];
+    }
+}
+
+- (void)onNativePageFinished {
+    [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageFinished" arguments:@{@"nativePageId": self.options.nativePageId}];
+    
+    [WDFlutterRouter.sharedInstance remove:self];
+    
+    [[HybridRouterPlugin sharedInstance] popDone:self.options.nativePageId];
 }
 
 - (UIView *)splashView {

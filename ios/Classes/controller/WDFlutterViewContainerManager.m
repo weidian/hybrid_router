@@ -6,7 +6,6 @@
 //
 
 #import "WDFlutterViewContainerManager.h"
-#import "WDFlutterViewContainer.h"
 
 @interface WDFlutterViewContainerManager ()
 @property(nonatomic, strong) NSMutableDictionary *containers;
@@ -21,25 +20,25 @@
     return self;
 }
 
-- (BOOL)contains:(WDFlutterViewContainer *)container {
+- (BOOL)contains:(WDFlutterViewController *)container {
     if (container) {
-        return _containers[container.routeOptions.nativePageId] ? YES : NO;
+        return _containers[container.options.nativePageId] ? YES : NO;
     }
     return NO;
 }
 
-- (void)add:(WDFlutterViewContainer *)container {
+- (void)add:(WDFlutterViewController *)container {
     if ([self contains:container]) {
         return;
     }
-    _containers[container.routeOptions.nativePageId] = container;
+    _containers[container.options.nativePageId] = container;
 }
 
-- (void)remove:(WDFlutterViewContainer *)container {
+- (void)remove:(WDFlutterViewController *)container {
     if (![self contains:container]) {
         return;
     }
-    [_containers removeObjectForKey:container.routeOptions.nativePageId];
+    [_containers removeObjectForKey:container.options.nativePageId];
 }
 
 - (WDFlutterViewContainer *)find:(NSString *)pageId {

@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "WDFlutterViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -13,11 +14,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface WDFlutterViewContainerManager : NSObject
 
-- (void)add:(WDFlutterViewContainer *)container;
+- (void)add:(WDFlutterViewController *)container;
 
-- (void)remove:(WDFlutterViewContainer *)container;
+- (void)remove:(WDFlutterViewController *)container;
 
-- (WDFlutterViewContainer *)find:(NSString *)pageId;
+- (WDFlutterViewController *)find:(NSString *)pageId;
 
 @end
 

@@ -28,6 +28,10 @@
 
 @interface HybridRouterPlugin ()
 @property(nonatomic, strong) FlutterMethodChannel *methodChannel;
+@property(nonatomic,strong) NSMutableDictionary *popResult;
+
+@property(nonatomic,strong) NSMutableArray *popedIds;
+
 @end
 
 @implementation HybridRouterPlugin
@@ -46,6 +50,8 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInst = [[HybridRouterPlugin alloc] init];
+        sharedInst.popResult = [NSMutableDictionary dictionary];
+        sharedInst.popedIds = [NSMutableArray array];
     });
     return sharedInst;
 }
@@ -61,8 +67,7 @@
     } else if ([@"openFlutterPage" isEqualToString:method]) {
         [self openFlutterPage:call.arguments result:result];
     } else if ([@"onNativeRouteEvent" isEqualToString:method]) {
-        [self onNativeRouteEvent:call.arguments];
-        result(nil);
+        [self onNativeRouteEvent:call.arguments result:result];
     } else if ([@"onFlutterRouteEvent" isEqualToString:method]) {
         [self onFlutterRouteEvent:call.arguments];
         result(nil);
@@ -73,16 +78,23 @@
 
 #pragma mark - native route event
 
-- (void)onNativeRouteEvent:(NSDictionary *)arguments {
+- (void)onNativeRouteEvent:(NSDictionary *)arguments result:(FlutterResult)result {
     NSString *nativePageId = arguments[@"nativePageId"];
     NSNumber *eventId = arguments[@"eventId"];
-    id result = arguments[@"result"];
+    id _result = arguments[@"result"];
     switch (eventId.integerValue) {
         case WDFNativeRouteEventBeforeDestroy:
-            [WDFlutterRouteEventHandler beforeNativePagePop:nativePageId result:result];
+            if([_popedIds containsObject:nativePageId]) {
+                result(nil);
+                [_popedIds removeObject:nativePageId];
+                break;
+            }
+            
+            _popResult[nativePageId] = result;
+            [WDFlutterRouteEventHandler beforeNativePagePop:nativePageId result:_result];
             break;
         case WDFNativeRouteEventOnDestroy:
-            [WDFlutterRouteEventHandler onNativePageRemoved:nativePageId result:result];
+            [WDFlutterRouteEventHandler onNativePageRemoved:nativePageId result:_result];
             break;
         case WDFNativeRouteEventOnResume:
             [WDFlutterRouteEventHandler onNativePageResume:nativePageId];
@@ -142,6 +154,16 @@
 
 - (void)invokeFlutterMethod:(NSString *)method arguments:(id)arguments {
     [self.methodChannel invokeMethod:method arguments:arguments];
+}
+
+- (void)popDone:(NSString *)nativePageId {
+    FlutterResult result = _popResult[nativePageId];
+    if(result) {
+        result(nil);
+        [_popResult removeObjectForKey:nativePageId];
+    } else {
+        [_popedIds addObject:nativePageId];
+    }
 }
 
 @end

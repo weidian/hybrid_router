@@ -29,11 +29,15 @@
 
 #import <Foundation/Foundation.h>
 #import <Flutter/Flutter.h>
+#import "WDFlutterViewContainer.h"
 
 typedef void (^FlutterViewWillAppearBlock) (void);
 
 @interface WDFlutterViewController : FlutterViewController
 
 @property(nonatomic,copy) FlutterViewWillAppearBlock viewWillAppearBlock;
+@property(nonatomic,strong) WDFlutterRouteOptions *options;
+
+- (void)surfaceUpdated:(BOOL)appeared;
 
 @end

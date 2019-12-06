@@ -51,4 +51,6 @@ typedef NS_ENUM(NSInteger, WDFFlutterRouteEvent) {
 
 - (void)invokeFlutterMethod:(NSString *)method arguments:(id)arguments;
 
+- (void)popDone:(NSString *)nativePageId;
+
 @end
