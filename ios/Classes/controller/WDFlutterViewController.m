@@ -28,11 +28,8 @@
 //
 
 #import "WDFlutterViewController.h"
-#import "WDFlutterEngine.h"
 #import "HybridRouterPlugin.h"
 #import "WDFlutterRouter.h"
-
-#define WD_FLUTTER_ENGINE WDFlutterEngine.sharedInstance
 
 static BOOL onceDisplaySplashView = NO;
 
@@ -105,7 +102,14 @@ static BOOL onceDisplaySplashView = NO;
 }
 
 - (void)dealloc {
-    [self onNativePageFinished];
+    //[self onNativePageFinished];
+}
+
+-(void)didMoveToParentViewController:(UIViewController *)parent {
+    [super didMoveToParentViewController:parent];
+    if(parent == nil) {
+        [self onNativePageFinished];
+    }
 }
 
 - (void)onNativePageFinished {

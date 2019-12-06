@@ -69,7 +69,7 @@
 
 - (void)atach:(FlutterViewController *)vc {
     if(_engine.viewController != vc) {
-        [(WDFlutterViewController *)vc surfaceUpdated:NO];
+        [(WDFlutterViewController *)_engine.viewController surfaceUpdated:NO];
         _engine.viewController = vc;
     }
 }

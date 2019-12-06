@@ -24,6 +24,10 @@
     WDFlutterViewController *controller = [self find:pageId];
     if(!controller) return;
     
+    if ([controller respondsToSelector:@selector(nativePageWillRemove:)]) {
+        [controller nativePageWillRemove:result];
+    }
+    
     if(controller.options.modal) {
         [controller dismissViewControllerAnimated:controller.options.animated completion:nil];
     } else {
@@ -61,18 +65,18 @@
 }
 
 + (void)onNativePageRemoved:(NSString *)pageId result:(id)result {
-//    WDFlutterViewContainer *container = [self find:pageId];
-//    if (container) {
-//        //[container nativePageWillRemove:result];
-//        //[self removeContainer:container];
-//    }
+    WDFlutterViewController *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(nativePageRemoved:)]) {
+        [controller nativePageRemoved:result];
+        //[self removeContainer:container];
+    }
 }
 
 + (void)onNativePageResume:(NSString *)pageId {
-//    WDFlutterViewContainer *container = [self find:pageId];
-//    if (container) {
-//        [container nativePageResume];
-//    }
+    WDFlutterViewController *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(nativePageResume)]) {
+        [controller nativePageResume];
+    }
 }
 
 //+ (void)removeContainer:(WDFlutterViewContainer *)container {

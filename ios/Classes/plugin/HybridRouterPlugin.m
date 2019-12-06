@@ -76,6 +76,7 @@
         [self openFlutterPage:call.arguments result:result];
     } else if ([@"onNativeRouteEvent" isEqualToString:method]) {
         [self onNativeRouteEvent:call.arguments result:result];
+        //result(nil);
     } else if ([@"onFlutterRouteEvent" isEqualToString:method]) {
         [self onFlutterRouteEvent:call.arguments];
         result(nil);

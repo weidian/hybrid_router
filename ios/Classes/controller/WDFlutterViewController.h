@@ -29,6 +29,9 @@
 
 #import <Foundation/Foundation.h>
 #import <Flutter/Flutter.h>
+#import "WDFlutterEngine.h"
+
+#define WD_FLUTTER_ENGINE WDFlutterEngine.sharedInstance
 
 typedef void (^FlutterViewWillAppearBlock) (void);
 

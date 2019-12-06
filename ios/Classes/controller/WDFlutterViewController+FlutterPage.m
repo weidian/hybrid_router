@@ -10,6 +10,25 @@
 
 @implementation WDFlutterViewController (FlutterPage)
 
+- (void)nativePageWillRemove:(id)result {
+//    if (self.options.resultBlock) {
+//        if (result) {
+//            self.options.resultBlock(@{@"data": result});
+//        } else {
+//            self.options.resultBlock(@{});
+//        }
+//    }
+}
+
+- (void)nativePageRemoved:(id)result {
+    [self nativePageWillRemove:result];
+}
+
+- (void)nativePageResume {
+//    [WD_FLUTTER_ENGINE atach:self];
+//    [self surfaceUpdated:YES];
+}
+
 - (void)flutterPagePushed:(NSString *)pageName {
     self.flutterPageCount++;
     if (self.flutterPageCount > 1) {
