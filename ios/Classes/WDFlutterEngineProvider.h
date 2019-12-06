@@ -11,10 +11,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol WDFlutterViewProvider <NSObject>
+@protocol WDFlutterEngineProvider <NSObject>
 
-@required
-- (FlutterViewController *)viewController;
+- (FlutterViewController *)flutterViewController;
+
+- (void)prepare;
+- (void)atach:(FlutterViewController *)vc;
+- (void)detach;
 
 @end
 

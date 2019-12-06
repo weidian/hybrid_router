@@ -54,7 +54,25 @@
 #pragma clang diagnostic pop
 }
 
-#pragma mark -- WDFlutterViewProvider
+#pragma mark -- WDFlutterEngineProvider
+
+- (FlutterViewController *)flutterViewController {
+    return _engine.viewController;
+}
+
+- (void)prepare {
+    WDFlutterViewController *fvc = (WDFlutterViewController *) _engine.viewController;
+    if(fvc) {
+        [fvc surfaceUpdated:NO];
+    }
+}
+
+- (void)atach:(FlutterViewController *)vc {
+    if(_engine.viewController != vc) {
+        [(WDFlutterViewController *)vc surfaceUpdated:NO];
+        _engine.viewController = vc;
+    }
+}
 
 - (void)detach {
     if(_engine.viewController != _dummy){

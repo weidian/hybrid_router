@@ -6,13 +6,13 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "WDFlutterViewProvider.h"
+#import "WDFlutterEngineProvider.h"
 
 @class FlutterEngine;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface WDFlutterEngine : NSObject <WDFlutterViewProvider>
+@interface WDFlutterEngine : NSObject <WDFlutterEngineProvider>
 
 @property(nonatomic, strong) FlutterEngine *engine;
 
