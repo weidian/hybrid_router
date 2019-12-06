@@ -1,8 +1,8 @@
 package com.vdian.flutter.hybridrouterexample;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
@@ -10,8 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
-import com.vdian.flutter.hybridrouter.page.FlutterWrapActivity;
-import com.vdian.flutter.hybridrouter.page.FlutterWrapFragment;
+import com.vdian.flutter.hybridrouter.page.HybridFlutterActivity;
 
 public class NativeExampleActivity extends AppCompatActivity {
 
@@ -43,9 +42,9 @@ public class NativeExampleActivity extends AppCompatActivity {
         btnJumpToFlutter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = FlutterWrapActivity.startIntent(v.getContext(), new FlutterRouteOptions.Builder("example")
+                Intent intent = HybridFlutterActivity.newBuilder().route(new FlutterRouteOptions.Builder("example")
                         .setArgs("Jump from native example")
-                        .build());
+                        .build()).buildIntent(v.getContext());
                 startActivityForResult(intent, REQUEST_FLUTTER);
             }
         });
@@ -93,8 +92,8 @@ public class NativeExampleActivity extends AppCompatActivity {
             }
             case REQUEST_FLUTTER: {
                 String message = null;
-                if (data != null && data.hasExtra(FlutterWrapFragment.EXTRA_RESULT_KEY)) {
-                    message = data.getStringExtra(FlutterWrapFragment.EXTRA_RESULT_KEY);
+                if (data != null) {
+                    message = (String) HybridFlutterActivity.getFlutterResule(data);
                 }
                 message = message == null ? "No message from flutter example" : message;
                 txtRet.setText(message);

@@ -28,9 +28,13 @@
 
 @interface HybridRouterPlugin ()
 @property(nonatomic, strong) FlutterMethodChannel *methodChannel;
-@property(nonatomic,strong) NSMutableDictionary *popResult;
 
+@property(nonatomic,strong) NSMutableDictionary *popResult;
 @property(nonatomic,strong) NSMutableArray *popedIds;
+
+@property(nonatomic, assign) BOOL initialized;
+@property(nonatomic, copy) NSString *method;
+@property(nonatomic, strong) id arguments;
 
 @end
 
@@ -61,6 +65,10 @@
     if ([@"getInitRoute" isEqualToString:method]) {
         NSDictionary *params = self.mainEntryParams ?: @{};
         result(params);
+        _initialized = YES;
+        if(_method) {
+            [self.methodChannel invokeMethod:_method arguments:_arguments];
+        }
     } else if ([@"openNativePage" isEqualToString:method]) {
         [self openNativePage:call.arguments result:result];
         result(nil);
@@ -137,13 +145,18 @@
 #pragma mark - open flutter page
 
 - (void)openFlutterPage:(NSDictionary *)arguments result:(FlutterResult)result {
-    [WDFlutterRouter.sharedInstance openFlutterPage:arguments[@"pageName"] params:arguments[@"args"] result:result];
+    [WDFlutterRouter.sharedInstance openFlutterPage:arguments[@"pageName"]
+                                             params:arguments[@"args"]
+                                     transitionType:(WDFlutterRouterTransitionType) [arguments[@"transitionType"] intValue]
+                                             result:result];
 }
 
 #pragma mark - open native page
 
 - (void)openNativePage:(NSDictionary *)arguments result:(FlutterResult)result {
-    [WDFlutterRouter.sharedInstance openNativePage:arguments[@"url"] params:arguments[@"args"] transitionType:[arguments[@"transitionType"] intValue]];
+    [WDFlutterRouter.sharedInstance openNativePage:arguments[@"url"]
+                                            params:arguments[@"args"]
+                                    transitionType:(WDFlutterRouterTransitionType) [arguments[@"transitionType"] intValue]];
 }
 
 #pragma mark - invoke method
@@ -153,7 +166,12 @@
 }
 
 - (void)invokeFlutterMethod:(NSString *)method arguments:(id)arguments {
-    [self.methodChannel invokeMethod:method arguments:arguments];
+    if(_initialized) {
+        [self.methodChannel invokeMethod:method arguments:arguments];
+    } else {
+        _method = method;
+        _arguments = arguments;
+    }
 }
 
 - (void)popDone:(NSString *)nativePageId {

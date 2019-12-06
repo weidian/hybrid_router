@@ -24,10 +24,11 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 package com.vdian.flutter.hybridrouter.page;
 
-import android.content.Intent;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
+import io.flutter.embedding.android.FlutterView;
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.plugin.common.PluginRegistry;
 
 /**
  * ┏┛ ┻━━━━━┛ ┻┓
@@ -48,32 +49,47 @@ import android.support.annotation.Nullable;
  * * * ┗━┻━┛   ┗━┻━┛
  *
  * @author qigengxin
- * @since 2019-04-25 15:22
+ * @since 2019-10-17 17:08
  */
-public class BaseFlutterWrapConfig implements IFlutterWrapConfig {
+public class EmptyFlutterHook implements IFlutterHook{
 
     @Override
-    public void preFlutterApplyTheme(@NonNull IFlutterNativePage nativePage) {
+    public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
 
     }
 
     @Override
-    public void postFlutterApplyTheme(@NonNull IFlutterNativePage nativePage) {
+    public void cleanUpFlutterEngine(@NonNull FlutterEngine flutterEngine) {
 
     }
 
     @Override
-    public boolean onFlutterPageRoute(@NonNull IFlutterNativePage nativePage, @Nullable FlutterRouteOptions routeOptions, int requestCode) {
-        return false;
+    public void onFlutterInitFailure(@NonNull Throwable error) {
+
     }
 
     @Override
-    public boolean onNativePageRoute(@NonNull IFlutterNativePage nativePage, @NonNull NativeRouteOptions routeOptions, int requestCode) {
-        return false;
+    public void onRegisterPlugin(PluginRegistry pluginRegistry) {
+
     }
 
     @Override
-    public FlutterRouteOptions parseFlutterRouteFromBundle(@NonNull IFlutterNativePage nativePage, Bundle bundle) {
-        return null;
+    public void afterFlutterViewAttachToEngine(@NonNull FlutterView flutterView, @NonNull FlutterEngine flutterEngine) {
+
+    }
+
+    @Override
+    public void beforeFlutterViewDetachFromEngine(@NonNull FlutterView flutterView, @NonNull FlutterEngine flutterEngine) {
+
+    }
+
+    @Override
+    public void afterUpdateSystemUiOverlays(FlutterView flutterView) {
+
+    }
+
+    @Override
+    public void onFirstFrameRendered(@NonNull FlutterView flutterView) {
+
     }
 }

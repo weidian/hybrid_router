@@ -1,13 +1,12 @@
 package com.vdian.flutter.hybridrouterexample;
 
-import android.graphics.Color;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -17,7 +16,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
-import com.vdian.flutter.hybridrouter.page.FlutterWrapFragment;
+import com.vdian.flutter.hybridrouter.page.HybridFlutterFragment;
 
 import io.flutter.embedding.android.FlutterView;
 
@@ -42,8 +41,8 @@ public class TabExampleActivity extends AppCompatActivity {
         }
     }
 
-    FlutterWrapFragment flutterWrapFragmentA;
-    FlutterWrapFragment flutterWrapFragmentB;
+    HybridFlutterFragment hybridFlutterFragmentA;
+    HybridFlutterFragment hybridFlutterFragmentB;
     Fragment nativeFragment;
     TabLayout tabLayout;
 
@@ -51,14 +50,12 @@ public class TabExampleActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tab_example);
-        flutterWrapFragmentA = new FlutterWrapFragment.Builder()
-                .screenshot(true)
-                .pageDelegate(new FlutterWrapFragment.ActivityPageDelegate().tab(true))
+        hybridFlutterFragmentA = new HybridFlutterFragment.Builder()
+                .renderMode(FlutterView.RenderMode.texture)
                 .route(new FlutterRouteOptions.Builder("tab_example").build())
                 .build();
-        flutterWrapFragmentB = new FlutterWrapFragment.Builder()
-                .screenshot(true)
-                .pageDelegate(new FlutterWrapFragment.ActivityPageDelegate().tab(true))
+        hybridFlutterFragmentB = new HybridFlutterFragment.Builder()
+                .renderMode(FlutterView.RenderMode.texture)
                 .route(new FlutterRouteOptions.Builder("tab_example").build())
                 .build();
         nativeFragment = new NativeFragment();
@@ -82,11 +79,12 @@ public class TabExampleActivity extends AppCompatActivity {
     boolean[] isAdded = new boolean[]{false, false, false};
 
     private void show(int index) {
-        Fragment[] fragments = new Fragment[]{flutterWrapFragmentA, nativeFragment, flutterWrapFragmentB};
+        Fragment[] fragments = new Fragment[]{hybridFlutterFragmentA, nativeFragment, hybridFlutterFragmentB};
         Fragment fragment = fragments[index];
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         if (preFragment != null) {
             transaction.detach(preFragment);
+            preFragment = null;
         }
         if (isAdded[index]) {
             transaction.attach(fragment);

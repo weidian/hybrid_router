@@ -56,6 +56,7 @@ static BOOL onceDisplaySplashView = NO;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.view.backgroundColor = [UIColor whiteColor];
     if (!onceDisplaySplashView) {
         if (!self.splashScreenView) {
             self.splashScreenView = self.splashView;
@@ -75,7 +76,6 @@ static BOOL onceDisplaySplashView = NO;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-
     self.navigationController.navigationBar.hidden = YES;
 
     if (self.viewWillAppearBlock) {

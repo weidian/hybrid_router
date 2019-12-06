@@ -22,17 +22,12 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
-package com.vdian.flutter.hybridrouter.engine;
+package com.vdian.flutter.hybridrouter.page;
 
-import android.content.Context;
-import android.graphics.Bitmap;
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-
-import java.lang.reflect.Field;
-
-import io.flutter.embedding.engine.FlutterEngine;
-import io.flutter.embedding.engine.FlutterJNI;
 
 /**
  * ┏┛ ┻━━━━━┛ ┻┓
@@ -52,46 +47,30 @@ import io.flutter.embedding.engine.FlutterJNI;
  * * * ┃ ┫ ┫   ┃ ┫ ┫
  * * * ┗━┻━┛   ┗━┻━┛
  *
- * 目前官方的 FixFlutterEngine 不完善，这里补充它的功能
- *
  * @author qigengxin
- * @since 2019-07-03 22:54
+ * @since 2019-04-25 15:22
  */
-public class FixFlutterEngine extends FlutterEngine {
+public class EmptyFlutterWrapConfig implements IFlutterWrapConfig {
 
-    private FlutterJNI flutterJNI;
-    private FixFlutterPluginRegistry fixPluginRegistry;
+    @Override
+    public void postFlutterApplyTheme(@NonNull IFlutterNativePage nativePage) {
 
-    public FixFlutterEngine(@NonNull Context context) {
-        super(context);
-        flutterJNI = reflectFlutterJNI();
-        fixPluginRegistry = new FixFlutterPluginRegistry(this, context);
     }
 
-    /**
-     * 获取 flutter engine 的截图
-     * @return
-     */
-    @Nullable
-    public Bitmap getFlutterBitmap() {
-        if (flutterJNI == null) {
-            return null;
-        }
-        return flutterJNI.getBitmap();
+    @Override
+    public boolean onFlutterPageRoute(@NonNull IFlutterNativePage nativePage,
+                                      @Nullable FlutterRouteOptions routeOptions, int requestCode) {
+        return false;
     }
 
-    public FixFlutterPluginRegistry getFixPluginRegistry() {
-        return fixPluginRegistry;
+    @Override
+    public boolean onNativePageRoute(@NonNull IFlutterNativePage nativePage,
+                                     @NonNull NativeRouteOptions routeOptions, int requestCode) {
+        return false;
     }
 
-    private FlutterJNI reflectFlutterJNI() {
-        try {
-            Field flutterJNIField = FlutterEngine.class.getDeclaredField("flutterJNI");
-            flutterJNIField.setAccessible(true);
-            return (FlutterJNI) flutterJNIField.get(this);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Override
+    public FlutterRouteOptions parseFlutterRouteFromBundle(@NonNull IFlutterNativePage nativePage) {
         return null;
     }
 }

@@ -25,6 +25,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'hybrid_plugin.dart';
@@ -237,7 +238,10 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     NativeContainer lastContainer =
         _containerHistory.isEmpty ? null : _containerHistory.last;
     _containerHistory.add(container);
-    OverlayEntry overlayEntry = OverlayEntry(builder: (context) => container);
+
+    /// 这里通过设置 overlay 不透明来拦截 select widget mode
+    OverlayEntry overlayEntry = OverlayEntry(
+        builder: (context) => container, opaque: true, maintainState: true);
     container._overlayEntry = overlayEntry;
     container._manager = this;
     overlay.insert(overlayEntry, above: lastContainer?._overlayEntry);
@@ -255,29 +259,49 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
 
   /// move the container to top
   void show(NativeContainer container) {
-    if (container != null && container != _containerHistory.last) {
-      overlay
-          .rearrange([container._overlayEntry], below: container._overlayEntry);
-      NativeContainer topContainer =
-          _containerHistory.isEmpty ? null : _containerHistory.last;
-      _containerHistory.remove(container);
-      _containerHistory.add(container);
-      _didShow(container, topContainer);
+    if (container != null) {
+      if (!_containerHistory.contains(container)) {
+        // need push
+        push(container);
+        // log error to console
+        FlutterError.onError(FlutterErrorDetails(
+            exception: "Attempt to show page that "
+                "not pushed in stack: initRouteName: ${container.initRouteName}"));
+      } else if (container != _containerHistory.last) {
+        // need move to top
+        overlay.rearrange([container._overlayEntry],
+            below: container._overlayEntry);
+        NativeContainer topContainer =
+            _containerHistory.isEmpty ? null : _containerHistory.last;
+        _containerHistory.remove(container);
+        _containerHistory.add(container);
+        _didShow(container, topContainer);
+      }
     }
   }
 
   /// remove a native container by native page Id
   Future<bool> removeNamed({@required String nativePageId, dynamic result}) {
     try {
-      NativeContainer c = _containerHistory.firstWhere((c) {
-        return c.nativePageId == nativePageId;
-      });
+      // 此函数可能会在相同的 nativePageId 调用 2 次 （dart 层移除一次，native 页面结束后一次），
+      // 所以需要做好判定
+      NativeContainer c;
+      for (int i = 0; i < _containerHistory.length; ++i) {
+        NativeContainer cc = _containerHistory[i];
+        if (cc.nativePageId == nativePageId) {
+          c = cc;
+          break;
+        }
+      }
+      // 未找到，remove 失败
+      if (c == null) return Future.value(false);
       c._result = result;
       return remove(c);
-    } catch (e) {
-      FlutterError.dumpErrorToConsole(FlutterErrorDetails(exception: e));
+    } catch (e, stack) {
+      FlutterError.dumpErrorToConsole(
+          FlutterErrorDetails(exception: e, stack: stack));
     }
-    return Future.value(false);
+    return SynchronousFuture<bool>(false);
   }
 
   /// remove a native container
@@ -287,20 +311,31 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
       return false;
     }
 
+    // 优先查找 container 是否已经移除，因为下面的 await 是一个异步的处理
+    // 有可能会触发两次相同 container 的 remove，把 containerHistory
+    // 提前就不会了
+    int index = _containerHistory.indexOf(container);
+    if (index < 0) {
+      // 表明 container 已经移除或者在移除中，直接返回 false
+      return false;
+    }
+    // remove history
+    _containerHistory.removeAt(index);
+
     // 通知 native 组件，我将要 pop
     await HybridPlugin.singleton.onNativeRouteEvent(
         event: NativeRouteEvent.beforeDestroy,
         nativePageId: container.nativePageId,
         result: container._result);
 
-    container._overlayEntry.remove();
-    int index = _containerHistory.indexOf(container);
+    // maybe overlayEntry is empty
+    container._overlayEntry?.remove();
+    // set the overlayEntry to null that means container's overlay is removed
+    container._overlayEntry = null;
     NativeContainer preContainer;
     if (index > 0) {
       preContainer = _containerHistory[index - 1];
     }
-
-    _containerHistory.removeAt(index);
     _didRemove(container, preContainer);
     return true;
   }
@@ -316,7 +351,12 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
   Widget build(BuildContext context) {
     List<OverlayEntry> initEntry;
     if (widget.backgroundBuilder != null) {
-      initEntry = [OverlayEntry(builder: widget.backgroundBuilder)];
+      initEntry = [
+        OverlayEntry(
+            builder: widget.backgroundBuilder,
+            opaque: false,
+            maintainState: true)
+      ];
     } else {
       initEntry = [];
     }

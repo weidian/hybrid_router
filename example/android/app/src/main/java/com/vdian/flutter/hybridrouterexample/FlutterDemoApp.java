@@ -10,10 +10,9 @@ import android.support.annotation.Nullable;
 import android.view.Window;
 
 import com.vdian.flutter.hybridrouter.FlutterManager;
-import com.vdian.flutter.hybridrouter.page.BaseFlutterWrapConfig;
+import com.vdian.flutter.hybridrouter.page.EmptyFlutterWrapConfig;
 import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
-import com.vdian.flutter.hybridrouter.page.FlutterWrapActivity;
-import com.vdian.flutter.hybridrouter.page.FlutterWrapFragment;
+import com.vdian.flutter.hybridrouter.page.HybridFlutterActivity;
 import com.vdian.flutter.hybridrouter.page.IFlutterNativePage;
 
 import io.flutter.view.FlutterMain;
@@ -46,7 +45,7 @@ public class FlutterDemoApp extends Application {
         // 提前初始化
         FlutterMain.startInitialization(this);
         // 可以添加一些自定义的行为
-        FlutterManager.getInstance().setFlutterWrapConfig(new BaseFlutterWrapConfig() {
+        FlutterManager.getInstance().setFlutterWrapConfig(new EmptyFlutterWrapConfig() {
 
             @Override
             public void postFlutterApplyTheme(@NonNull IFlutterNativePage nativePage) {
@@ -62,7 +61,8 @@ public class FlutterDemoApp extends Application {
             public boolean onFlutterPageRoute(@NonNull IFlutterNativePage nativePage,
                                               @Nullable FlutterRouteOptions routeOptions, int requestCode) {
                 // 自定义flutter 页面的跳转
-                Intent intent = FlutterWrapActivity.startIntent(nativePage.getContext(), routeOptions);
+                Intent intent = HybridFlutterActivity.newBuilder().route(routeOptions)
+                        .buildIntent(nativePage.getContext());
                 nativePage.startActivityForResult(intent, requestCode);
                 return true;
             }

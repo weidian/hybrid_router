@@ -5,38 +5,36 @@ import 'example.dart';
 
 void main() {
   final GlobalKey<NativeContainerManagerState> managerKey = GlobalKey();
+  var manager = HybridNavigator.init(
+      key: managerKey,
+      backgroundBuilder: (context) {
+        return EmptyPage();
+      },
+      defaultPushType: HybridPushType.Native,
+      pageObserver: [_TestNavigatorObserver()],
+      routes: {
+        "example": (context, argument) {
+          return ExamplePage(
+            title: argument as String,
+          );
+        },
+        "tab_example": (context, argument) {
+          return TabExamplePage();
+        }
+      },
+      unknownRouteBuilder: <T>(RouteSettings settings) {
+        return MaterialPageRoute<T>(
+          builder: (context) {
+            return PageNotFound();
+          },
+          settings: settings,
+        );
+      });
   runApp(MaterialApp(
     theme: ThemeData(
       brightness: Brightness.light,
     ),
-    home: EmptyPage(),
-    builder: (context, child) {
-      return HybridNavigator.init(
-          key: managerKey,
-          backgroundBuilder: (context) {
-            return EmptyPage();
-          },
-          defaultPushType: HybridPushType.Native,
-          pageObserver: [_TestNavigatorObserver()],
-          routes: {
-            "example": (context, argument) {
-              return ExamplePage(
-                title: argument as String,
-              );
-            },
-            "tab_example": (context, argument) {
-              return TabExamplePage();
-            }
-          },
-          unknownRouteBuilder: <T>(RouteSettings settings) {
-            return MaterialPageRoute<T>(
-              builder: (context) {
-                return PageNotFound();
-              },
-              settings: settings,
-            );
-          });
-    },
+    home: manager,
   ));
   var errorCallback = FlutterError.onError;
   FlutterError.onError = (details) {

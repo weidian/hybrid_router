@@ -21,9 +21,14 @@
 
 + (void)beforeNativePagePop:(NSString *)pageId result:(id)result {
 
-    WDFlutterViewController *container = [self find:pageId];
-    if(!container) return;
-    [[WDFlutterRouter.sharedInstance.delegate appNavigationController] popViewControllerAnimated:YES];
+    WDFlutterViewController *controller = [self find:pageId];
+    if(!controller) return;
+    
+    if(controller.options.modal) {
+        [controller dismissViewControllerAnimated:controller.options.animated completion:nil];
+    } else {
+        [[WDFlutterRouter.sharedInstance.delegate appNavigationController] popViewControllerAnimated:controller.options.animated];
+    }
     
     /*WDFlutterViewContainer *container = [self find:pageId];
     static int _count = 0;

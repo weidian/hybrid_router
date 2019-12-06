@@ -36,6 +36,8 @@ import java.util.Map;
 
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.embedding.engine.FlutterJNI;
+import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry;
 import io.flutter.embedding.engine.systemchannels.TextInputChannel;
 import io.flutter.plugin.editing.TextInputPlugin;
 import io.flutter.view.AccessibilityBridge;
@@ -108,19 +110,35 @@ public class FlutterStackManagerUtil {
         }
     }
 
-    public static void detachFlutterFromEngine(FlutterView flutterView, FlutterEngine flutterEngine) {
-        // 1.5.4 版本 FlutterView 的内存泄漏修复
-        // 释放 AccessibilityBridge
-        flutterEngine.getAccessibilityChannel().setAccessibilityMessageHandler(null);
+    public static FlutterJNI getJNIFromFlutterEngine(FlutterEngine flutterEngine) {
         try {
-            Field accessibilityBridgeField = FlutterView.class.getDeclaredField("accessibilityBridge");
-            accessibilityBridgeField.setAccessible(true);
-            AccessibilityBridge accessibilityBridge = (AccessibilityBridge) accessibilityBridgeField.get(flutterView);
-            accessibilityBridge.release();
-            accessibilityBridgeField.set(flutterView, null);
+            Field flutterJNIField = FlutterEngine.class.getDeclaredField("flutterJNI");
+            flutterJNIField.setAccessible(true);
+            return (FlutterJNI) flutterJNIField.get(flutterEngine);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    public static void detachShimPluginRegistryFromActivity(ShimPluginRegistry registry) {
+        try {
+            Field shimRegistrarAggregateField = ShimPluginRegistry.class
+                    .getDeclaredField("shimRegistrarAggregate");
+            shimRegistrarAggregateField.setAccessible(true);
+            Object shimRegistrarAggregate = shimRegistrarAggregateField.get(registry);
+            if (shimRegistrarAggregate != null) {
+                Field activityPluginBindingField = shimRegistrarAggregate.getClass()
+                        .getDeclaredField("activityPluginBinding");
+                activityPluginBindingField.setAccessible(true);
+                activityPluginBindingField.set(shimRegistrarAggregate, null);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void detachFlutterFromEngine(Object flutterView, FlutterEngine flutterEngine) {
         // 释放 text input plugin
         try {
             Field textInputPluginField = FlutterView.class.getDeclaredField("textInputPlugin");
