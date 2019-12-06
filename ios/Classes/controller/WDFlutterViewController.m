@@ -40,9 +40,8 @@ static BOOL onceDisplaySplashView = NO;
 @implementation WDFlutterViewController
 
 - (id)init {
-    
+    //前一个flutter vc不在更新
     WDFlutterViewController *fvc = (WDFlutterViewController *) WDFlutterEngine.sharedInstance.engine.viewController;
-    
     if(fvc) {
         [fvc surfaceUpdated:NO];
     }
@@ -86,8 +85,6 @@ static BOOL onceDisplaySplashView = NO;
     if (self.viewWillAppearBlock) {
         self.viewWillAppearBlock();
         self.viewWillAppearBlock = nil;
-    } else {
-//        [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.options.nativePageId}];
     }
     
     [WDFlutterRouter.sharedInstance add:self];
@@ -96,13 +93,13 @@ static BOOL onceDisplaySplashView = NO;
 - (void)viewDidAppear:(BOOL)animated {
     NSLog(@"---viewDidAppear %@",self);
     
-    [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.options.nativePageId}];
-
     FlutterViewController *fltvc = WDFlutterEngine.sharedInstance.engine.viewController;
     
+    //fltvc 不是 当面页面  需要重新 atach 当面页面，并通知 flutter 当前页面resumed 否则会闪屏
     if(fltvc != self) {
         [(WDFlutterViewController *)fltvc surfaceUpdated:NO];
         WDFlutterEngine.sharedInstance.engine.viewController = self;
+        [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.options.nativePageId}];
     }
     
     [self surfaceUpdated:YES];
