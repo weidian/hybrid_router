@@ -13,8 +13,10 @@
 @implementation WDFlutterRouteEventHandler
 
 + (WDFlutterViewController *)find:(NSString *)pageId {
-    WDFlutterViewContainerManager *manager = [WDFlutterRouter.sharedInstance contaninerManger];
-    return [manager find:pageId];
+//    WDFlutterViewContainerManager *manager = [WDFlutterRouter.sharedInstance contaninerManger];
+//    return [manager find:pageId];
+    WDFlutterViewController *vc = (WDFlutterViewController *)[WD_FLUTTER_ENGINE flutterViewController];
+    return vc.options.nativePageId == pageId ? vc : nil;
 }
 
 #pragma mark -- container page
@@ -23,6 +25,10 @@
 
     WDFlutterViewController *controller = [self find:pageId];
     if(!controller) return;
+    
+    //防止页面回退 异常
+    [controller surfaceUpdated:NO];
+    [WD_FLUTTER_ENGINE detach];
     
     if ([controller respondsToSelector:@selector(nativePageWillRemove:)]) {
         [controller nativePageWillRemove:result];
@@ -33,42 +39,12 @@
     } else {
         [[WDFlutterRouter.sharedInstance.delegate appNavigationController] popViewControllerAnimated:controller.options.animated];
     }
-    
-    /*WDFlutterViewContainer *container = [self find:pageId];
-    static int _count = 0;
-
-    if (!container || !container.didAppear) {
-        _count++;
-        if (_count > 10) {
-            return;
-        }
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [WDFlutterRouteEventHandler beforeNativePagePop:pageId result:result];
-        });
-        return;
-    }
-
-    _count = 0;
-
-    [container nativePageWillRemove:result];
-
-    if (!container.routeOptions.modal) {
-        UINavigationController *nav = container.navigationController;
-        if (nav.topViewController == container) {
-            [container.navigationController popViewControllerAnimated:container.routeOptions.animated];
-        } else {
-            [self removeContainer:container];
-        }
-    } else {
-        [container dismissViewControllerAnimated:container.routeOptions.animated completion:nil];
-    }*/
 }
 
 + (void)onNativePageRemoved:(NSString *)pageId result:(id)result {
     WDFlutterViewController *controller = [self find:pageId];
     if (controller && [controller respondsToSelector:@selector(nativePageRemoved:)]) {
         [controller nativePageRemoved:result];
-        //[self removeContainer:container];
     }
 }
 
@@ -78,14 +54,6 @@
         [controller nativePageResume];
     }
 }
-
-//+ (void)removeContainer:(WDFlutterViewContainer *)container {
-//    UINavigationController *nav = container.navigationController;
-//    if (!nav) return;
-//    NSMutableArray<UIViewController *> *viewControllers = nav.viewControllers.mutableCopy;
-//    [viewControllers removeObject:container];
-//    nav.viewControllers = viewControllers.copy;
-//}
 
 #pragma mark -- flutter page
 

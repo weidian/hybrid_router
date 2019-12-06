@@ -77,7 +77,7 @@ static BOOL onceDisplaySplashView = NO;
         self.viewWillAppearBlock = nil;
     }
     
-    [WDFlutterRouter.sharedInstance add:self];
+    //[WDFlutterRouter.sharedInstance add:self];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -102,20 +102,20 @@ static BOOL onceDisplaySplashView = NO;
 }
 
 - (void)dealloc {
-    //[self onNativePageFinished];
+    [self onNativePageFinished];
 }
 
--(void)didMoveToParentViewController:(UIViewController *)parent {
-    [super didMoveToParentViewController:parent];
-    if(parent == nil) {
-        [self onNativePageFinished];
-    }
-}
+//- (void)didMoveToParentViewController:(UIViewController *)parent {
+//    [super didMoveToParentViewController:parent];
+//    if(parent == nil) {
+//        [self onNativePageFinished];
+//    }
+//}
 
 - (void)onNativePageFinished {
     [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageFinished" arguments:@{@"nativePageId": self.options.nativePageId}];
-    [WDFlutterRouter.sharedInstance remove:self];
-    [[HybridRouterPlugin sharedInstance] popDone:self.options.nativePageId];
+    //[WDFlutterRouter.sharedInstance remove:self];
+    //[[HybridRouterPlugin sharedInstance] popDone:self.options.nativePageId];
 }
 
 - (UIView *)splashView {
