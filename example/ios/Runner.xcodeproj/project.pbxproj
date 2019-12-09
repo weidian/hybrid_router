@@ -20,6 +20,7 @@
 		97C146F31CF9000F007C117D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 97C146F21CF9000F007C117D /* main.m */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		BF16A089239E506000C0D4C1 /* MyFlutterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BF16A088239E506000C0D4C1 /* MyFlutterViewController.m */; };
 		D636F48E95B25B3885ABA956 /* libPods-Runner.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1793E8ED2E6B693B036558FA /* libPods-Runner.a */; };
 /* End PBXBuildFile section */
 
@@ -60,6 +61,8 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BF16A087239E506000C0D4C1 /* MyFlutterViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MyFlutterViewController.h; sourceTree = "<group>"; };
+		BF16A088239E506000C0D4C1 /* MyFlutterViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MyFlutterViewController.m; sourceTree = "<group>"; };
 		D997878C8C9BD306EB0670E6 /* libPods-Runner.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Runner.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -142,6 +145,8 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				175E52E722266CA000FAEF67 /* DemoViewController.h */,
 				175E52E822266CA000FAEF67 /* DemoViewController.m */,
+				BF16A087239E506000C0D4C1 /* MyFlutterViewController.h */,
+				BF16A088239E506000C0D4C1 /* MyFlutterViewController.m */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -314,6 +319,7 @@
 				97C146F31CF9000F007C117D /* main.m in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				175E52E922266CA000FAEF67 /* DemoViewController.m in Sources */,
+				BF16A089239E506000C0D4C1 /* MyFlutterViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

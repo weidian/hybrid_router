@@ -82,7 +82,6 @@ typedef void (^FlutterViewWillAppearBlock) (void);
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    self.navigationController.navigationBar.hidden = YES;
 
     if (self.viewWillAppearBlock) {
         self.viewWillAppearBlock();

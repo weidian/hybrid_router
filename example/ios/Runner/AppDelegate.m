@@ -2,6 +2,7 @@
 #include "DemoViewController.h"
 #import "WDFlutterRouter.h"
 #import "WDFlutterViewContainer.h"
+#import "MyFlutterViewController.h"
 
 @interface AppDelegate () <WDFlutterRouterDelegate>
 
@@ -21,7 +22,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     options.args = @"EXAMPLE";
     options.isTab = TRUE;
 
-    WDFlutterViewContainer *fvc = [[WDFlutterViewContainer alloc] init];
+    WDFlutterViewContainer *fvc = [[MyFlutterViewController alloc] init];
     fvc.hidesBottomBarWhenPushed = NO;
     fvc.options = options;
     UINavigationController *nav0 = [[UINavigationController alloc] initWithRootViewController:fvc];
@@ -37,7 +38,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     options_.args = @"EXAMPLE";
     options_.isTab = TRUE;
 
-    WDFlutterViewContainer *fvc_ = [[WDFlutterViewContainer alloc] init];
+    WDFlutterViewContainer *fvc_ = [[MyFlutterViewController alloc] init];
     fvc_.hidesBottomBarWhenPushed = NO;
     fvc_.options = options_;
     UINavigationController *nav2 = [[UINavigationController alloc] initWithRootViewController:fvc_];
@@ -45,8 +46,9 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     UITabBarController *tabVC = [[UITabBarController alloc] init];
     tabVC.viewControllers = @[nav0, nav1, nav2];
-    //tabVC.viewControllers = @[nav1];
 
+    [[UITabBar appearance] setTranslucent:NO];
+    
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.rootViewController = tabVC;
     [self.window makeKeyAndVisible];
@@ -63,6 +65,10 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
 - (void)openNativePage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type {
     [[self appNavigationController] pushViewController:[[DemoViewController alloc] init] animated:YES];
+}
+
+- (WDFlutterViewContainer *)flutterViewContainer {
+    return [[MyFlutterViewController alloc] init];
 }
 
 @end
