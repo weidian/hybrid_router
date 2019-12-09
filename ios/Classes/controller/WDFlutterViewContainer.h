@@ -33,13 +33,10 @@
 
 #define WD_FLUTTER_ENGINE WDFlutterEngine.sharedInstance
 
-typedef void (^FlutterViewWillAppearBlock) (void);
-
 @class WDFlutterRouteOptions;
 
 @interface WDFlutterViewContainer : FlutterViewController
 
-@property(nonatomic,copy) FlutterViewWillAppearBlock viewWillAppearBlock;
 @property(nonatomic,strong) WDFlutterRouteOptions *options;
 @property(nonatomic,assign) NSUInteger flutterPageCount;
 

@@ -106,22 +106,22 @@
     }
     container.options = options;
 
-    static long long fTag = 0;
-    long long _pageId = fTag++;
-
-    container.viewWillAppearBlock = ^() {
-        static BOOL sIsFirstPush = YES;
-
-        options.nativePageId = @(_pageId).stringValue;
-
-        if (sIsFirstPush) {
-            [HybridRouterPlugin sharedInstance].mainEntryParams = [options toDictionary];
-            sIsFirstPush = NO;
-        } else {
-            [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"pushFlutterPage"
-                                                           arguments:[options toDictionary]];
-        }
-    };
+//    static long long fTag = 0;
+//    long long _pageId = fTag++;
+//
+//    container.viewWillAppearBlock = ^() {
+//        static BOOL sIsFirstPush = YES;
+//
+//        options.nativePageId = @(_pageId).stringValue;
+//
+//        if (sIsFirstPush) {
+//            [HybridRouterPlugin sharedInstance].mainEntryParams = [options toDictionary];
+//            sIsFirstPush = NO;
+//        } else {
+//            [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"pushFlutterPage"
+//                                                           arguments:[options toDictionary]];
+//        }
+//    };
     UINavigationController *nav = _delegate.appNavigationController;
     if (!nav) return;
 
