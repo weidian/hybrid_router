@@ -5,10 +5,10 @@
 //  Created by blackox626 on 2019/12/6.
 //
 
-#import "WDFlutterViewController+FlutterPage.h"
-#import "WDFlutterViewController.h"
+#import "WDFlutterViewContainer+FlutterPage.h"
+#import "WDFlutterViewContainer.h"
 
-@implementation WDFlutterViewController (FlutterPage)
+@implementation WDFlutterViewContainer (FlutterPage)
 
 - (void)nativePageWillRemove:(id)result {
     if (self.options.resultBlock) {

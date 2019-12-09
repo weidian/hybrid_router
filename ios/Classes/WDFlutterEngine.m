@@ -7,7 +7,7 @@
 
 #import <Flutter/Flutter.h>
 #import "WDFlutterEngine.h"
-#import "WDFlutterViewController.h"
+#import "WDFlutterViewContainer.h"
 #import "WDFlutterPluginRigstrant.h"
 
 @interface WDFlutterEngine ()
@@ -36,9 +36,9 @@
         
         _engine = engine;
         
-        _dummy = [[WDFlutterViewController alloc] initWithEngine:_engine
-                                                         nibName:nil
-                                                          bundle:nil];
+        _dummy = [[WDFlutterViewContainer alloc] initWithEngine:_engine
+                                                        nibName:nil
+                                                         bundle:nil];
         
         Class clazz = NSClassFromString(@"GeneratedPluginRegistrant");
         if (clazz) {
@@ -62,7 +62,7 @@
 }
 
 - (void)prepare {
-    WDFlutterViewController *fvc = (WDFlutterViewController *) _engine.viewController;
+    WDFlutterViewContainer *fvc = (WDFlutterViewContainer *) _engine.viewController;
     if(fvc) {
         [fvc surfaceUpdated:NO];
     }
@@ -70,7 +70,7 @@
 
 - (void)attach:(FlutterViewController *)vc {
     if(_engine.viewController != vc) {
-        [(WDFlutterViewController *)_engine.viewController surfaceUpdated:NO];
+        [(WDFlutterViewContainer *)_engine.viewController surfaceUpdated:NO];
         _engine.viewController = vc;
     }
 }

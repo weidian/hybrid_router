@@ -31,7 +31,7 @@
 #import "WDFlutterViewContainerManager.h"
 #import "WDFlutterEngine.h"
 #import "HybridRouterPlugin.h"
-#import "WDFlutterViewController.h"
+#import "WDFlutterViewContainer.h"
 
 @interface WDFlutterRouter ()
 @property(nonatomic, strong) WDFlutterViewContainerManager *manager;
@@ -97,21 +97,19 @@
     options.modal = modal;
     options.animated = animated;
 
-//    WDFlutterViewContainer *viewController = nil;
-//    if ([_delegate respondsToSelector:@selector(flutterViewContainer)]) {
-//        viewController = [_delegate flutterViewContainer];
-//    }
-//    if (viewController == nil) {
-//        viewController = [[WDFlutterViewContainer alloc] init];
-//    }
-//    viewController.routeOptions = options;
+    WDFlutterViewContainer *container = nil;
+    if ([_delegate respondsToSelector:@selector(flutterViewContainer)]) {
+        container = [_delegate flutterViewContainer];
+    }
+    if (container == nil) {
+        container = [[WDFlutterViewContainer alloc] init];
+    }
+    container.options = options;
 
     static long long fTag = 0;
     long long _pageId = fTag++;
 
-    WDFlutterViewController *viewController = [[WDFlutterViewController alloc] init];
-    viewController.options = options;
-    viewController.viewWillAppearBlock = ^() {
+    container.viewWillAppearBlock = ^() {
         static BOOL sIsFirstPush = YES;
 
         options.nativePageId = @(_pageId).stringValue;
@@ -120,18 +118,19 @@
             [HybridRouterPlugin sharedInstance].mainEntryParams = [options toDictionary];
             sIsFirstPush = NO;
         } else {
-            [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"pushFlutterPage" arguments:[options toDictionary]];
+            [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"pushFlutterPage"
+                                                           arguments:[options toDictionary]];
         }
     };
     UINavigationController *nav = _delegate.appNavigationController;
     if (!nav) return;
 
     if (!modal) {
-        [nav pushViewController:viewController animated:animated];
+        [nav pushViewController:container animated:animated];
     } else {
-        UIViewController *_viewController = [[UINavigationController alloc] initWithRootViewController:viewController];
-        _viewController.modalPresentationStyle = UIModalPresentationFullScreen;
-        [nav presentViewController:_viewController
+        UINavigationController *subNav = [[UINavigationController alloc] initWithRootViewController:container];
+        subNav.modalPresentationStyle = UIModalPresentationFullScreen;
+        [nav presentViewController:subNav
                           animated:animated
                         completion:nil];
     }
@@ -139,12 +138,12 @@
 
 #pragma mark -- container
 
-- (void)add:(WDFlutterViewController *)controller {
-    [_manager add:controller];
+- (void)add:(WDFlutterViewContainer *)container {
+    [_manager add:container];
 }
 
-- (void)remove:(WDFlutterViewController *)controller {
-    [_manager remove:controller];
+- (void)remove:(WDFlutterViewContainer *)container {
+    [_manager remove:container];
 }
 
 #pragma mark -- manager

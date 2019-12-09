@@ -9,15 +9,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class WDFlutterViewController;
+@class WDFlutterViewContainer;
 
 @interface WDFlutterViewContainerManager : NSObject
 
-- (void)add:(WDFlutterViewController *)controller;
+- (void)add:(WDFlutterViewContainer *)container;
 
-- (void)remove:(WDFlutterViewController *)controller;
+- (void)remove:(WDFlutterViewContainer *)container;
 
-- (WDFlutterViewController *)find:(NSString *)pageId;
+- (WDFlutterViewContainer *)find:(NSString *)pageId;
 
 @end
 

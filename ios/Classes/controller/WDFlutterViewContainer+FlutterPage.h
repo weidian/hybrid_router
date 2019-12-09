@@ -5,12 +5,12 @@
 //  Created by blackox626 on 2019/12/6.
 //
 
-#import "WDFlutterViewController.h"
+#import "WDFlutterViewContainer.h"
 #import "WDFlutterPageLifeCircle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface WDFlutterViewController (FlutterPage) <WDFlutterPageLifeCircle>
+@interface WDFlutterViewContainer (FlutterPage) <WDFlutterPageLifeCircle>
 
 @end
 

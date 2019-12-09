@@ -27,17 +27,17 @@
 // Copyright (c) 2018 lm. All rights reserved.
 //
 
-#import "WDFlutterViewController.h"
+#import "WDFlutterViewContainer.h"
 #import "HybridRouterPlugin.h"
 #import "WDFlutterRouter.h"
 
 static BOOL onceDisplaySplashView = NO;
 
-@interface WDFlutterViewController ()
+@interface WDFlutterViewContainer ()
 @property(nonatomic, strong) UIView *splashView;
 @end
 
-@implementation WDFlutterViewController
+@implementation WDFlutterViewContainer
 
 - (id)init {
     //前一个fluttervc detach ，attach当前页面

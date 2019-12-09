@@ -37,7 +37,7 @@ typedef void (^FlutterViewWillAppearBlock) (void);
 
 @class WDFlutterRouteOptions;
 
-@interface WDFlutterViewController : FlutterViewController
+@interface WDFlutterViewContainer : FlutterViewController
 
 @property(nonatomic,copy) FlutterViewWillAppearBlock viewWillAppearBlock;
 @property(nonatomic,strong) WDFlutterRouteOptions *options;
