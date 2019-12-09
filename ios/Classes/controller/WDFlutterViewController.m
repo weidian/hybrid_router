@@ -40,7 +40,7 @@ static BOOL onceDisplaySplashView = NO;
 @implementation WDFlutterViewController
 
 - (id)init {
-    //前一个fluttervc detach ，atach当前页面
+    //前一个fluttervc detach ，attach当前页面
     [WD_FLUTTER_ENGINE prepare];
     self = [super initWithEngine:WDFlutterEngine.sharedInstance.engine nibName:nil bundle:nil];
     if (self) {
@@ -53,7 +53,7 @@ static BOOL onceDisplaySplashView = NO;
     self.view.backgroundColor = [UIColor whiteColor];
     if (!onceDisplaySplashView) {
         if (!self.splashScreenView) {
-            self.splashScreenView = self.splashView;
+            //self.splashScreenView = self.splashView;
         }
         onceDisplaySplashView = YES;
     }
@@ -83,7 +83,7 @@ static BOOL onceDisplaySplashView = NO;
 - (void)viewDidAppear:(BOOL)animated {
     //fltvc 不是当面页面, 需要重新atach当面页面 && 通知 flutter 当前页面resumed
     if([WD_FLUTTER_ENGINE flutterViewController] != self) {
-        [WD_FLUTTER_ENGINE atach:self];
+        [WD_FLUTTER_ENGINE attach:self];
         [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed" arguments:@{@"nativePageId": self.options.nativePageId}];
     }
     
@@ -105,17 +105,8 @@ static BOOL onceDisplaySplashView = NO;
     [self onNativePageFinished];
 }
 
-//- (void)didMoveToParentViewController:(UIViewController *)parent {
-//    [super didMoveToParentViewController:parent];
-//    if(parent == nil) {
-//        [self onNativePageFinished];
-//    }
-//}
-
 - (void)onNativePageFinished {
     [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageFinished" arguments:@{@"nativePageId": self.options.nativePageId}];
-    //[WDFlutterRouter.sharedInstance remove:self];
-    //[[HybridRouterPlugin sharedInstance] popDone:self.options.nativePageId];
 }
 
 - (UIView *)splashView {

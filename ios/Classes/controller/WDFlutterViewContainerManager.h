@@ -6,11 +6,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "WDFlutterViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class WDFlutterViewContainer;
+@class WDFlutterViewController;
 
 @interface WDFlutterViewContainerManager : NSObject
 

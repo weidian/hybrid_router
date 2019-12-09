@@ -13,8 +13,6 @@
 @implementation WDFlutterRouteEventHandler
 
 + (WDFlutterViewController *)find:(NSString *)pageId {
-//    WDFlutterViewContainerManager *manager = [WDFlutterRouter.sharedInstance contaninerManger];
-//    return [manager find:pageId];
     WDFlutterViewController *vc = (WDFlutterViewController *)[WD_FLUTTER_ENGINE flutterViewController];
     return vc.options.nativePageId == pageId ? vc : nil;
 }

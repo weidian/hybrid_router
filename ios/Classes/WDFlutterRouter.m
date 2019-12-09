@@ -139,12 +139,12 @@
 
 #pragma mark -- container
 
-- (void)add:(WDFlutterViewController *)container {
-    [_manager add:container];
+- (void)add:(WDFlutterViewController *)controller {
+    [_manager add:controller];
 }
 
-- (void)remove:(WDFlutterViewController *)container {
-    [_manager remove:container];
+- (void)remove:(WDFlutterViewController *)controller {
+    [_manager remove:controller];
 }
 
 #pragma mark -- manager

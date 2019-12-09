@@ -47,6 +47,7 @@
                             withObject:_engine];
             }
         }
+        //非plugin 工程 接入的 plugin 需要手动register
         [WDFlutterPluginRigstrant registerWithRegistry:_engine];
     }
 
@@ -67,7 +68,7 @@
     }
 }
 
-- (void)atach:(FlutterViewController *)vc {
+- (void)attach:(FlutterViewController *)vc {
     if(_engine.viewController != vc) {
         [(WDFlutterViewController *)_engine.viewController surfaceUpdated:NO];
         _engine.viewController = vc;

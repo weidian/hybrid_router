@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (FlutterViewController *)flutterViewController;
 
 - (void)prepare;
-- (void)atach:(FlutterViewController *)vc;
+- (void)attach:(FlutterViewController *)vc;
 - (void)detach;
 
 @end

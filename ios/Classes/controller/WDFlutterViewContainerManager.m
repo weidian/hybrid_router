@@ -6,6 +6,7 @@
 //
 
 #import "WDFlutterViewContainerManager.h"
+#import "WDFlutterViewController.h"
 
 @interface WDFlutterViewContainerManager ()
 @property(nonatomic, strong) NSMutableDictionary *controllers;
@@ -41,7 +42,7 @@
     [_controllers removeObjectForKey:controller.options.nativePageId];
 }
 
-- (WDFlutterViewContainer *)find:(NSString *)pageId {
+- (WDFlutterViewController *)find:(NSString *)pageId {
     return _controllers[pageId];
 }
 
