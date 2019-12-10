@@ -96,12 +96,19 @@ typedef void (^FlutterViewWillAppearBlock) (void);
     if ([WD_FLUTTER_ENGINE flutterViewController] != self) {
         [WD_FLUTTER_ENGINE attach:self];
         [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed"
-                                                       arguments:@{@"nativePageId": self.options.nativePageId}];
+                                                       arguments:@{@"nativePageId": self.options.nativePageId}
+                                                          result:^(id result) {
+            [self surfaceUpdated:YES];
+        }];
+    } else {
+        [self surfaceUpdated:YES];
     }
 
-    //resumed 之后执行 否则会闪屏
-    [self surfaceUpdated:YES];
-
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        //resumed 之后执行 否则会闪屏
+//        [self surfaceUpdated:YES];
+//    });
+    
     [super viewDidAppear:animated];
 }
 

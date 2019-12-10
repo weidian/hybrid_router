@@ -28,6 +28,10 @@
 
 }
 
+- (void)onNativePageCreate {
+    
+}
+
 - (void)flutterPagePushed:(NSString *)pageName {
     self.flutterPageCount++;
     if (self.flutterPageCount > 1) {

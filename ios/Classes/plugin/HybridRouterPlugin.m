@@ -29,9 +29,6 @@
 @interface HybridRouterPlugin ()
 @property(nonatomic, strong) FlutterMethodChannel *methodChannel;
 
-@property(nonatomic,strong) NSMutableDictionary *popResult;
-@property(nonatomic,strong) NSMutableArray *popedIds;
-
 @property(nonatomic, assign) BOOL initialized;
 @property(nonatomic, copy) NSString *method;
 @property(nonatomic, strong) id arguments;
@@ -54,8 +51,6 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInst = [[HybridRouterPlugin alloc] init];
-        sharedInst.popResult = [NSMutableDictionary dictionary];
-        sharedInst.popedIds = [NSMutableArray array];
     });
     return sharedInst;
 }
@@ -93,13 +88,6 @@
     id _result = arguments[@"result"];
     switch (eventId.integerValue) {
         case WDFNativeRouteEventBeforeDestroy:
-//            if([_popedIds containsObject:nativePageId]) {
-//                result(nil);
-//                [_popedIds removeObject:nativePageId];
-//                break;
-//            }
-//
-//            _popResult[nativePageId] = result;
             [WDFlutterRouteEventHandler beforeNativePagePop:nativePageId result:_result];
             break;
         case WDFNativeRouteEventOnDestroy:
@@ -107,6 +95,9 @@
             break;
         case WDFNativeRouteEventOnResume:
             [WDFlutterRouteEventHandler onNativePageResume:nativePageId];
+            break;
+        case WDFNativeRouteEventOnCreate:
+            [WDFlutterRouteEventHandler onNativePageCreate:nativePageId];
             break;
         default:
             break;
@@ -173,16 +164,6 @@
         _method = method;
         _arguments = arguments;
     }
-}
-
-- (void)popDone:(NSString *)nativePageId {
-//    FlutterResult result = _popResult[nativePageId];
-//    if(result) {
-//        result(nil);
-//        [_popResult removeObjectForKey:nativePageId];
-//    } else {
-//        [_popedIds addObject:nativePageId];
-//    }
 }
 
 @end

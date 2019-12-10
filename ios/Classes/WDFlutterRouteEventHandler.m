@@ -53,6 +53,13 @@
     }
 }
 
++ (void)onNativePageCreate:(NSString *)pageId {
+    WDFlutterViewContainer *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(nativePageCreate)]) {
+        [controller nativePageCreate];
+    }
+}
+
 #pragma mark -- flutter page
 
 + (void)onFlutterPagePushed:(NSString *)pageId name:(NSString *)name {
