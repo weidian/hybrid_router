@@ -95,6 +95,8 @@ typedef void (^FlutterViewWillAppearBlock) (void);
     //fltvc 不是当面页面, 需要重新attach当面页面 && 通知 flutter 当前页面resumed
     if ([WD_FLUTTER_ENGINE flutterViewController] != self) {
         [WD_FLUTTER_ENGINE attach:self];
+        //更新viewport
+        [self viewDidLayoutSubviews];
         [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed"
                                                        arguments:@{@"nativePageId": self.options.nativePageId}
                                                           result:^(id result) {
