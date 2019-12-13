@@ -15,6 +15,9 @@ buildscript {
 
 rootProject.allprojects {
     repositories {
+        maven {
+            url "http://nexus.vdian.net/repository/android/"
+        }
         google()
         jcenter()
     }
