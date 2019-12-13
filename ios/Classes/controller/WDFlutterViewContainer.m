@@ -120,6 +120,10 @@ typedef void (^FlutterViewWillAppearBlock) (void);
 
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
+    //处理下present 页面卡死的情况
+    if ([WD_FLUTTER_ENGINE flutterViewController] != self) {
+        [[WD_FLUTTER_ENGINE flutterViewController] viewDidAppear:animated];
+    }
 }
 
 - (void)dealloc {
