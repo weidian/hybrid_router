@@ -66,7 +66,6 @@
         }
     } else if ([@"openNativePage" isEqualToString:method]) {
         [self openNativePage:call.arguments result:result];
-        result(nil);
     } else if ([@"openFlutterPage" isEqualToString:method]) {
         [self openFlutterPage:call.arguments result:result];
     } else if ([@"onNativeRouteEvent" isEqualToString:method]) {
@@ -149,6 +148,10 @@
     [WDFlutterRouter.sharedInstance openNativePage:arguments[@"url"]
                                             params:arguments[@"args"]
                                     transitionType:(WDFlutterRouterTransitionType) [arguments[@"transitionType"] intValue]];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        result(nil);
+    });
 }
 
 #pragma mark - invoke method

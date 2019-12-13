@@ -21,22 +21,35 @@
 
 + (void)beforeNativePagePop:(NSString *)pageId result:(id)result {
 
-    WDFlutterViewContainer *controller = [self find:pageId];
-    if(!controller) return;
+    WDFlutterViewContainer *container = [self find:pageId];
+    if(!container) return;
     
     //防止页面回退 异常
-    [controller surfaceUpdated:NO];
+    [container surfaceUpdated:NO];
     [WD_FLUTTER_ENGINE detach];
     
-    if ([controller respondsToSelector:@selector(nativePageWillRemove:)]) {
-        [controller nativePageWillRemove:result];
+    if ([container respondsToSelector:@selector(nativePageWillRemove:)]) {
+        [container nativePageWillRemove:result];
     }
     
-    if(controller.options.modal) {
-        [controller dismissViewControllerAnimated:controller.options.animated completion:nil];
+    if(container.options.modal) {
+        [container dismissViewControllerAnimated:container.options.animated completion:nil];
     } else {
-        [[WDFlutterRouter.sharedInstance.delegate appNavigationController] popViewControllerAnimated:controller.options.animated];
+        UINavigationController *nav = container.navigationController;
+        if (nav.topViewController == container) {
+            [nav popViewControllerAnimated:container.options.animated];
+        } else {
+            [self removeContainer:container];
+        }
     }
+}
+
++ (void)removeContainer:(WDFlutterViewContainer *)container {
+    UINavigationController *nav = container.navigationController;
+    if (!nav) return;
+    NSMutableArray<UIViewController *> *viewControllers = nav.viewControllers.mutableCopy;
+    [viewControllers removeObject:container];
+    nav.viewControllers = viewControllers.copy;
 }
 
 + (void)onNativePageRemoved:(NSString *)pageId result:(id)result {
