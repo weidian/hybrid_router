@@ -50,7 +50,7 @@ import java.util.Map;
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.dart.DartExecutor;
-import io.flutter.embedding.engine.renderer.OnFirstFrameRenderedListener;
+import io.flutter.embedding.engine.renderer.FlutterUiDisplayListener;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.platform.PlatformPlugin;
 import io.flutter.view.FlutterMain;
@@ -727,12 +727,17 @@ public class FlutterNativePageDelegate {
         flutterEngine.getDartExecutor().executeDartEntrypoint(entrypoint);
     }
 
-    private OnFirstFrameRenderedListener firstFrameListener = new OnFirstFrameRenderedListener() {
+    private FlutterUiDisplayListener firstFrameListener = new FlutterUiDisplayListener() {
         @Override
-        public void onFirstFrameRendered() {
+        public void onFlutterUiDisplayed() {
             if (page instanceof IFlutterHook && flutterView != null) {
                 ((IFlutterHook) page).onFirstFrameRendered(flutterView);
             }
+        }
+
+        @Override
+        public void onFlutterUiNoLongerDisplayed() {
+
         }
     };
 

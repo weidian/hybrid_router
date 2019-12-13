@@ -10,7 +10,7 @@ import android.widget.FrameLayout;
 
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
-import io.flutter.embedding.engine.renderer.OnFirstFrameRenderedListener;
+import io.flutter.embedding.engine.renderer.FlutterUiDisplayListener;
 
 /**
  * ┏┛ ┻━━━━━┛ ┻┓
@@ -85,10 +85,15 @@ public class FlutterSplashView extends FrameLayout {
     private View splashScreen;
     private FlutterView flutterView;
 
-    private final OnFirstFrameRenderedListener firstFrameListener = new OnFirstFrameRenderedListener() {
+    private final FlutterUiDisplayListener firstFrameListener = new FlutterUiDisplayListener() {
         @Override
-        public void onFirstFrameRendered() {
+        public void onFlutterUiDisplayed() {
             transitionToFlutter();
+        }
+
+        @Override
+        public void onFlutterUiNoLongerDisplayed() {
+
         }
     };
 
