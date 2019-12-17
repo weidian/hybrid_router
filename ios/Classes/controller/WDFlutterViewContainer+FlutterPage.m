@@ -7,6 +7,11 @@
 
 #import "WDFlutterViewContainer+FlutterPage.h"
 #import "WDFlutterViewContainer.h"
+#import "HybridRouterPlugin.h"
+
+@interface WDFlutterViewContainer ()<UIGestureRecognizerDelegate>
+
+@end
 
 @implementation WDFlutterViewContainer (FlutterPage)
 
@@ -37,6 +42,7 @@
     if (self.flutterPageCount > 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = NO;
     }
+    self.navigationController.interactivePopGestureRecognizer.delegate = self;
 }
 
 - (void)flutterPageRemoved:(NSString *)pageName {
@@ -44,6 +50,10 @@
     if (self.flutterPageCount <= 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
     }
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    return YES;
 }
 
 @end
