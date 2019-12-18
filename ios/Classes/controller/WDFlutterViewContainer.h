@@ -54,6 +54,8 @@
 @property(nonatomic, assign) BOOL modal;
 @property(nonatomic, assign) BOOL animated;
 
+@property(nonatomic, copy) NSString *topRouteId;
+
 - (NSDictionary *)toDictionary;
 
 @end

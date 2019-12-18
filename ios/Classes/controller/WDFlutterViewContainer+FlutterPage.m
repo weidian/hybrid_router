@@ -53,6 +53,16 @@
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if([self willPop]) {
+        [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onBackPressed"
+                                                       arguments:nil];
+        return NO;
+    }
+    
+    return YES;
+}
+
+- (BOOL)willPop {
     return YES;
 }
 
