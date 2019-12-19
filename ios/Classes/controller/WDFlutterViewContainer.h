@@ -54,6 +54,7 @@
 @property(nonatomic, assign) BOOL modal;
 @property(nonatomic, assign) BOOL animated;
 
+//记录container 置顶的routeId
 @property(nonatomic, copy) NSString *topRouteId;
 
 - (NSDictionary *)toDictionary;
