@@ -30,7 +30,7 @@
 #import <Foundation/Foundation.h>
 #import <Flutter/Flutter.h>
 
-@class WDFlutterViewContainer, WDFlutterViewContainerManager;
+@class WDFlutterViewContainer, WDFlutterViewContainerManager,WDFlutterViewContainer;
 @class UIViewController, WDFlutterViewContainer, WDFlutterRouteOptions;
 
 typedef NS_ENUM(int, WDFlutterRouterTransitionType) {

@@ -8,60 +8,39 @@
 #import "WDFlutterRouteEventHandler.h"
 #import "WDFlutterRouter.h"
 #import "WDFlutterViewContainerManager.h"
-#import "WDFlutterViewContainer.h"
+#import "WDFlutterViewContainer+FlutterPage.h"
 
 @implementation WDFlutterRouteEventHandler
 
 + (WDFlutterViewContainer *)find:(NSString *)pageId {
-    WDFlutterViewContainerManager *manager = [WDFlutterRouter.sharedInstance contaninerManger];
-    return [manager find:pageId];
+    WDFlutterViewContainer *vc = (WDFlutterViewContainer *)[WD_FLUTTER_ENGINE flutterViewController];
+    return vc.options.nativePageId == pageId ? vc : nil;
 }
 
 #pragma mark -- container page
 
 + (void)beforeNativePagePop:(NSString *)pageId result:(id)result {
+
     WDFlutterViewContainer *container = [self find:pageId];
-    static int _count = 0;
-
-    if (!container || !container.didAppear) {
-        _count++;
-        if (_count > 10) {
-            return;
-        }
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [WDFlutterRouteEventHandler beforeNativePagePop:pageId result:result];
-        });
-        return;
+    if(!container) return;
+    
+    //防止页面回退 异常
+    [container surfaceUpdated:NO];
+    [WD_FLUTTER_ENGINE detach];
+    
+    if ([container respondsToSelector:@selector(nativePageWillRemove:)]) {
+        [container nativePageWillRemove:result];
     }
-
-    _count = 0;
-
-    [container nativePageWillRemove:result];
-
-    if (!container.routeOptions.modal) {
+    
+    if(container.options.modal) {
+        [container dismissViewControllerAnimated:container.options.animated completion:nil];
+    } else {
         UINavigationController *nav = container.navigationController;
         if (nav.topViewController == container) {
-            [container.navigationController popViewControllerAnimated:container.routeOptions.animated];
+            [nav popViewControllerAnimated:container.options.animated];
         } else {
             [self removeContainer:container];
         }
-    } else {
-        [container dismissViewControllerAnimated:container.routeOptions.animated completion:nil];
-    }
-}
-
-+ (void)onNativePageRemoved:(NSString *)pageId result:(id)result {
-    WDFlutterViewContainer *container = [self find:pageId];
-    if (container) {
-        //[container nativePageWillRemove:result];
-        //[self removeContainer:container];
-    }
-}
-
-+ (void)onNativePageResume:(NSString *)pageId {
-    WDFlutterViewContainer *container = [self find:pageId];
-    if (container) {
-        [container nativePageResume];
     }
 }
 
@@ -73,33 +52,54 @@
     nav.viewControllers = viewControllers.copy;
 }
 
++ (void)onNativePageRemoved:(NSString *)pageId result:(id)result {
+    WDFlutterViewContainer *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(nativePageRemoved:)]) {
+        [controller nativePageRemoved:result];
+    }
+}
+
++ (void)onNativePageResume:(NSString *)pageId {
+    WDFlutterViewContainer *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(nativePageResume)]) {
+        [controller nativePageResume];
+    }
+}
+
++ (void)onNativePageCreate:(NSString *)pageId {
+    WDFlutterViewContainer *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(nativePageCreate)]) {
+        [controller nativePageCreate];
+    }
+}
+
 #pragma mark -- flutter page
 
 + (void)onFlutterPagePushed:(NSString *)pageId name:(NSString *)name {
-    WDFlutterViewContainer *container = [self find:pageId];
-    if (container && [container respondsToSelector:@selector(flutterPagePushed:)]) {
-        [container flutterPagePushed:name];
+    WDFlutterViewContainer *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(flutterPagePushed:)]) {
+        [controller flutterPagePushed:name];
     }
 }
 
 + (void)onFlutterPageRemoved:(NSString *)pageId name:(NSString *)name {
-    WDFlutterViewContainer *container = [self find:pageId];
-    if (container && [container respondsToSelector:@selector(flutterPageRemoved:)]) {
-        [container flutterPageRemoved:name];
+    WDFlutterViewContainer *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(flutterPageRemoved:)]) {
+        [controller flutterPageRemoved:name];
     }
 }
 
 + (void)onFlutterPageResume:(NSString *)pageId name:(NSString *)name {
-    WDFlutterViewContainer *container = [self find:pageId];
-    if (container && [container respondsToSelector:@selector(flutterPageResume:)]) {
-        [container flutterPageResume:name];
+    WDFlutterViewContainer *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(flutterPageResume:)]) {
+        [controller flutterPageResume:name];
     }
 }
 
 + (void)onFlutterPagePause:(NSString *)pageId name:(NSString *)name {
-    WDFlutterViewContainer *container = [self find:pageId];
-    if (container && [container respondsToSelector:@selector(flutterPagePause:)]) {
-        [container flutterPagePause:name];
+    WDFlutterViewContainer *controller = [self find:pageId];
+    if (controller && [controller respondsToSelector:@selector(flutterPagePause:)]) {
+        [controller flutterPagePause:name];
     }
 }
 

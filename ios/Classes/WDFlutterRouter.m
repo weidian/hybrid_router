@@ -28,8 +28,10 @@
 //
 
 #import "WDFlutterRouter.h"
-#import "WDFlutterViewContainer.h"
 #import "WDFlutterViewContainerManager.h"
+#import "WDFlutterEngine.h"
+#import "HybridRouterPlugin.h"
+#import "WDFlutterViewContainer.h"
 
 @interface WDFlutterRouter ()
 @property(nonatomic, strong) WDFlutterViewContainerManager *manager;
@@ -95,24 +97,24 @@
     options.modal = modal;
     options.animated = animated;
 
-    WDFlutterViewContainer *viewController = nil;
+    WDFlutterViewContainer *container = nil;
     if ([_delegate respondsToSelector:@selector(flutterViewContainer)]) {
-        viewController = [_delegate flutterViewContainer];
+        container = [_delegate flutterViewContainer];
     }
-    if (viewController == nil) {
-        viewController = [[WDFlutterViewContainer alloc] init];
+    if (container == nil) {
+        container = [[WDFlutterViewContainer alloc] init];
     }
-    viewController.routeOptions = options;
+    container.options = options;
 
     UINavigationController *nav = _delegate.appNavigationController;
     if (!nav) return;
 
     if (!modal) {
-        [nav pushViewController:viewController animated:animated];
+        [nav pushViewController:container animated:animated];
     } else {
-        UIViewController *_viewController = [[UINavigationController alloc] initWithRootViewController:viewController];
-        _viewController.modalPresentationStyle = UIModalPresentationFullScreen;
-        [nav presentViewController:_viewController
+        UINavigationController *subNav = [[UINavigationController alloc] initWithRootViewController:container];
+        subNav.modalPresentationStyle = UIModalPresentationFullScreen;
+        [nav presentViewController:subNav
                           animated:animated
                         completion:nil];
     }
