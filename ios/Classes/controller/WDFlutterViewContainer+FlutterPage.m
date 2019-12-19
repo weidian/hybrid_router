@@ -9,10 +9,6 @@
 #import "WDFlutterViewContainer.h"
 #import "HybridRouterPlugin.h"
 
-@interface WDFlutterViewContainer ()<UIGestureRecognizerDelegate>
-
-@end
-
 @implementation WDFlutterViewContainer (FlutterPage)
 
 - (void)nativePageWillRemove:(id)result {
@@ -42,7 +38,6 @@
     if (self.flutterPageCount > 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = NO;
     }
-    self.navigationController.interactivePopGestureRecognizer.delegate = self;
 }
 
 - (void)flutterPageRemoved:(NSString *)pageName {
@@ -50,20 +45,6 @@
     if (self.flutterPageCount <= 1) {
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
     }
-}
-
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
-    if([self willPop]) {
-        [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onBackPressed"
-                                                       arguments:nil];
-        return NO;
-    }
-    
-    return YES;
-}
-
-- (BOOL)willPop {
-    return YES;
 }
 
 @end

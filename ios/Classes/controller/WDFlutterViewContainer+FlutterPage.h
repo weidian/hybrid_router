@@ -12,8 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface WDFlutterViewContainer (FlutterPage) <WDFlutterPageLifeCircle>
 
-- (BOOL)willPop;
-
 @end
 
 NS_ASSUME_NONNULL_END
