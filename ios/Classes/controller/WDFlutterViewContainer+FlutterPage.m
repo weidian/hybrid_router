@@ -26,10 +26,14 @@
 }
 
 - (void)nativePageResume {
-
+    
 }
 
-- (void)onNativePageCreate {
+- (void)nativePageCreate {
+    
+}
+
+- (void)nativePagePause {
     
 }
 
