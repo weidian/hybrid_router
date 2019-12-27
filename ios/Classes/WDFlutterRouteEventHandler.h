@@ -19,6 +19,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)onNativePageResume:(NSString *)pageId;
 
++ (void)onNativePageCreate:(NSString *)pageId;
+
++ (void)onNativePagePause:(NSString *)pageId;
+
 #pragma mark -- flutter
 
 + (void)onFlutterPagePushed:(NSString *)pageId name:(NSString *)name;
