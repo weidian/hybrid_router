@@ -73,7 +73,7 @@ typedef void (^FlutterViewWillAppearBlock) (void);
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
-    [[WDFlutterEngine.sharedInstance.engine lifecycleChannel] sendMessage:@"AppLifecycleState.resumed"];
+    [[WD_FLUTTER_ENGINE.engine lifecycleChannel] sendMessage:@"AppLifecycleState.resumed"];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -86,9 +86,8 @@ typedef void (^FlutterViewWillAppearBlock) (void);
     if (self.viewWillAppearBlock) {
         self.viewWillAppearBlock();
         self.viewWillAppearBlock = nil;
+        self.navigationController.interactivePopGestureRecognizer.enabled = YES;
     }
-    
-    //[WDFlutterRouter.sharedInstance add:self];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -112,10 +111,15 @@ typedef void (^FlutterViewWillAppearBlock) (void);
 //    });
     
     [super viewDidAppear:animated];
+    
+    if (self.flutterPageCount > 1) {
+        self.navigationController.interactivePopGestureRecognizer.enabled = NO;
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
+    self.navigationController.interactivePopGestureRecognizer.enabled = YES;
 }
 
 - (void)viewDidDisappear:(BOOL)animated {

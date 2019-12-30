@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)nativePageCreate;
 
+- (void)nativePagePause;
+
 - (void)flutterPagePushed:(NSString *)pageName;
 
 - (void)flutterPageResume:(NSString *)pageName;

@@ -98,6 +98,8 @@
         case WDFNativeRouteEventOnCreate:
             [WDFlutterRouteEventHandler onNativePageCreate:nativePageId];
             break;
+        case WDFNativeRouteEventOnPause:
+            [WDFlutterRouteEventHandler onNativePagePause:nativePageId];
         default:
             break;
     }

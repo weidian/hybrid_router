@@ -53,23 +53,30 @@
 }
 
 + (void)onNativePageRemoved:(NSString *)pageId result:(id)result {
-    WDFlutterViewContainer *controller = [self find:pageId];
-    if (controller && [controller respondsToSelector:@selector(nativePageRemoved:)]) {
-        [controller nativePageRemoved:result];
+    WDFlutterViewContainer *container = [self find:pageId];
+    if (container && [container respondsToSelector:@selector(nativePageRemoved:)]) {
+        [container nativePageRemoved:result];
     }
 }
 
 + (void)onNativePageResume:(NSString *)pageId {
-    WDFlutterViewContainer *controller = [self find:pageId];
-    if (controller && [controller respondsToSelector:@selector(nativePageResume)]) {
-        [controller nativePageResume];
+    WDFlutterViewContainer *container = [self find:pageId];
+    if (container && [container respondsToSelector:@selector(nativePageResume)]) {
+        [container nativePageResume];
     }
 }
 
 + (void)onNativePageCreate:(NSString *)pageId {
-    WDFlutterViewContainer *controller = [self find:pageId];
-    if (controller && [controller respondsToSelector:@selector(nativePageCreate)]) {
-        [controller nativePageCreate];
+    WDFlutterViewContainer *container = [self find:pageId];
+    if (container && [container respondsToSelector:@selector(nativePageCreate)]) {
+        [container nativePageCreate];
+    }
+}
+
++ (void)onNativePagePause:(NSString *)pageId {
+    WDFlutterViewContainer *container = [self find:pageId];
+    if (container && [container respondsToSelector:@selector(nativePagePause)]) {
+        [container nativePagePause];
     }
 }
 
