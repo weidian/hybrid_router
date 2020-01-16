@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 import com.vdian.flutter.hybridrouter.page.FlutterLaunchHelper;
 import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
-import com.vdian.flutter.hybridrouter.page.HybridFlutterActivity;
 
 import org.voiddog.android.lib.base.recycler.adapter.ListMultiTypeBindAdapter;
 import org.voiddog.android.lib.base.recycler.adapter.MultiTypeBindAdapter;
@@ -86,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
                 "跳转到 flutter 页面", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = HybridFlutterActivity.newBuilder()
+                Intent intent = FlutterExampleActivity.builder()
                         // flutter_tools 会把参数传递到 intent 中
                         .initializationArgs(FlutterLaunchHelper.parseFlutterShellArgs(getIntent()))
                         .dartEntrypoint(FlutterLaunchHelper.getDartEntrypointName(getIntent()))

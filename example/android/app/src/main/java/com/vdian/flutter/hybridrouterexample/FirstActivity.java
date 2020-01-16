@@ -35,7 +35,7 @@ public class FirstActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            Intent intent = HybridFlutterActivity.newBuilder().route(new FlutterRouteOptions.Builder("example")
+            Intent intent = FlutterExampleActivity.builder().route(new FlutterRouteOptions.Builder("example")
                     .setArgs("Jump from first activity")
                     .build()).buildIntent(getApplicationContext());
             startActivity(intent);

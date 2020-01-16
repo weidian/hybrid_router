@@ -41,6 +41,15 @@
             android:theme="@style/TranslucentTheme"></activity>
 
         <activity android:name=".SecondActivity"></activity>
+
+
+        <activity
+            android:name=".FlutterExampleActivity"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
+            android:hardwareAccelerated="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
+
     </application>
 
 </manifest>

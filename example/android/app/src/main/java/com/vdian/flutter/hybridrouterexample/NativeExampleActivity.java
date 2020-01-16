@@ -10,7 +10,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
-import com.vdian.flutter.hybridrouter.page.HybridFlutterActivity;
 
 public class NativeExampleActivity extends AppCompatActivity {
 
@@ -42,7 +41,7 @@ public class NativeExampleActivity extends AppCompatActivity {
         btnJumpToFlutter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = HybridFlutterActivity.newBuilder().route(new FlutterRouteOptions.Builder("example")
+                Intent intent = FlutterExampleActivity.builder().route(new FlutterRouteOptions.Builder("example")
                         .setArgs("Jump from native example")
                         .build()).buildIntent(v.getContext());
                 startActivityForResult(intent, REQUEST_FLUTTER);
@@ -93,7 +92,7 @@ public class NativeExampleActivity extends AppCompatActivity {
             case REQUEST_FLUTTER: {
                 String message = null;
                 if (data != null) {
-                    message = (String) HybridFlutterActivity.getFlutterResule(data);
+                    message = (String) FlutterExampleActivity.getFlutterResule(data);
                 }
                 message = message == null ? "No message from flutter example" : message;
                 txtRet.setText(message);
