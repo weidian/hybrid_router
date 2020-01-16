@@ -34,6 +34,13 @@
                 <data android:scheme="native" />
             </intent-filter>
         </activity>
+
+
+        <activity
+            android:name=".FirstActivity"
+            android:theme="@style/TranslucentTheme"></activity>
+
+        <activity android:name=".SecondActivity"></activity>
     </application>
 
 </manifest>

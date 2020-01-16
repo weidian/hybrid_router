@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hybrid_router/hybrid_router.dart';
 
 class ExamplePage extends StatefulWidget {
@@ -188,6 +189,16 @@ class _ExampleBody extends StatelessWidget {
                   .openNativePage(
                       url: "native://hybridstackmanager/illegal_result");
               print("返回的数据是: ${result.data}");
+            },
+          ),
+          ListTile(
+            title: Text(
+              '通过 channel 跳转到透明Activity',
+              style: TextStyle(color: Colors.white),
+            ),
+            onTap: () async {
+              const MethodChannel _sChannel = MethodChannel("hybrid_plugin", JSONMethodCodec());
+              await _sChannel.invokeMethod("toActivity");
             },
           ),
         ],
