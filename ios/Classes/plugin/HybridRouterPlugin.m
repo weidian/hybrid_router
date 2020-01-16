@@ -28,6 +28,11 @@
 
 @interface HybridRouterPlugin ()
 @property(nonatomic, strong) FlutterMethodChannel *methodChannel;
+
+@property(nonatomic, assign) BOOL initialized;
+@property(nonatomic, copy) NSString *method;
+@property(nonatomic, strong) id arguments;
+
 @end
 
 @implementation HybridRouterPlugin
@@ -55,13 +60,16 @@
     if ([@"getInitRoute" isEqualToString:method]) {
         NSDictionary *params = self.mainEntryParams ?: @{};
         result(params);
+        _initialized = YES;
+        if(_method) {
+            [self.methodChannel invokeMethod:_method arguments:_arguments];
+        }
     } else if ([@"openNativePage" isEqualToString:method]) {
         [self openNativePage:call.arguments result:result];
-        result(nil);
     } else if ([@"openFlutterPage" isEqualToString:method]) {
         [self openFlutterPage:call.arguments result:result];
     } else if ([@"onNativeRouteEvent" isEqualToString:method]) {
-        [self onNativeRouteEvent:call.arguments];
+        [self onNativeRouteEvent:call.arguments result:result];
         result(nil);
     } else if ([@"onFlutterRouteEvent" isEqualToString:method]) {
         [self onFlutterRouteEvent:call.arguments];
@@ -73,20 +81,25 @@
 
 #pragma mark - native route event
 
-- (void)onNativeRouteEvent:(NSDictionary *)arguments {
+- (void)onNativeRouteEvent:(NSDictionary *)arguments result:(FlutterResult)result {
     NSString *nativePageId = arguments[@"nativePageId"];
     NSNumber *eventId = arguments[@"eventId"];
-    id result = arguments[@"result"];
+    id _result = arguments[@"result"];
     switch (eventId.integerValue) {
         case WDFNativeRouteEventBeforeDestroy:
-            [WDFlutterRouteEventHandler beforeNativePagePop:nativePageId result:result];
+            [WDFlutterRouteEventHandler beforeNativePagePop:nativePageId result:_result];
             break;
         case WDFNativeRouteEventOnDestroy:
-            [WDFlutterRouteEventHandler onNativePageRemoved:nativePageId result:result];
+            [WDFlutterRouteEventHandler onNativePageRemoved:nativePageId result:_result];
             break;
         case WDFNativeRouteEventOnResume:
             [WDFlutterRouteEventHandler onNativePageResume:nativePageId];
             break;
+        case WDFNativeRouteEventOnCreate:
+            [WDFlutterRouteEventHandler onNativePageCreate:nativePageId];
+            break;
+        case WDFNativeRouteEventOnPause:
+            [WDFlutterRouteEventHandler onNativePagePause:nativePageId];
         default:
             break;
     }
@@ -137,6 +150,10 @@
     [WDFlutterRouter.sharedInstance openNativePage:arguments[@"url"]
                                             params:arguments[@"args"]
                                     transitionType:(WDFlutterRouterTransitionType) [arguments[@"transitionType"] intValue]];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        result(nil);
+    });
 }
 
 #pragma mark - invoke method
@@ -146,7 +163,12 @@
 }
 
 - (void)invokeFlutterMethod:(NSString *)method arguments:(id)arguments {
-    [self.methodChannel invokeMethod:method arguments:arguments];
+    if(_initialized) {
+        [self.methodChannel invokeMethod:method arguments:arguments];
+    } else {
+        _method = method;
+        _arguments = arguments;
+    }
 }
 
 @end

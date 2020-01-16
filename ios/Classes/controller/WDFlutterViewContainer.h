@@ -28,21 +28,19 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 #import <Flutter/Flutter.h>
-#import "WDFlutterPageLifeCircle.h"
-#import "WDFlutterRouter.h"
+#import "WDFlutterEngine.h"
 
-@class WDFlutterViewController, WDFlutterRouteOptions;
+#define WD_FLUTTER_ENGINE WDFlutterEngine.sharedInstance
 
-@interface WDFlutterViewContainer : UIViewController <WDFlutterPageLifeCircle>
+@class WDFlutterRouteOptions;
 
-@property(nonatomic, assign) BOOL didAppear;
-@property(nonatomic, strong) WDFlutterRouteOptions *routeOptions;
+@interface WDFlutterViewContainer : FlutterViewController
 
-- (void)nativePageWillRemove:(id)result;
+@property(nonatomic,strong) WDFlutterRouteOptions *options;
+@property(nonatomic,assign) NSUInteger flutterPageCount;
 
-- (void)nativePageResume;
+- (void)surfaceUpdated:(BOOL)appeared;
 
 @end
 
@@ -55,6 +53,9 @@
 @property(nonatomic, assign) BOOL isTab;
 @property(nonatomic, assign) BOOL modal;
 @property(nonatomic, assign) BOOL animated;
+
+//记录container 置顶的routeId
+@property(nonatomic, copy) NSString *topRouteId;
 
 - (NSDictionary *)toDictionary;
 

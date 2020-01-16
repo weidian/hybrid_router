@@ -237,7 +237,7 @@ class HybridPlugin {
         case "onBackPressed":
 
           /// 这里重写了 onBackPressed 是防止出现黑屏无法返回退出的情况
-          /// 仅 android 才有
+          /// ios 右滑返回处理willpop 也走这里
           return await NativeContainerManager.onBackPressed();
         case "onNativePageFinished":
           Map args = call.arguments;

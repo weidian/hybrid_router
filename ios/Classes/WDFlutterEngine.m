@@ -5,12 +5,13 @@
 //  Created by blackox626 on 2019/6/27.
 //
 
+#import <Flutter/Flutter.h>
 #import "WDFlutterEngine.h"
-#import "WDFlutterViewController.h"
+#import "WDFlutterViewContainer.h"
 #import "WDFlutterPluginRigstrant.h"
 
 @interface WDFlutterEngine ()
-@property(nonatomic, strong) FlutterViewController *viewController;
+@property(nonatomic, strong) FlutterViewController *dummy;
 @end
 
 @implementation WDFlutterEngine
@@ -29,26 +30,55 @@
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
     if (self = [super init]) {
-        _viewController = [[WDFlutterViewController alloc] initWithProject:nil nibName:nil bundle:nil];
-        [_viewController view];
+        
+        FlutterEngine *engine = [[FlutterEngine alloc] initWithName:@"share_engine" project:nil];
+        [engine runWithEntrypoint:nil];
+        
+        _engine = engine;
+        
+        _dummy = [[WDFlutterViewContainer alloc] initWithEngine:_engine
+                                                        nibName:nil
+                                                         bundle:nil];
+        
         Class clazz = NSClassFromString(@"GeneratedPluginRegistrant");
         if (clazz) {
             if ([clazz respondsToSelector:NSSelectorFromString(@"registerWithRegistry:")]) {
                 [clazz performSelector:NSSelectorFromString(@"registerWithRegistry:")
-                            withObject:_viewController];
+                            withObject:_engine];
             }
         }
-        [WDFlutterPluginRigstrant registerWithRegistry:_viewController];
+        //非plugin 工程 接入的 plugin 需要手动register
+        [WDFlutterPluginRigstrant registerWithRegistry:_engine];
     }
 
     return self;
 #pragma clang diagnostic pop
 }
 
-#pragma mark -- WDFlutterViewProvider
+#pragma mark -- WDFlutterEngineProvider
 
-- (nonnull FlutterViewController *)viewController {
-    return _viewController;
+- (FlutterViewController *)flutterViewController {
+    return _engine.viewController;
+}
+
+- (void)prepare {
+    WDFlutterViewContainer *fvc = (WDFlutterViewContainer *) _engine.viewController;
+    if(fvc) {
+        [fvc surfaceUpdated:NO];
+    }
+}
+
+- (void)attach:(FlutterViewController *)vc {
+    if(_engine.viewController != vc) {
+        [(WDFlutterViewContainer *)_engine.viewController surfaceUpdated:NO];
+        _engine.viewController = vc;
+    }
+}
+
+- (void)detach {
+    if(_engine.viewController != _dummy){
+        _engine.viewController = _dummy;
+    }
 }
 
 @end
