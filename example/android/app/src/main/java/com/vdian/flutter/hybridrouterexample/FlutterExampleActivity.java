@@ -65,7 +65,7 @@ public class FlutterExampleActivity extends HybridFlutterActivity implements IFl
 
     @Override
     public void onRegisterPlugin(PluginRegistry pluginRegistry) {
-        HybridPlugin.registerWith(pluginRegistry.registrarFor("com.vdian.flutter.hybridrouterexample.HybridPlugin"));
+        HybridPluginRegistrant.registerWith(pluginRegistry);
     }
 
     @Override

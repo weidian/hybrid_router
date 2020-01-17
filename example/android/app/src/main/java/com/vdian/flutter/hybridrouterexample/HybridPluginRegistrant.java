@@ -3,7 +3,7 @@ package com.vdian.flutter.hybridrouterexample;
 
 import io.flutter.plugin.common.PluginRegistry;
 
-public final class GeneratedPluginRegistrant {
+public final class HybridPluginRegistrant {
   public static void registerWith(PluginRegistry registry) {
     if (alreadyRegisteredWith(registry)) {
       return;
@@ -12,7 +12,7 @@ public final class GeneratedPluginRegistrant {
   }
 
   private static boolean alreadyRegisteredWith(PluginRegistry registry) {
-    final String key = GeneratedPluginRegistrant.class.getCanonicalName();
+    final String key = HybridPluginRegistrant.class.getCanonicalName();
     if (registry.hasPlugin(key)) {
       return true;
     }
