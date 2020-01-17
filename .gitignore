@@ -14,3 +14,6 @@ build/
 .classpath
 .project
 .settings/
+
+# flutter version manager
+fvm
