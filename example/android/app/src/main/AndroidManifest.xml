@@ -35,9 +35,17 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".FlutterExampleActivity"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
+            android:hardwareAccelerated="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
+
+
 
         <activity
-            android:name=".FirstActivity"
+            android:name=".translucent.TranslucentActivity"
             android:theme="@style/TranslucentTheme">
             <intent-filter android:priority="1">
                 <action android:name="android.intent.action.VIEW" />
@@ -45,21 +53,27 @@
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <data android:host="hybridstackmanager" />
-                <data android:path="/first" />
+                <data android:path="/translucent" />
                 <data android:scheme="native" />
             </intent-filter>
 
         </activity>
 
-        <activity android:name=".SecondActivity"></activity>
-
-
         <activity
-            android:name=".FlutterExampleActivity"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
-            android:hardwareAccelerated="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-            android:windowSoftInputMode="adjustResize" />
+            android:name=".translucent.NoTranslucentActivity">
+            <intent-filter android:priority="1">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:host="hybridstackmanager" />
+                <data android:path="/notranslucent" />
+                <data android:scheme="native" />
+            </intent-filter>
+
+        </activity>
+
+        <activity android:name=".translucent.SetResultActivity"/>
 
     </application>
 

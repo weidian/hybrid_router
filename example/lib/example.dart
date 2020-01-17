@@ -193,23 +193,30 @@ class _ExampleBody extends StatelessWidget {
           ),
           ListTile(
             title: Text(
-              '通过 channel 跳转到透明Activity',
-              style: TextStyle(color: Colors.white),
-            ),
-            onTap: () async {
-              const MethodChannel _sChannel = MethodChannel("hybrid_plugin", JSONMethodCodec());
-              await _sChannel.invokeMethod("toActivity");
-            },
-          ),
-          ListTile(
-            title: Text(
               '通过 HybridNavigator 跳转到透明Activity',
               style: TextStyle(color: Colors.white),
             ),
             onTap: () async {
               NativePageResult result = await HybridNavigator.of(context)
                   .openNativePage(
-                  url: "native://hybridstackmanager/first",
+                  url: "native://hybridstackmanager/translucent",
+                  args: {"title": "jump from native"});
+              if (result != null && result.data is Map) {
+                Scaffold.of(context).showSnackBar(SnackBar(
+                    content: Text((result.data["message"] as String) ??
+                        "No result found")));
+              }
+            },
+          ),
+          ListTile(
+            title: Text(
+              '通过 HybridNavigator 跳转到非透明Activity',
+              style: TextStyle(color: Colors.white),
+            ),
+            onTap: () async {
+              NativePageResult result = await HybridNavigator.of(context)
+                  .openNativePage(
+                  url: "native://hybridstackmanager/notranslucent",
                   args: {"title": "jump from native"});
               if (result != null && result.data is Map) {
                 Scaffold.of(context).showSnackBar(SnackBar(

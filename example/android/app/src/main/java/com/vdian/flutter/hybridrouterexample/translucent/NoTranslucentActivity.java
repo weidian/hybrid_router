@@ -22,80 +22,50 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
-package com.vdian.flutter.hybridrouterexample;
+package com.vdian.flutter.hybridrouterexample.translucent;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 
-import com.vdian.flutter.hybridrouter.page.HybridFlutterActivity;
-import com.vdian.flutter.hybridrouter.page.IFlutterHook;
+import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
+import com.vdian.flutter.hybridrouterexample.FlutterExampleActivity;
+import com.vdian.flutter.hybridrouterexample.R;
 
-import io.flutter.embedding.android.FlutterView;
-import io.flutter.embedding.engine.FlutterEngine;
-import io.flutter.plugin.common.PluginRegistry;
+public class NoTranslucentActivity extends AppCompatActivity {
 
-public class FlutterExampleActivity extends HybridFlutterActivity implements IFlutterHook {
     public static final String TAG = "FlutterLifecycle" + Build.VERSION.SDK_INT;
 
-    public static FlutterExampleActivity.IntentBuilder builder() {
-        return new FlutterExampleActivity.IntentBuilder();
-    }
-
-    public static class IntentBuilder extends GenericIntentBuilder<FlutterExampleActivity.IntentBuilder> {
-
-        protected IntentBuilder() {
-            super(FlutterExampleActivity.class);
-        }
-    }
-
+    private static final int REQUEST_CODE = 1000;
 
     @Override
-    public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
-
-    }
-
-    @Override
-    public void cleanUpFlutterEngine(@NonNull FlutterEngine flutterEngine) {
-
-    }
-
-    @Override
-    public void onFlutterInitFailure(@NonNull Throwable error) {
-
-    }
-
-    @Override
-    public void onRegisterPlugin(PluginRegistry pluginRegistry) {
-
-    }
-
-    @Override
-    public void afterFlutterViewAttachToEngine(@NonNull FlutterView flutterView, @NonNull FlutterEngine flutterEngine) {
-
-    }
-
-    @Override
-    public void beforeFlutterViewDetachFromEngine(@NonNull FlutterView flutterView, @NonNull FlutterEngine flutterEngine) {
-
-    }
-
-    @Override
-    public void afterUpdateSystemUiOverlays(FlutterView flutterView) {
-
-    }
-
-    @Override
-    public void onFirstFrameRendered(@NonNull FlutterView flutterView) {
-
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.e(TAG, "onCreate:" + this);
+        setContentView(R.layout.activity_notranslucent);
+
+        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivityForResult(new Intent(NoTranslucentActivity.this, SetResultActivity.class), REQUEST_CODE);
+            }
+        });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            Intent intent = FlutterExampleActivity.builder().route(new FlutterRouteOptions.Builder("example")
+                    .setArgs("Jump from no translucent theme activity")
+                    .build()).buildIntent(getApplicationContext());
+            startActivity(intent);
+            finish();
+        }
     }
 
 

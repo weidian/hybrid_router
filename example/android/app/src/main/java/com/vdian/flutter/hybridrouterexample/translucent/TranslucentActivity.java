@@ -22,30 +22,49 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
-package com.vdian.flutter.hybridrouterexample;
+package com.vdian.flutter.hybridrouterexample.translucent;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
-public class SecondActivity extends AppCompatActivity {
-    public static final String TAG = "SecondActivity" + Build.VERSION.SDK_INT;
+import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
+import com.vdian.flutter.hybridrouterexample.FlutterExampleActivity;
+import com.vdian.flutter.hybridrouterexample.R;
+
+public class TranslucentActivity extends AppCompatActivity {
+    public static final String TAG = "FlutterLifecycle" + Build.VERSION.SDK_INT;
+
+    private static final int REQUEST_CODE = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.e(TAG, "onCreate:" + this);
-        setContentView(R.layout.activity_second);
+        setContentView(R.layout.activity_translucent);
+
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setResult(Activity.RESULT_OK);
-                finish();
+                startActivityForResult(new Intent(TranslucentActivity.this, SetResultActivity.class), REQUEST_CODE);
             }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            Intent intent = FlutterExampleActivity.builder().route(new FlutterRouteOptions.Builder("example")
+                    .setArgs("Jump from translucent theme activity")
+                    .build()).buildIntent(getApplicationContext());
+            startActivity(intent);
+            finish();
+        }
     }
 
 
