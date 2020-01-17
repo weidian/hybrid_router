@@ -38,7 +38,18 @@
 
         <activity
             android:name=".FirstActivity"
-            android:theme="@style/TranslucentTheme"></activity>
+            android:theme="@style/TranslucentTheme">
+            <intent-filter android:priority="1">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:host="hybridstackmanager" />
+                <data android:path="/first" />
+                <data android:scheme="native" />
+            </intent-filter>
+
+        </activity>
 
         <activity android:name=".SecondActivity"></activity>
 

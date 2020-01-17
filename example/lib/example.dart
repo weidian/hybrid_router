@@ -201,6 +201,23 @@ class _ExampleBody extends StatelessWidget {
               await _sChannel.invokeMethod("toActivity");
             },
           ),
+          ListTile(
+            title: Text(
+              '通过 HybridNavigator 跳转到透明Activity',
+              style: TextStyle(color: Colors.white),
+            ),
+            onTap: () async {
+              NativePageResult result = await HybridNavigator.of(context)
+                  .openNativePage(
+                  url: "native://hybridstackmanager/first",
+                  args: {"title": "jump from native"});
+              if (result != null && result.data is Map) {
+                Scaffold.of(context).showSnackBar(SnackBar(
+                    content: Text((result.data["message"] as String) ??
+                        "No result found")));
+              }
+            },
+          ),
         ],
       ),
     );
