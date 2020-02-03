@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hybrid_router/hybrid_router.dart';
 
 class ExamplePage extends StatefulWidget {
@@ -188,6 +189,40 @@ class _ExampleBody extends StatelessWidget {
                   .openNativePage(
                       url: "native://hybridstackmanager/illegal_result");
               print("返回的数据是: ${result.data}");
+            },
+          ),
+          ListTile(
+            title: Text(
+              '通过 HybridNavigator 跳转到透明Activity',
+              style: TextStyle(color: Colors.white),
+            ),
+            onTap: () async {
+              NativePageResult result = await HybridNavigator.of(context)
+                  .openNativePage(
+                  url: "native://hybridstackmanager/translucent",
+                  args: {"title": "jump from native"});
+              if (result != null && result.data is Map) {
+                Scaffold.of(context).showSnackBar(SnackBar(
+                    content: Text((result.data["message"] as String) ??
+                        "No result found")));
+              }
+            },
+          ),
+          ListTile(
+            title: Text(
+              '通过 HybridNavigator 跳转到非透明Activity',
+              style: TextStyle(color: Colors.white),
+            ),
+            onTap: () async {
+              NativePageResult result = await HybridNavigator.of(context)
+                  .openNativePage(
+                  url: "native://hybridstackmanager/notranslucent",
+                  args: {"title": "jump from native"});
+              if (result != null && result.data is Map) {
+                Scaffold.of(context).showSnackBar(SnackBar(
+                    content: Text((result.data["message"] as String) ??
+                        "No result found")));
+              }
             },
           ),
         ],

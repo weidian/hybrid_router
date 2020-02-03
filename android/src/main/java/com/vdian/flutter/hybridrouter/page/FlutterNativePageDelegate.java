@@ -45,6 +45,8 @@ import com.vdian.flutter.hybridrouter.HybridRouterPlugin;
 import com.vdian.flutter.hybridrouter.engine.FixFlutterView;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import io.flutter.embedding.android.FlutterView;
@@ -93,11 +95,19 @@ public class FlutterNativePageDelegate {
     private static final int FLAG_ATTACH = 1;
     private static final int FLAG_ENGINE_INIT = 2;
     private static final int FLAG_PUSH_PAGE = 4;
+
+    private static final int FLAG_CREATED = 1;
+    private static final int FLAG_STARTED = 2;
+    private static final int FLAG_RESUMED = 4;
+
     private static final int MAX_REQUEST_CODE = 100;
 
     private static final String TAG = "FlutterDelegate";
     private static final String ARG_RESULT_KEY = "arg_flutter_result";
     private static final String ARG_SAVED_START_ROUTE_OPTIONS = "arg_flutter_saved_start_route_options";
+
+    // 这里记录 resumed 的 delegate 列表，在 android 10 上，可能会有多个 activity 同时 resume 的情况
+    private static final List<FlutterNativePageDelegate> resumedDelegate = new LinkedList<>();
 
     private final IFlutterNativePage page;
     private final String nativePageId = FlutterManager.getInstance().generateNativePageId();
@@ -111,8 +121,10 @@ public class FlutterNativePageDelegate {
     private PlatformPlugin platformPlugin;
     private SparseArray<MethodChannel.Result> resultChannelMap = new SparseArray<>();
     private SparseArray<IPageResultCallback> pageCallbackMap = new SparseArray<>();
-    // 当前 flutter 的状态
-    private int flag;
+    // 当前 flutter attach 的状态
+    private int attachFlag;
+    // 当前 delegate 生命周期 flag
+    private int lifecycleFlag;
 
     // 因为 engine 没有 attach 收到的信息
     private Intent pendingNewIntent;
@@ -138,7 +150,7 @@ public class FlutterNativePageDelegate {
      * @return
      */
     public boolean isAttachToFlutter() {
-        return hasFlag(flag, FLAG_ATTACH);
+        return hasFlag(attachFlag, FLAG_ATTACH);
     }
 
     /**
@@ -146,7 +158,7 @@ public class FlutterNativePageDelegate {
      */
     public Map<String, Object> getInitRoute() {
         // 这里获取 initRoute 可以认为 push 了 page
-        flag |= FLAG_PUSH_PAGE;
+        attachFlag |= FLAG_PUSH_PAGE;
         Map<String, Object> ret = new HashMap<>();
         if (routeOptions != null) {
             ret.put("pageName", routeOptions.pageName);
@@ -232,6 +244,8 @@ public class FlutterNativePageDelegate {
      * @param saveInstanceState
      */
     public void onCreate(@Nullable Bundle saveInstanceState) {
+        Log.v(TAG, "onCreate(): " + nativePageId);
+        lifecycleFlag |= FLAG_CREATED;
         // 添加页面到混合栈管理
         FlutterManager.getInstance().addNativePage(page);
         // 解析参数
@@ -263,7 +277,7 @@ public class FlutterNativePageDelegate {
                 ((IFlutterHook) page).configureFlutterEngine(flutterEngine);
             }
 
-            flag |= FLAG_ENGINE_INIT;
+            attachFlag |= FLAG_ENGINE_INIT;
         } catch (Throwable t) {
             // engine init error
             t.printStackTrace();
@@ -278,7 +292,7 @@ public class FlutterNativePageDelegate {
      * 这里保存了初始路由信息 {@link #routeOptions}
      */
     public void onSaveInstance(@NonNull Bundle outState) {
-        Log.v(TAG, "obSaveInstance");
+        Log.v(TAG, "onSaveInstance(): " + nativePageId);
         if (routeOptions != null) {
             outState.putParcelable(ARG_SAVED_START_ROUTE_OPTIONS, routeOptions);
         }
@@ -290,8 +304,8 @@ public class FlutterNativePageDelegate {
      * @return {@link FlutterSplashView}
      */
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.v(TAG, "Creating FlutterView.");
-        if (!hasFlag(flag, FLAG_ENGINE_INIT)) {
+        Log.v(TAG, "Creating FlutterView: " + nativePageId);
+        if (!hasFlag(attachFlag, FLAG_ENGINE_INIT)) {
             Log.e(TAG, "Engine init failure, return null view.");
             // engine init is failure, return null
             return null;
@@ -309,14 +323,18 @@ public class FlutterNativePageDelegate {
     }
 
     public void onStart() {
-        Log.v(TAG, "onStart()");
-        if (hasFlag(flag, FLAG_ENGINE_INIT)) {
+        Log.v(TAG, "onStart(): " + nativePageId);
+        if (!hasFlag(lifecycleFlag, FLAG_CREATED)) {
+            throw new IllegalStateException("Call onStart before onCreate");
+        }
+        lifecycleFlag |= FLAG_STARTED;
+        if (hasFlag(attachFlag, FLAG_ENGINE_INIT)) {
             assertNotNull(flutterView);
             assertNotNull(flutterEngine);
             flutterView.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (page.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
+                    if (hasFlag(lifecycleFlag, FLAG_STARTED)) {
                         // 如果在 onStart 的时候 attachEngine，会让 FlutterView
                         // sendViewportMetricsToFlutter，导致 flutter 端收到 width=0 和 height = 0 的
                         // viewportMetrics
@@ -329,8 +347,13 @@ public class FlutterNativePageDelegate {
     }
 
     public void onResume() {
-        Log.v(TAG, "onResume");
-        if (hasFlag(flag, FLAG_ENGINE_INIT)) {
+        Log.v(TAG, "onResume(): " + nativePageId);
+        if (!hasFlag(lifecycleFlag, FLAG_CREATED|FLAG_STARTED)) {
+            throw new IllegalStateException("Call onResume before onCreate or onStart; current flag: " + lifecycleFlag);
+        }
+        lifecycleFlag |= FLAG_RESUMED;
+        addToResumeList();
+        if (hasFlag(attachFlag, FLAG_ENGINE_INIT)) {
 
             // 通知 flutter native page resume 了
             if (HybridRouterPlugin.isRegistered()) {
@@ -339,56 +362,67 @@ public class FlutterNativePageDelegate {
 
             // resume 逻辑处理放到 post 中
             assertNotNull(flutterView);
-            flutterView.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (page.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
-                        // make sure the flutter is attach
-                        attachEngine();
-                    }
-                    // 这里模拟 postResume()
-                    if (page.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
-                        Log.v(TAG, "Resume flutter engine");
-                        // if is attach, resume the flutter engine
-                        assertNotNull(flutterEngine);
-                        flutterEngine.getLifecycleChannel().appIsResumed();
+            resumeEngine();
+        }
+    }
 
-                        if (platformPlugin != null) {
-                            platformPlugin.updateSystemUiOverlays();
-                            if (flutterView != null &&
-                                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-                                // 用于修复 tab 切换时候状态栏 inset 变化的问题
-                                flutterView.requestApplyInsets();
-                            }
+    // 在 onResume 中使用，这里去掉了 post resume，原代码是有 post 的，google 官方也不知道为啥要加 post
+    private void resumeEngine() {
+        if (!hasFlag(attachFlag, FLAG_ENGINE_INIT)) {
+            return;
+        }
+        if (hasFlag(lifecycleFlag, FLAG_STARTED)) {
+            // make sure the flutter is attach
+            attachEngine();
+        }
+        if (hasFlag(lifecycleFlag, FLAG_RESUMED)) {
+            Log.v(TAG, "Resume flutter engine");
+            // if is attach, resume the flutter engine
+            assertNotNull(flutterEngine);
+            flutterEngine.getLifecycleChannel().appIsResumed();
 
-                            // hook update system ui overlays
-                            // 可以用来自定义系统状态栏样式
-                            IFlutterWrapConfig wrapConfig = FlutterManager.getInstance().getFlutterWrapConfig();
-                            if (wrapConfig != null) {
-                                wrapConfig.postFlutterApplyTheme(page);
-                            }
-                            if (page instanceof IFlutterHook) {
-                                ((IFlutterHook) page).afterUpdateSystemUiOverlays(flutterView);
-                            }
-                        }
-                    }
+            if (platformPlugin != null) {
+                platformPlugin.updateSystemUiOverlays();
+                if (flutterView != null &&
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                    // 用于修复 tab 切换时候状态栏 inset 变化的问题
+                    flutterView.requestApplyInsets();
                 }
-            });
+
+                // hook update system ui overlays
+                // 可以用来自定义系统状态栏样式
+                IFlutterWrapConfig wrapConfig = FlutterManager.getInstance().getFlutterWrapConfig();
+                if (wrapConfig != null) {
+                    wrapConfig.postFlutterApplyTheme(page);
+                }
+                if (page instanceof IFlutterHook) {
+                    ((IFlutterHook) page).afterUpdateSystemUiOverlays(flutterView);
+                }
+            }
         }
     }
 
     public void onPause() {
-        Log.v(TAG, "onPause");
-        if (hasFlag(flag, FLAG_ATTACH)) {
+        Log.v(TAG, "onPause(): " + nativePageId);
+        if (!hasFlag(lifecycleFlag, FLAG_RESUMED)) {
+            throw new IllegalStateException("Call onPause before onResume; current flag: " + lifecycleFlag);
+        }
+        lifecycleFlag &= ~FLAG_RESUMED;
+        if (hasFlag(attachFlag, FLAG_ATTACH)) {
             assertNotNull(flutterEngine);
             Log.v(TAG, "Inactive flutter engine");
             flutterEngine.getLifecycleChannel().appIsInactive();
         }
+        removeFromResumeList();
     }
 
     public void onStop() {
-        Log.v(TAG, "onStop");
-        if (hasFlag(flag, FLAG_ATTACH)) {
+        Log.v(TAG, "onStop(): " + nativePageId);
+        if (!hasFlag(lifecycleFlag, FLAG_STARTED)) {
+            throw new IllegalStateException("Call onPause before onStart; current flag: " + lifecycleFlag);
+        }
+        lifecycleFlag &= ~FLAG_STARTED;
+        if (hasFlag(attachFlag, FLAG_ATTACH)) {
             assertNotNull(flutterEngine);
             Log.v(TAG, "Paused flutter engine");
             flutterEngine.getLifecycleChannel().appIsPaused();
@@ -400,7 +434,7 @@ public class FlutterNativePageDelegate {
     }
 
     public void onDestroyView() {
-        Log.v(TAG, "onDestroyView");
+        Log.v(TAG, "onDestroyView(): " + nativePageId);
         if (flutterView != null) {
             flutterView.removeOnFirstFrameRenderedListener(firstFrameListener);
             flutterView = null;
@@ -408,13 +442,18 @@ public class FlutterNativePageDelegate {
     }
 
     public void onDestroy() {
+        Log.v(TAG, "onDestroy(): " + nativePageId);
+        if (!hasFlag(lifecycleFlag, FLAG_CREATED)) {
+            throw new IllegalStateException("Call onPause before onCreate; current flag: " + lifecycleFlag);
+        }
+        lifecycleFlag = 0;
         // 清理 pending action
         clearPendingAction();
         // 如果结束了，取消所有的结果
         cancelAllResult();
         // 从 manager 中移除当前页
         FlutterManager.getInstance().removeNativePage(page);
-        if (hasFlag(flag, FLAG_ENGINE_INIT)) {
+        if (hasFlag(attachFlag, FLAG_ENGINE_INIT)) {
             if (page instanceof IFlutterHook) {
                 ((IFlutterHook) page).cleanUpFlutterEngine(flutterEngine);
             }
@@ -424,7 +463,7 @@ public class FlutterNativePageDelegate {
             HybridRouterPlugin.getInstance().onNativePageFinished(nativePageId);
         }
         flutterEngine = null;
-        flag = 0;
+        attachFlag = 0;
     }
 
     /**
@@ -464,7 +503,7 @@ public class FlutterNativePageDelegate {
      * {@code Fragment#onNewIntent}
      */
     public void onNewIntent(@NonNull Intent intent) {
-        Log.v(TAG, "onNewIntent");
+        Log.v(TAG, "onNewIntent(): " + nativePageId);
         if (isAttachToFlutter() && flutterEngine != null) {
             flutterEngine.getActivityControlSurface().onNewIntent(intent);
         } else {
@@ -489,7 +528,7 @@ public class FlutterNativePageDelegate {
      * Call from {@code Activity#onTrimMemory}
      */
     public void onTrimMemory(int level) {
-        Log.v(TAG, "onTrimMemory");
+        Log.v(TAG, "onTrimMemory(): " + nativePageId);
         if (flutterEngine != null) {
             if (level == TRIM_MEMORY_RUNNING_LOW) {
                 flutterEngine.getSystemChannel().sendMemoryPressureWarning();
@@ -504,7 +543,7 @@ public class FlutterNativePageDelegate {
      * {@code Fragment#onLowMemory}
      */
     public void onLowMemory() {
-        Log.v(TAG, "onLowMemory");
+        Log.v(TAG, "onLowMemory(): " + nativePageId);
         if (flutterEngine != null) {
             flutterEngine.getSystemChannel().sendMemoryPressureWarning();
         } else {
@@ -556,7 +595,7 @@ public class FlutterNativePageDelegate {
      * - Run dart VM or push start page
      */
     public void attachEngine() {
-        if (hasFlag(flag, FLAG_ATTACH) || !hasFlag(flag, FLAG_ENGINE_INIT)) {
+        if (hasFlag(attachFlag, FLAG_ATTACH) || !hasFlag(attachFlag, FLAG_ENGINE_INIT)) {
             return;
         }
         Log.v(TAG, "startAttachEngine");
@@ -564,8 +603,8 @@ public class FlutterNativePageDelegate {
         if (curNativePage != null) {
             curNativePage.detachFlutter();
         }
-        // 这里的 flag 设置必须在 上面 detachFlutter call 之后
-        flag |= FLAG_ATTACH;
+        // 这里的 attachFlag 设置必须在 上面 detachFlutter call 之后
+        attachFlag |= FLAG_ATTACH;
         // 把当前页面设置成 native 页面
         FlutterManager.getInstance().setCurNativePage(page);
         // null check
@@ -612,10 +651,10 @@ public class FlutterNativePageDelegate {
      * - Destroy {@link #platformPlugin}
      */
     public void detachEngine() {
-        if (!hasFlag(flag, FLAG_ATTACH) || !hasFlag(flag, FLAG_ENGINE_INIT)) {
+        if (!hasFlag(attachFlag, FLAG_ATTACH) || !hasFlag(attachFlag, FLAG_ENGINE_INIT)) {
             return;
         }
-        flag &= ~FLAG_ATTACH;
+        attachFlag &= ~FLAG_ATTACH;
         // null check
         assertNotNull(flutterView);
         assertNotNull(flutterEngine);
@@ -625,11 +664,11 @@ public class FlutterNativePageDelegate {
             ((IFlutterHook) page).beforeFlutterViewDetachFromEngine(flutterView, flutterEngine);
         }
         // 生命周期感知
-        if (page.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
+        if (hasFlag(lifecycleFlag, FLAG_RESUMED)) {
             flutterEngine.getActivityControlSurface().onUserLeaveHint();
             flutterEngine.getLifecycleChannel().appIsInactive();
         }
-        if (page.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
+        if (hasFlag(lifecycleFlag, FLAG_STARTED)) {
             flutterEngine.getLifecycleChannel().appIsPaused();
         }
         Activity activity = page.getActivity();
@@ -711,8 +750,8 @@ public class FlutterNativePageDelegate {
     private void doInitialRunOrPushPage() {
         assertNotNull(flutterEngine);
         if (flutterEngine.getDartExecutor().isExecutingDart()) {
-            if (!hasFlag(flag, FLAG_PUSH_PAGE)) {
-                flag |= FLAG_PUSH_PAGE;
+            if (!hasFlag(attachFlag, FLAG_PUSH_PAGE)) {
+                attachFlag |= FLAG_PUSH_PAGE;
                 // push page
                 HybridRouterPlugin.getInstance().pushFlutterPager(routeOptions.pageName,
                         routeOptions.args, nativePageId, page.isTab(), null);
@@ -873,6 +912,27 @@ public class FlutterNativePageDelegate {
             this.requestCode = requestCode;
             this.requestPermission = requestPermission;
             this.grantResult = grantResult;
+        }
+    }
+
+    private void addToResumeList() {
+        if (hasFlag(lifecycleFlag, FLAG_RESUMED)) {
+            if (!resumedDelegate.contains(this)) {
+                resumedDelegate.add(0, this);
+            }
+        }
+    }
+
+    private void removeFromResumeList() {
+        if (!hasFlag(lifecycleFlag, FLAG_RESUMED)) {
+            if (resumedDelegate.remove(this)) {
+                // remove success
+                if (resumedDelegate.size() > 0) {
+                    FlutterNativePageDelegate delegate = resumedDelegate.get(0);
+                    delegate.onPause();
+                    delegate.onResume();
+                }
+            }
         }
     }
 }
