@@ -141,5 +141,18 @@ public class MainActivity extends AppCompatActivity {
         adapter.set(dataList);
         recList.setLayoutManager(new LinearLayoutManager(this));
         recList.setAdapter(adapter);
+
+        Intent intent = FlutterExampleActivity.builder()
+                // flutter_tools 会把参数传递到 intent 中
+                .initializationArgs(FlutterLaunchHelper.parseFlutterShellArgs(getIntent()))
+                .dartEntrypoint(FlutterLaunchHelper.getDartEntrypointName(getIntent()))
+                .route(new FlutterRouteOptions.Builder("example")
+                        .setArgs("Jump From Main").build())
+                .buildIntent(MainActivity.this);
+        startActivity(intent);
+
+
+//        Intent intent = new Intent(MainActivity.this, TabExampleActivity.class);
+//        startActivity(intent);
     }
 }

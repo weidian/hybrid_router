@@ -347,7 +347,7 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     // https://github.com/flutter/flutter/issues/39494
     // 以上提交导致息屏状态下如果直接启动flutter界面，会导致界面不会进行渲染，此处强制注册回调
     // ignore: invalid_use_of_protected_member
-    SchedulerBinding.instance?.ensureFrameCallbacksRegistered();
+//    SchedulerBinding.instance?.ensureFrameCallbacksRegistered();
     super.initState();
     NativeContainerManager.state = this;
     _startInitRoute();
