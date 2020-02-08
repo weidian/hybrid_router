@@ -27,6 +27,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import 'hybrid_plugin.dart';
 import 'model.dart';
@@ -342,6 +343,8 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
 
   @override
   void initState() {
+    // ignore: invalid_use_of_protected_member
+    SchedulerBinding.instance.ensureFrameCallbacksRegistered();
     super.initState();
     NativeContainerManager.state = this;
     _startInitRoute();
