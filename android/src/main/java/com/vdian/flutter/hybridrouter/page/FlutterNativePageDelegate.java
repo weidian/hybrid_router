@@ -363,10 +363,6 @@ public class FlutterNativePageDelegate {
             // if is attach, resume the flutter engine
             assertNotNull(flutterEngine);
             flutterEngine.getLifecycleChannel().appIsResumed();
-            // 这里暂时把 flutterView 移动到 resume engine 的地方，这是 1.12.13 引入的 bug
-            // https://github.com/flutter/flutter/pull/39535
-            // https://github.com/flutter/flutter/issues/39494
-            attachEngine2FlutterView();
 
             if (platformPlugin != null) {
                 platformPlugin.updateSystemUiOverlays();
@@ -613,10 +609,7 @@ public class FlutterNativePageDelegate {
             }
         }
         // attach flutter view to engine
-        // 这里暂时把 flutterView 移动到 resume engine 的地方，这是 1.12.13 引入的 bug
-        // https://github.com/flutter/flutter/pull/39535
-        // https://github.com/flutter/flutter/issues/39494
-//        attachEngine2FlutterView();
+        attachEngine2FlutterView();
         // 可能的话开始执行 dart
         doInitialRunOrPushPage();
         // do pending action

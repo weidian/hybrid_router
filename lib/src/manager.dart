@@ -27,6 +27,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 
 import 'hybrid_plugin.dart';
@@ -252,9 +253,13 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
   /// move the container to top by name
   void showNamed({@required String nativePageId}) {
     assert(nativePageId != null, "NativePageId should not be null");
-    NativeContainer c = _containerHistory.firstWhere((c) {
-      return c.nativePageId == nativePageId;
-    });
+    NativeContainer c;
+    for (NativeContainer cc in _containerHistory) {
+      if (cc.nativePageId == nativePageId) {
+        c = cc;
+        break;
+      }
+    }
     show(c);
   }
 
@@ -347,7 +352,7 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     // https://github.com/flutter/flutter/issues/39494
     // 以上提交导致息屏状态下如果直接启动flutter界面，会导致界面不会进行渲染，此处强制注册回调
     // ignore: invalid_use_of_protected_member
-//    SchedulerBinding.instance?.ensureFrameCallbacksRegistered();
+    SchedulerBinding.instance?.ensureFrameCallbacksRegistered();
     super.initState();
     NativeContainerManager.state = this;
     _startInitRoute();
@@ -366,9 +371,11 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
     } else {
       initEntry = [];
     }
-    return Overlay(
-      key: _overlayKey,
-      initialEntries: initEntry,
+    return _IgnoreChildWhenSizeZero(
+      child: Overlay(
+        key: _overlayKey,
+        initialEntries: initEntry,
+      ),
     );
   }
 
@@ -723,5 +730,28 @@ class NativeContainerState extends State<NativeContainer>
     widget.observers?.forEach((o) {
       o.didStopUserGesture();
     });
+  }
+}
+
+class _IgnoreChildWhenSizeZero extends SingleChildRenderObjectWidget {
+  const _IgnoreChildWhenSizeZero({Key key, Widget child})
+      : super(key: key, child: child);
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return _IgnoreChildWhenSizeZeroRenderObject();
+  }
+}
+
+class _IgnoreChildWhenSizeZeroRenderObject extends RenderProxyBox {
+  _IgnoreChildWhenSizeZeroRenderObject() : super();
+
+  @override
+  void performLayout() {
+    if (constraints.maxWidth == 0 || constraints.maxHeight == 0) {
+      size = Size(constraints.maxWidth, constraints.maxHeight);
+      return;
+    }
+    super.performLayout();
   }
 }
