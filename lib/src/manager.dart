@@ -132,6 +132,22 @@ class NativeContainerManager extends StatefulWidget {
         transitionType: transitionType);
   }
 
+  /// flutter 请求 open 一个 native 页面 (微店店长版专用)
+  /// [url] the native route url: use weidian router Agreement： page://pageidentifier
+  static Future<NativePageResult<T>> openPage<T extends Object>(
+      {@required String url,
+      @required String nativePageId,
+      Map args,
+      NativePageTransitionType transitionType}) {
+    assert(url != null);
+    transitionType = transitionType ?? NativePageTransitionType.DEFAULT;
+    return HybridPlugin.singleton.openPage(
+        url: url,
+        args: args,
+        nativePageId: nativePageId,
+        transitionType: transitionType);
+  }
+
   /// 通过 context 获取当前页面的 native page id
   static String getNativePageIdByContext(BuildContext context) {
     NativeContainerState state = NativeContainer.of(context);

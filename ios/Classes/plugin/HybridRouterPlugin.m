@@ -66,6 +66,8 @@
         }
     } else if ([@"openNativePage" isEqualToString:method]) {
         [self openNativePage:call.arguments result:result];
+    } else if ([@"openPage" isEqualToString:method]) {
+        [self openPage:call.arguments result:result];
     } else if ([@"openFlutterPage" isEqualToString:method]) {
         [self openFlutterPage:call.arguments result:result];
     } else if ([@"onNativeRouteEvent" isEqualToString:method]) {
@@ -148,6 +150,18 @@
 
 - (void)openNativePage:(NSDictionary *)arguments result:(FlutterResult)result {
     [WDFlutterRouter.sharedInstance openNativePage:arguments[@"url"]
+                                            params:arguments[@"args"]
+                                    transitionType:(WDFlutterRouterTransitionType) [arguments[@"transitionType"] intValue]];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        result(nil);
+    });
+}
+
+/// open native page （微店店长版专用）
+/// url: page://pageIdentifier
+- (void)openPage:(NSDictionary *)arguments result:(FlutterResult)result {
+    [WDFlutterRouter.sharedInstance openPage:arguments[@"url"]
                                             params:arguments[@"args"]
                                     transitionType:(WDFlutterRouterTransitionType) [arguments[@"transitionType"] intValue]];
     

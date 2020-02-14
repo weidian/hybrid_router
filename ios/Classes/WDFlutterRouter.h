@@ -50,6 +50,16 @@ typedef NS_ENUM(int, WDFlutterRouterTransitionType) {
  */
 - (void)openNativePage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type;
 
+
+/**
+ flutter打开native页面的回调 （微店店长版专用）
+
+ @param page native的页面名 page://pageIdentifier
+ @param params 页面参数
+ */
+- (void)openPage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type;
+
+
 - (UINavigationController *)appNavigationController;
 
 @optional
@@ -84,6 +94,8 @@ typedef NS_ENUM(int, WDFlutterRouterTransitionType) {
                animated:(BOOL)animated;
 
 - (void)openNativePage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type;
+
+- (void)openPage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type;
 
 #pragma mark -- container
 

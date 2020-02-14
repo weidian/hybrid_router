@@ -169,6 +169,41 @@ class HybridPlugin {
         resultCode: result["resultCode"], data: result["data"]);
   }
 
+  /// 从 native 端打开一个页面 （微店店长版专用）
+  /// [url] 页面路由: use weidian router Agreement： page://pageidentifier
+  /// [args] 页面参数
+  /// [nativePageId] 当前堆栈对应的关键帧所在的 native page id
+  Future<NativePageResult> openPage(
+      {String url,
+      String nativePageId,
+      Map args,
+      NativePageTransitionType transitionType}) async {
+    assert(url != null);
+    assert(nativePageId != null);
+    assert(transitionType != null);
+
+    Map param = {"url": url, "nativePageId": nativePageId, "args": args ?? {}};
+
+    /// 这里定义下动画类型的 type to int
+    int navTranType = 0;
+    switch (transitionType) {
+      case NativePageTransitionType.DEFAULT:
+        navTranType = 0;
+        break;
+      case NativePageTransitionType.BOTTOM_TOP:
+        navTranType = 1;
+        break;
+      case NativePageTransitionType.RIGHT_LEFT:
+        navTranType = 2;
+        break;
+    }
+    param["transitionType"] = navTranType;
+
+    Map result = await _channel.invokeMethod("openPage", param) ?? {};
+    return NativePageResult(
+        resultCode: result["resultCode"], data: result["data"]);
+  }
+
   /// 通过 native 重新打开一个 flutter page
   /// [pageName] 页面路由名
   /// [nativePageId] 打开页面需要的上下文环境
