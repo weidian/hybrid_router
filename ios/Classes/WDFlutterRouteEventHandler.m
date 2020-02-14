@@ -37,7 +37,11 @@
     } else {
         UINavigationController *nav = container.navigationController;
         if (nav.topViewController == container) {
-            [nav popViewControllerAnimated:container.options.animated];
+            if (nav.viewControllers.count == 1) {
+                [nav dismissViewControllerAnimated:container.options.animated completion:nil];
+            } else {
+                [nav popViewControllerAnimated:container.options.animated];
+            }
         } else {
             [self removeContainer:container];
         }
