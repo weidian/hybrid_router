@@ -62,12 +62,6 @@
     }
 }
 
-- (void)openPage:(NSString *)page params:(id)paramsDic transitionType:(WDFlutterRouterTransitionType)type {
-    if ([self.delegate respondsToSelector:@selector(openPage:params:transitionType:)]) {
-        [self.delegate openPage:page params:paramsDic transitionType:type];
-    }
-}
-
 - (void)openFlutterPage:(NSString *)page
                  params:(id)params
                  result:(FlutterResult)result {

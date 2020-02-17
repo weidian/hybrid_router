@@ -317,20 +317,6 @@ class HybridNavigatorState extends NavigatorState {
         transitionType: transitionType);
   }
 
-  /// open a native page(微店专用)
-  /// [url] the native route url: use weidian router Agreement： page://pageidentifier
-  Future<NativePageResult<T>> openPage<T extends Object>(
-      {@required String url,
-      Map args,
-      NativePageTransitionType transitionType}) {
-    assert(url != null);
-    return NativeContainerManager.openPage<T>(
-        url: url,
-        nativePageId: widget.nativePageId,
-        args: args,
-        transitionType: transitionType);
-  }
-
   /// 通过 name 获取到 route
   Route<T> getRouteByName<T>(
     String routeName, {
