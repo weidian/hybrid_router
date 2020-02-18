@@ -9,6 +9,7 @@ import android.content.res.Configuration;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 
 import java.lang.reflect.Field;
@@ -70,7 +71,7 @@ public class FixFlutterView extends FlutterView {
             AccessibilityBridge ab = (AccessibilityBridge) accessibilityBridge.get(this);
             ab.setOnAccessibilityChangeListener(null);
             ab.release();
-            FixAccessibilityBridge nab = new FixAccessibilityBridge(this, flutterEngine.getAccessibilityChannel(), (AccessibilityManager)this.getContext().getSystemService("accessibility"), this.getContext().getContentResolver(), flutterEngine.getPlatformViewsController());
+            FixAccessibilityBridge nab = new FixAccessibilityBridge(this, flutterEngine.getAccessibilityChannel(), (AccessibilityManager) this.getContext().getSystemService("accessibility"), this.getContext().getContentResolver(), flutterEngine.getPlatformViewsController());
             Field onAccessibilityChangeListenerField = FlutterView.class.getDeclaredField("onAccessibilityChangeListener");
             onAccessibilityChangeListenerField.setAccessible(true);
             Object listener = onAccessibilityChangeListenerField.get(this);
@@ -88,4 +89,13 @@ public class FixFlutterView extends FlutterView {
             super.onConfigurationChanged(newConfig);
         }
     }
+
+    /**
+     * Fix java.lang.NullPointerException: Attempt to invoke virtual method 'android.content.Context android.view.View.getContext()' on a null object reference at io.flutter.plugin.platform.PlatformViewsController.checkInputConnectionProxy
+     */
+    @Override
+    public boolean checkInputConnectionProxy(View view) {
+        return view != null && super.checkInputConnectionProxy(view);
+    }
+
 }
