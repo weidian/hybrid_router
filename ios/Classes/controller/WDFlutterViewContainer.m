@@ -57,15 +57,11 @@ typedef void (^FlutterViewWillAppearBlock) (void);
     long long _pageId = fTag++;
 
     _viewWillAppearBlock = ^() {
-        static BOOL sIsFirstPush = YES;
-
         self.options.nativePageId = @(_pageId).stringValue;
-
-        if (sIsFirstPush) {
-            [HybridRouterPlugin sharedInstance].mainEntryParams = [self.options toDictionary];
-            sIsFirstPush = NO;
+        if (!HybridRouterPlugin.sharedInstance.initialized) {
+            HybridRouterPlugin.sharedInstance.mainEntryParams = [self.options toDictionary];
         } else {
-            [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"pushFlutterPage"
+            [HybridRouterPlugin.sharedInstance invokeFlutterMethod:@"pushFlutterPage"
                                                            arguments:[self.options toDictionary]];
         }
     };
