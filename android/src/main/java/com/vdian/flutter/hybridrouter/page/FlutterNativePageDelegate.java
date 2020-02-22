@@ -345,7 +345,14 @@ public class FlutterNativePageDelegate {
                 HybridRouterPlugin.getInstance().onNativePageResumed(page);
             }
 
-            resumeEngine();
+            // 这里如果不post，会出现莫名其妙的问题，保险起见，加post
+            flutterView.post(new Runnable() {
+                @Override
+                public void run() {
+                    resumeEngine();
+                }
+            });
+
         }
     }
 
