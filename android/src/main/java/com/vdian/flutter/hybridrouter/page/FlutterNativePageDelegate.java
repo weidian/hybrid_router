@@ -362,7 +362,13 @@ public class FlutterNativePageDelegate {
 
             // resume 逻辑处理放到 post 中
             assertNotNull(flutterView);
-            resumeEngine();
+            flutterView.post(new Runnable() {
+                @Override
+                public void run() {
+                    resumeEngine();
+                }
+            });
+
         }
     }
 
