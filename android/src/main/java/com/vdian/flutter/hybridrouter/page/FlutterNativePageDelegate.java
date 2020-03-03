@@ -52,7 +52,7 @@ import java.util.Map;
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.dart.DartExecutor;
-import io.flutter.embedding.engine.renderer.OnFirstFrameRenderedListener;
+import io.flutter.embedding.engine.renderer.FlutterUiDisplayListener;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.platform.PlatformPlugin;
 import io.flutter.view.FlutterMain;
@@ -117,6 +117,7 @@ public class FlutterNativePageDelegate {
     private FlutterEngine flutterEngine;
     @Nullable
     private FlutterView flutterView;
+    private boolean isFlutterViewAttachToEngine;
     private FlutterSplashView flutterSplashView;
     private PlatformPlugin platformPlugin;
     private SparseArray<MethodChannel.Result> resultChannelMap = new SparseArray<>();
@@ -328,27 +329,11 @@ public class FlutterNativePageDelegate {
             throw new IllegalStateException("Call onStart before onCreate");
         }
         lifecycleFlag |= FLAG_STARTED;
-        if (hasFlag(attachFlag, FLAG_ENGINE_INIT)) {
-            assertNotNull(flutterView);
-            assertNotNull(flutterEngine);
-            flutterView.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (hasFlag(lifecycleFlag, FLAG_STARTED)) {
-                        // 如果在 onStart 的时候 attachEngine，会让 FlutterView
-                        // sendViewportMetricsToFlutter，导致 flutter 端收到 width=0 和 height = 0 的
-                        // viewportMetrics
-                        Log.v(TAG, "Attaching FlutterEngine to FlutterView.");
-                        attachEngine();
-                    }
-                }
-            });
-        }
     }
 
     public void onResume() {
         Log.v(TAG, "onResume(): " + nativePageId);
-        if (!hasFlag(lifecycleFlag, FLAG_CREATED|FLAG_STARTED)) {
+        if (!hasFlag(lifecycleFlag, FLAG_CREATED | FLAG_STARTED)) {
             throw new IllegalStateException("Call onResume before onCreate or onStart; current flag: " + lifecycleFlag);
         }
         lifecycleFlag |= FLAG_RESUMED;
@@ -360,9 +345,14 @@ public class FlutterNativePageDelegate {
                 HybridRouterPlugin.getInstance().onNativePageResumed(page);
             }
 
-            // resume 逻辑处理放到 post 中
-            assertNotNull(flutterView);
-            resumeEngine();
+            // 这里如果不post，会出现莫名其妙的问题，保险起见，加post
+            flutterView.post(new Runnable() {
+                @Override
+                public void run() {
+                    resumeEngine();
+                }
+            });
+
         }
     }
 
@@ -626,13 +616,9 @@ public class FlutterNativePageDelegate {
             }
         }
         // attach flutter view to engine
-        flutterView.attachToFlutterEngine(flutterEngine);
+        attachEngine2FlutterView();
         // 可能的话开始执行 dart
         doInitialRunOrPushPage();
-        // hook method
-        if (page instanceof IFlutterHook) {
-            ((IFlutterHook) page).afterFlutterViewAttachToEngine(flutterView, flutterEngine);
-        }
         // do pending action
         checkPendingAction();
     }
@@ -659,10 +645,6 @@ public class FlutterNativePageDelegate {
         assertNotNull(flutterView);
         assertNotNull(flutterEngine);
         assertNotNull(platformPlugin);
-        // hook method
-        if (page instanceof IFlutterHook) {
-            ((IFlutterHook) page).beforeFlutterViewDetachFromEngine(flutterView, flutterEngine);
-        }
         // 生命周期感知
         if (hasFlag(lifecycleFlag, FLAG_RESUMED)) {
             flutterEngine.getActivityControlSurface().onUserLeaveHint();
@@ -682,9 +664,7 @@ public class FlutterNativePageDelegate {
                     .getInstance().getShimPluginRegistry());
         }
         // detach flutter engine from flutterView
-        flutterView.detachFromFlutterEngine();
-        // 修复内存泄漏
-        FlutterStackManagerUtil.detachFlutterFromEngine(flutterView, flutterEngine);
+        detachEngineFromFlutterView();
         platformPlugin.destroy();
         platformPlugin = null;
     }
@@ -766,12 +746,17 @@ public class FlutterNativePageDelegate {
         flutterEngine.getDartExecutor().executeDartEntrypoint(entrypoint);
     }
 
-    private OnFirstFrameRenderedListener firstFrameListener = new OnFirstFrameRenderedListener() {
+    private FlutterUiDisplayListener firstFrameListener = new FlutterUiDisplayListener() {
         @Override
-        public void onFirstFrameRendered() {
+        public void onFlutterUiDisplayed() {
             if (page instanceof IFlutterHook && flutterView != null) {
                 ((IFlutterHook) page).onFirstFrameRendered(flutterView);
             }
+        }
+
+        @Override
+        public void onFlutterUiNoLongerDisplayed() {
+
         }
     };
 
@@ -910,6 +895,10 @@ public class FlutterNativePageDelegate {
         }
     }
 
+    /**
+     * 这里使用 resume delegate list 的机制，是为了去掉对多页面切换的时候
+     * resume 生命周期混乱的问题，在 android  10 上，可能会有多页面 resume 的情况
+     */
     private void addToResumeList() {
         if (hasFlag(lifecycleFlag, FLAG_RESUMED)) {
             if (!resumedDelegate.contains(this)) {
@@ -929,5 +918,37 @@ public class FlutterNativePageDelegate {
                 }
             }
         }
+    }
+
+    /**
+     * 为了解决 1.12.13 上，如果 flutterView.attachToEngine 出现在 engine.appIsResume 之前的
+     * 之后，页面无法渲染的 bug 问题
+     * https://github.com/flutter/flutter/pull/39535
+     * https://github.com/flutter/flutter/issues/39494
+     * <p>
+     * 1.15.10 之后可以删除
+     */
+    private void attachEngine2FlutterView() {
+        if (flutterView != null && !isFlutterViewAttachToEngine && flutterEngine != null) {
+            isFlutterViewAttachToEngine = true;
+            flutterView.attachToFlutterEngine(flutterEngine);
+            // hook method
+            if (page instanceof IFlutterHook) {
+                ((IFlutterHook) page).afterFlutterViewAttachToEngine(flutterView, flutterEngine);
+            }
+        }
+    }
+
+    private void detachEngineFromFlutterView() {
+        if (flutterView != null && isFlutterViewAttachToEngine) {
+            // hook method
+            if (page instanceof IFlutterHook) {
+                ((IFlutterHook) page).beforeFlutterViewDetachFromEngine(flutterView, flutterEngine);
+            }
+            flutterView.detachFromFlutterEngine();
+            // 修复内存泄漏
+            FlutterStackManagerUtil.detachFlutterFromEngine(flutterView, flutterEngine);
+        }
+        isFlutterViewAttachToEngine = false;
     }
 }
