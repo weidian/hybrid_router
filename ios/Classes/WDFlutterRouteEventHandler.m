@@ -22,7 +22,10 @@
 + (void)beforeNativePagePop:(NSString *)pageId result:(id)result {
 
     WDFlutterViewContainer *container = [self find:pageId];
-    if(!container) return;
+    if(!container) {
+        [WD_FLUTTER_ENGINE detach];
+        return;
+    }
     
     //防止页面回退 异常
     [container surfaceUpdated:NO];
