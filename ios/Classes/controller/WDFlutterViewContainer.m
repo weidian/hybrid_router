@@ -69,7 +69,7 @@ typedef void (^FlutterViewWillAppearBlock) (void);
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
-    [[WD_FLUTTER_ENGINE.engine lifecycleChannel] sendMessage:@"AppLifecycleState.resumed"];
+    [WD_FLUTTER_ENGINE resume];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -122,7 +122,10 @@ typedef void (^FlutterViewWillAppearBlock) (void);
     [super viewDidDisappear:animated];
     //处理下present 页面卡死的情况
     if ([WD_FLUTTER_ENGINE flutterViewController] != self) {
-        [[WD_FLUTTER_ENGINE flutterViewController] viewDidAppear:animated];
+        [WD_FLUTTER_ENGINE resume];
+        [(WDFlutterViewContainer *)[WD_FLUTTER_ENGINE flutterViewController] surfaceUpdated:YES];
+    } else {
+      [WD_FLUTTER_ENGINE detach];
     }
 }
 

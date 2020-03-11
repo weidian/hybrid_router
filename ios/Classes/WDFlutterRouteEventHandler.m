@@ -23,13 +23,13 @@
 
     WDFlutterViewContainer *container = [self find:pageId];
     if(!container) {
-        [WD_FLUTTER_ENGINE detach];
+        //[WD_FLUTTER_ENGINE detach];
         return;
     }
     
     //防止页面回退 异常
-    [container surfaceUpdated:NO];
-    [WD_FLUTTER_ENGINE detach];
+    //[container surfaceUpdated:NO];
+    //[WD_FLUTTER_ENGINE detach];
     
     if ([container respondsToSelector:@selector(nativePageWillRemove:)]) {
         [container nativePageWillRemove:result];

@@ -61,6 +61,10 @@
     return _engine.viewController;
 }
 
+- (void)resume {
+    [[_engine lifecycleChannel] sendMessage:@"AppLifecycleState.resumed"];
+}
+
 - (void)prepare {
     WDFlutterViewContainer *fvc = (WDFlutterViewContainer *) _engine.viewController;
     if(fvc) {
@@ -70,7 +74,7 @@
 
 - (void)attach:(FlutterViewController *)vc {
     if(_engine.viewController != vc) {
-        [(WDFlutterViewContainer *)_engine.viewController surfaceUpdated:NO];
+        //[(WDFlutterViewContainer *)_engine.viewController surfaceUpdated:NO];
         _engine.viewController = vc;
     }
 }
