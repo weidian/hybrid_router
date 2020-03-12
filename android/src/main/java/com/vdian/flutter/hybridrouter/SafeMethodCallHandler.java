@@ -25,7 +25,8 @@
 
 package com.vdian.flutter.hybridrouter;
 
-import android.support.annotation.RestrictTo;
+
+import androidx.annotation.RestrictTo;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;

@@ -24,8 +24,8 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 package com.vdian.flutter.hybridrouter;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.vdian.flutter.hybridrouter.page.FlutterRouteOptions;
 import com.vdian.flutter.hybridrouter.page.IFlutterNativePage;

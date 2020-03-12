@@ -24,7 +24,8 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 package com.vdian.flutter.hybridrouter.page;
 
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
