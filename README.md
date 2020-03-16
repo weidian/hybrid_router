@@ -136,14 +136,14 @@ startActivity(intent);
 
 # iOS 集成
 ## 初始化
-初始化的时候设置代理类
+初始化的时候设置WDFlutterRouter代理类
 ```objc
 /**
  初始化
 
  @param delegate 实现<WDFlutterURLRouterDelegate>的代理
  */
-+ (void)setupWithDelegate:(id<WDFlutterURLRouterDelegate>)delegate;
+@property(nonatomic, weak) id <WDFlutterRouterDelegate> delegate;
 ```
 在代理类中实现以下方法
 ```objc
@@ -152,7 +152,7 @@ startActivity(intent);
 
  @return 导航对象
  */
-- (UIViewController *)flutterCurrentController;
+- (UINavigationController *)appNavigationController;
 ```
 ```objc
 /**
@@ -160,18 +160,17 @@ startActivity(intent);
 
  @param page native的页面名
  @param params 页面参数
+ @parms type present/push   
  */
-- (void)openNativePage:(NSString *)page params:(NSDictionary *)params;
+- (void)openNativePage:(NSString *)page params:(id)params transitionType:(WDFlutterRouterTransitionType)type;
 ```
 可选的代理方法：
 ```objc
 /**
- 获取flutter页面的容器，可以通过继承WDFlutterViewWrapperController来定制容器。默认使用WDFlutterViewWrapperController。
-
- @param routeOptions 路由参数
+ 获取flutter页面的容器，可以通过继承WDFlutterViewContainer来定制容器。默认使用WDFlutterViewContainer。
  @return flutter页面容器
  */
-- (WDFlutterViewWrapperController *)flutterWrapperController:(WDFlutterRouteOptions *)routeOptions;
+- (WDFlutterViewContainer *)flutterViewContainer;
 ```
 ## 使用
 ### 打开flutter页面
