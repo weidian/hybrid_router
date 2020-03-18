@@ -100,7 +100,7 @@ public class FlutterNativePageDelegate {
     private static final int FLAG_STARTED = 2;
     private static final int FLAG_RESUMED = 4;
 
-    private static final int MAX_REQUEST_CODE = 100;
+    private static final int MAX_REQUEST_CODE = 200;
 
     private static final String TAG = "FlutterDelegate";
     private static final String ARG_RESULT_KEY = "arg_flutter_result";
