@@ -10,7 +10,7 @@ void main() {
       backgroundBuilder: (context) {
         return EmptyPage();
       },
-      defaultPushType: HybridPushType.Native,
+      defaultPushType: HybridPushType.Flutter,
       pageObserver: [_TestNavigatorObserver()],
       routes: {
         "example": (context, argument) {
