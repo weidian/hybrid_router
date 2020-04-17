@@ -58,7 +58,7 @@ typedef void (^FlutterViewWillAppearBlock) (void);
 
     _viewWillAppearBlock = ^() {
         self.options.nativePageId = @(_pageId).stringValue;
-        if (!HybridRouterPlugin.sharedInstance.initialized) {
+        if (!HybridRouterPlugin.sharedInstance.initialized && !HybridRouterPlugin.sharedInstance.mainEntryParams) {
             HybridRouterPlugin.sharedInstance.mainEntryParams = [self.options toDictionary];
         } else {
             [HybridRouterPlugin.sharedInstance invokeFlutterMethod:@"pushFlutterPage"
