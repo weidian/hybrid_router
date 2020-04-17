@@ -1,9 +1,10 @@
 package io.flutter.view;
 
 import android.content.ContentResolver;
-import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
+
+import androidx.annotation.NonNull;
 
 import java.nio.ByteBuffer;
 
