@@ -33,12 +33,14 @@
 typedef void (^FlutterViewWillAppearBlock) (void);
 
 @interface WDFlutterViewContainer ()
-@property(nonatomic,copy) FlutterViewWillAppearBlock viewWillAppearBlock;
+
+@property (nonatomic, strong) NSString *pageId;
+
+@property (nonatomic, copy) FlutterViewWillAppearBlock viewWillAppearBlock;
+
 @end
 
-@implementation WDFlutterViewContainer {
-    BOOL _viewAppeared;
-}
+@implementation WDFlutterViewContainer
 
 - (id)init {
     //前一个fluttervc detach ，attach当前页面
@@ -49,20 +51,23 @@ typedef void (^FlutterViewWillAppearBlock) (void);
     return self;
 }
 
+static long long fTag = 0;
+
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
     self.view.backgroundColor = [UIColor whiteColor];
     
-    static long long fTag = 0;
-    long long _pageId = fTag++;
-
-    _viewWillAppearBlock = ^() {
-        self.options.nativePageId = @(_pageId).stringValue;
+    self.pageId = @(fTag++).stringValue;
+    
+    self.viewWillAppearBlock = ^() {
+        self.options.nativePageId = self.pageId;
+        
+        NSDictionary *options = [self.options toDictionary];
         if (!HybridRouterPlugin.sharedInstance.initialized && !HybridRouterPlugin.sharedInstance.mainEntryParams) {
-            HybridRouterPlugin.sharedInstance.mainEntryParams = [self.options toDictionary];
+            HybridRouterPlugin.sharedInstance.mainEntryParams = options;
         } else {
-            [HybridRouterPlugin.sharedInstance invokeFlutterMethod:@"pushFlutterPage"
-                                                           arguments:[self.options toDictionary]];
+            [HybridRouterPlugin.sharedInstance invokeFlutterMethod:@"pushFlutterPage" arguments:options];
         }
     };
 }
