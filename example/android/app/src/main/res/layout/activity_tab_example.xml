@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.vdian.flutter.hybridrouterexample.TabExampleActivity">
 
-    <android.support.design.widget.TabLayout
+    <com.google.android.material.tabs.TabLayout
         android:id="@+id/tab"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <android.support.design.widget.TabItem
+        <com.google.android.material.tabs.TabItem
             android:id="@+id/tab_home"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Flutter A" />
 
-        <android.support.design.widget.TabItem
+        <com.google.android.material.tabs.TabItem
             android:id="@+id/tab_attention"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Native" />
 
-    <android.support.design.widget.TabItem
+    <com.google.android.material.tabs.TabItem
             android:id="@+id/tab_personal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Flutter B" />
 
-    </android.support.design.widget.TabLayout>
+    </com.google.android.material.tabs.TabLayout>
 
     <FrameLayout
         android:id="@+id/fra_content"
@@ -39,4 +39,4 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"/>
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -12,23 +12,54 @@ class ExamplePage extends StatefulWidget {
 }
 
 class _ExamplePageState extends State<ExamplePage> with WidgetsBindingObserver {
-
   final Color color = _ColorMaker.getNextColor();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: color,
-        title: Text(widget.title ?? "FlutterExample"),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop("I am message from flutter example");
-          },
-        ),
-      ),
+          elevation: 0,
+          backgroundColor: color,
+          title: Text(widget.title ?? "FlutterExample"),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.of(context).pop("I am message from flutter example");
+            },
+          ),
+          actions: <Widget>[
+            PopupMenuButton(
+              child: Text("上下文菜单"),
+              tooltip: "长按提示",
+              initialValue: "menu1",
+              padding: EdgeInsets.all(0.0),
+              itemBuilder: (BuildContext context) {
+                return <PopupMenuItem<String>>[
+                  PopupMenuItem<String>(
+                    child: Text("菜单一"),
+                    value: "menu1",
+                  ),
+                  PopupMenuItem<String>(
+                    child: Text("菜单二"),
+                    value: "menu2",
+                  ),
+                ];
+              },
+              onSelected: (String action) {
+                switch (action) {
+                  case "menu1":
+                    print("菜单一");
+                    break;
+                  case "menu2":
+                    print("菜单二");
+                    break;
+                }
+              },
+              onCanceled: () {
+                print("onCanceled");
+              },
+            )
+          ]),
       body: new _ExampleBody(color: color),
     );
   }
@@ -39,25 +70,60 @@ class TabExamplePage extends StatefulWidget {
   _TabExamplePageState createState() => _TabExamplePageState();
 }
 
-class _TabExamplePageState extends State<TabExamplePage> with NativeContainerExitMixin {
-
+class _TabExamplePageState extends State<TabExamplePage>
+    with NativeContainerExitMixin {
   final Color color = _ColorMaker.getNextColor();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: color,
-        title: Text('Flutter tab example'),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).maybePop("I am message from flutter example");
-          },
-        ),
+          elevation: 0,
+          backgroundColor: color,
+          title: Text('Flutter tab example'),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.of(context)
+                  .maybePop("I am message from flutter example");
+            },
+          ),
+          actions: <Widget>[
+            PopupMenuButton(
+              child: Text("上下文菜单"),
+              tooltip: "长按提示",
+              initialValue: "menu1",
+              padding: EdgeInsets.all(0.0),
+              itemBuilder: (BuildContext context) {
+                return <PopupMenuItem<String>>[
+                  PopupMenuItem<String>(
+                    child: Text("菜单一"),
+                    value: "menu1",
+                  ),
+                  PopupMenuItem<String>(
+                    child: Text("菜单二"),
+                    value: "menu2",
+                  ),
+                ];
+              },
+              onSelected: (String action) {
+                switch (action) {
+                  case "menu1":
+                    print("菜单一");
+                    break;
+                  case "menu2":
+                    print("菜单二");
+                    break;
+                }
+              },
+              onCanceled: () {
+                print("onCanceled");
+              },
+            )
+          ]),
+      body: _ExampleBody(
+        color: color,
       ),
-      body: _ExampleBody(color: color,),
     );
   }
 }
@@ -82,8 +148,8 @@ class _ExampleBody extends StatelessWidget {
               style: TextStyle(color: Colors.white),
             ),
             onTap: () async {
-              String message = await Navigator.of(context).pushNamed("example",
-                  arguments: "Jump From Flutter");
+              String message = await Navigator.of(context)
+                  .pushNamed("example", arguments: "Jump From Flutter");
               Scaffold.of(context).showSnackBar(
                   SnackBar(content: Text(message ?? "No result found")));
             },
@@ -95,11 +161,11 @@ class _ExampleBody extends StatelessWidget {
             ),
             onTap: () async {
               String message = await Navigator.of(context).push(
-                HybridPageRoute(
-                  builder: (context) {
-                    return ExamplePage(title: "Jump from flutter",);
-                  }
-                ),
+                HybridPageRoute(builder: (context) {
+                  return ExamplePage(
+                    title: "Jump from flutter",
+                  );
+                }),
               );
               Scaffold.of(context).showSnackBar(
                   SnackBar(content: Text(message ?? "No result found")));
@@ -112,11 +178,12 @@ class _ExampleBody extends StatelessWidget {
             ),
             onTap: () async {
               String message = await Navigator.of(context).push(HybridPageRoute(
-                pushType: HybridPushType.Flutter,
-                builder: (context) {
-                  return ExamplePage(title: 'Jump from flutter',);
-                }
-              ));
+                  pushType: HybridPushType.Flutter,
+                  builder: (context) {
+                    return ExamplePage(
+                      title: 'Jump from flutter',
+                    );
+                  }));
               Scaffold.of(context).showSnackBar(
                   SnackBar(content: Text(message ?? "No result found")));
             },
@@ -199,8 +266,8 @@ class _ExampleBody extends StatelessWidget {
             onTap: () async {
               NativePageResult result = await HybridNavigator.of(context)
                   .openNativePage(
-                  url: "native://hybridstackmanager/translucent",
-                  args: {"title": "jump from native"});
+                      url: "native://hybridstackmanager/translucent",
+                      args: {"title": "jump from native"});
               if (result != null && result.data is Map) {
                 Scaffold.of(context).showSnackBar(SnackBar(
                     content: Text((result.data["message"] as String) ??
@@ -216,8 +283,8 @@ class _ExampleBody extends StatelessWidget {
             onTap: () async {
               NativePageResult result = await HybridNavigator.of(context)
                   .openNativePage(
-                  url: "native://hybridstackmanager/notranslucent",
-                  args: {"title": "jump from native"});
+                      url: "native://hybridstackmanager/notranslucent",
+                      args: {"title": "jump from native"});
               if (result != null && result.data is Map) {
                 Scaffold.of(context).showSnackBar(SnackBar(
                     content: Text((result.data["message"] as String) ??

@@ -25,19 +25,19 @@
 package com.vdian.flutter.hybridrouter.page;
 
 import android.app.Activity;
-import android.arch.lifecycle.Lifecycle;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.vdian.flutter.hybridrouter.FlutterManager;
 import com.vdian.flutter.hybridrouter.FlutterStackManagerUtil;
@@ -346,13 +346,13 @@ public class FlutterNativePageDelegate {
             }
 
             // 这里如果不post，会出现莫名其妙的问题，保险起见，加post
+            // 加了post会加长native->flutter白屏时间
             flutterView.post(new Runnable() {
                 @Override
                 public void run() {
                     resumeEngine();
                 }
             });
-
         }
     }
 
