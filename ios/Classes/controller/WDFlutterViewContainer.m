@@ -100,9 +100,9 @@ static long long fTag = 0;
 
 - (void)viewDidAppear:(BOOL)animated {
     [WD_FLUTTER_ENGINE attach:self];
-    [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed"
-                                                   arguments:@{@"nativePageId": self.options.nativePageId}
-                                                      result:^(id result) {}];
+//    [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed"
+//                                                   arguments:@{@"nativePageId": self.options.nativePageId}
+//                                                      result:^(id result) {}];
     [self surfaceUpdated:YES];
         
     [super viewDidAppear:animated];
