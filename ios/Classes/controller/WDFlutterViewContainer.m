@@ -44,7 +44,7 @@ typedef void (^FlutterViewWillAppearBlock) (void);
 
 - (id)init {
     //前一个fluttervc detach ，attach当前页面
-    [WD_FLUTTER_ENGINE prepare];
+    //[WD_FLUTTER_ENGINE prepare];
     self = [super initWithEngine:WDFlutterEngine.sharedInstance.engine nibName:nil bundle:nil];
     if (self) {
     }
@@ -82,35 +82,29 @@ static long long fTag = 0;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-
+    [WD_FLUTTER_ENGINE attach:self];
+    
     if (self.viewWillAppearBlock) {
         self.viewWillAppearBlock();
         self.viewWillAppearBlock = nil;
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
+    } else {
+        [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed"
+                                                       arguments:@{@"nativePageId": self.options.nativePageId}
+                                                          result:^(id result) {}];
     }
+    
+    [super viewWillAppear:animated];
+    [self.view setNeedsLayout];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
-    //fltvc 不是当面页面, 需要重新attach当面页面 && 通知 flutter 当前页面resumed
-    if ([WD_FLUTTER_ENGINE flutterViewController] != self) {
-        [WD_FLUTTER_ENGINE attach:self];
-        //更新viewport
-        [self viewDidLayoutSubviews];
-        [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed"
-                                                       arguments:@{@"nativePageId": self.options.nativePageId}
-                                                          result:^(id result) {
-            [self surfaceUpdated:YES];
-        }];
-    } else {
-        [self surfaceUpdated:YES];
-    }
-
-//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//        //resumed 之后执行 否则会闪屏
-//        [self surfaceUpdated:YES];
-//    });
-    
+    [WD_FLUTTER_ENGINE attach:self];
+    [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed"
+                                                   arguments:@{@"nativePageId": self.options.nativePageId}
+                                                      result:^(id result) {}];
+    [self surfaceUpdated:YES];
+        
     [super viewDidAppear:animated];
     
     if (self.flutterPageCount > 1) {
@@ -130,7 +124,7 @@ static long long fTag = 0;
         [WD_FLUTTER_ENGINE resume];
         [(WDFlutterViewContainer *)[WD_FLUTTER_ENGINE flutterViewController] surfaceUpdated:YES];
     } else {
-      [WD_FLUTTER_ENGINE detach];
+      //[WD_FLUTTER_ENGINE detach];
     }
 }
 
