@@ -96,9 +96,9 @@ static long long fTag = 0;
     [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed"
                                                    arguments:@{@"nativePageId": self.options.nativePageId}
                                                       result:^(id result) {
-        [self surfaceUpdated:YES];
+        //[self surfaceUpdated:YES];
     }];
-    //[self surfaceUpdated:YES];
+    [self surfaceUpdated:YES];
         
     [super viewDidAppear:animated];
     
