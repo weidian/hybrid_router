@@ -97,6 +97,10 @@
     options.modal = modal;
     options.animated = animated;
 
+    [self openFlutterPageWithOptions:options];
+}
+
+- (void)openFlutterPageWithOptions:(WDFlutterRouteOptions *)options {
     WDFlutterViewContainer *container = nil;
     if ([_delegate respondsToSelector:@selector(flutterViewContainer)]) {
         container = [_delegate flutterViewContainer];
@@ -109,14 +113,12 @@
     UINavigationController *nav = _delegate.appNavigationController;
     if (!nav) return;
 
-    if (!modal) {
-        [nav pushViewController:container animated:animated];
+    if (!options.modal) {
+        [nav pushViewController:container animated:options.animated];
     } else {
         UINavigationController *subNav = [[UINavigationController alloc] initWithRootViewController:container];
         subNav.modalPresentationStyle = UIModalPresentationFullScreen;
-        [nav presentViewController:subNav
-                          animated:animated
-                        completion:nil];
+        [nav presentViewController:subNav animated:options.animated completion:nil];
     }
 }
 
