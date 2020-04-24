@@ -119,7 +119,9 @@ static long long fTag = 0;
         [WD_FLUTTER_ENGINE resume];
         [(WDFlutterViewContainer *)[WD_FLUTTER_ENGINE flutterViewController] surfaceUpdated:YES];
     } else {
-      //[WD_FLUTTER_ENGINE detach];
+      // 这句话不能注释，两个flutter vc中间隔了一个native vc时候；
+      // back到第一个vc，时候，引擎做了一次surfaceUpdated，但是第一个flutterVC还没出来，第二个flutterVC的plantview已经没了，导致crash
+      [WD_FLUTTER_ENGINE detach];
     }
 }
 
