@@ -51,6 +51,7 @@ import 'manager.dart';
 import 'model.dart';
 import 'observer.dart';
 
+//v1.17适配 https://flutter.dev/docs/release/breaking-changes/route-navigator-refactoring
 class HybridNavigator extends Navigator {
   /// 获取页面默认打开方式
   static HybridPushType get defaultPushType {
