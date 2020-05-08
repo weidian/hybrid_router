@@ -553,7 +553,11 @@ class NativeContainer extends StatefulWidget {
   bool pop<T extends Object>({T result}) {
     assert(
         navKey.currentState != null, "The key of Navigator return null state");
-    return navKey.currentState.pop(result);
+    bool canPop = navKey.currentState.canPop();
+    if (canPop){
+      navKey.currentState.pop(result);
+    }
+    return canPop;
   }
 
   /// call maybe pop
