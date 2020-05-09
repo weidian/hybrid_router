@@ -43,8 +43,7 @@ typedef void (^FlutterViewWillAppearBlock) (void);
 @implementation WDFlutterViewContainer
 
 - (id)init {
-    //前一个fluttervc detach ，attach当前页面
-    //[WD_FLUTTER_ENGINE prepare];
+    [WD_FLUTTER_ENGINE prepare];
     self = [super initWithEngine:WDFlutterEngine.sharedInstance.engine nibName:nil bundle:nil];
     if (self) {
     }
@@ -86,18 +85,27 @@ static long long fTag = 0;
         self.viewWillAppearBlock();
         self.viewWillAppearBlock = nil;
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
+    } else {
+        [WD_FLUTTER_ENGINE attach:self];
+        [self.view setNeedsLayout];
+        [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed"
+                                                       arguments:@{@"nativePageId": self.options.nativePageId}
+                                                          result:^(id result) {
+            //[self surfaceUpdated:YES];
+        }];
+        [self surfaceUpdated:YES];
     }
     [super viewWillAppear:animated];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
-    [WD_FLUTTER_ENGINE attach:self];
-    [self.view setNeedsLayout];
-    [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed"
-                                                   arguments:@{@"nativePageId": self.options.nativePageId}
-                                                      result:^(id result) {
-        [self surfaceUpdated:YES];
-    }];
+//    [WD_FLUTTER_ENGINE attach:self];
+//    [self.view setNeedsLayout];
+//    [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed"
+//                                                   arguments:@{@"nativePageId": self.options.nativePageId}
+//                                                      result:^(id result) {
+//        //[self surfaceUpdated:YES];
+//    }];
 //    [self surfaceUpdated:YES];
         
     [super viewDidAppear:animated];
@@ -121,7 +129,7 @@ static long long fTag = 0;
     } else {
       // 这句话不能注释，两个flutter vc中间隔了一个native vc时候；
       // back到第一个vc，时候，引擎做了一次surfaceUpdated，但是第一个flutterVC还没出来，第二个flutterVC的plantview已经没了，导致crash
-      [WD_FLUTTER_ENGINE detach];
+      //[WD_FLUTTER_ENGINE detach];
     }
 }
 
