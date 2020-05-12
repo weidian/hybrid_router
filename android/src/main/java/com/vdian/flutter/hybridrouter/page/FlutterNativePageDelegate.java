@@ -340,7 +340,7 @@ public class FlutterNativePageDelegate {
         addToResumeList();
         if (hasFlag(attachFlag, FLAG_ENGINE_INIT)) {
 
-            // 通知 flutter native page resume 了
+            // 通知 flutter , native page resume 了
             if (HybridRouterPlugin.isRegistered()) {
                 HybridRouterPlugin.getInstance().onNativePageResumed(page);
             }
