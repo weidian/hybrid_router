@@ -430,6 +430,7 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
 
     @Override
     public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
         pageDelegate.onTrimMemory(level);
     }
 
@@ -450,7 +451,7 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
     @Nullable
     private Drawable getLaunchScreenDrawableFromActivityTheme() {
         Context context = getContext();
-        if (context == null) {return null};
+        if (context == null) {return null;}
         TypedValue typedValue = new TypedValue();
         if (!context.getTheme().resolveAttribute(
                 android.R.attr.windowBackground,
