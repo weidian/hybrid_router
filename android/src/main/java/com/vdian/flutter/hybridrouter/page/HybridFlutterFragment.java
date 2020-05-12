@@ -286,7 +286,7 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     public FlutterShellArgs getFlutterShellArgs() {
         String[] flutterShellArgsArray = getArguments().getStringArray(ARG_FLUTTER_SHELL_ARGS);
         return new FlutterShellArgs(
-                flutterShellArgsArray != null ? flutterShellArgsArray : new String[] {}
+                flutterShellArgsArray != null ? flutterShellArgsArray : new String[]{}
         );
     }
 
@@ -408,6 +408,7 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     }
 
     // ----------------------  以下方法需要 activity 主动调用 ---------------------
+    @Override
     public void onNewIntent(@NonNull Intent intent) {
         pageDelegate.onNewIntent(intent);
     }
@@ -439,7 +440,9 @@ public class HybridFlutterFragment extends Fragment implements IFlutterNativePag
     @Nullable
     private Drawable getLaunchScreenDrawableFromActivityTheme() {
         Context context = getContext();
-        if (context == null) return null;
+        if (context == null) {
+            return null;
+        }
         TypedValue typedValue = new TypedValue();
         if (!context.getTheme().resolveAttribute(
                 android.R.attr.windowBackground,
