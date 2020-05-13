@@ -946,11 +946,7 @@ public class FlutterNativePageDelegate {
                 ((IFlutterHook) page).beforeFlutterViewDetachFromEngine(flutterView, flutterEngine);
             }
             Log.v(TAG, "isAttachToFlutter: " + isAttachToFlutter());
-            if (flutterView.hasRenderedFirstFrame()) {
-                flutterView.detachFromFlutterEngine();
-            }else{
-                Log.v(TAG, "has detached engine: ");
-            }
+            flutterView.detachFromFlutterEngine();
             // 修复内存泄漏
             FlutterStackManagerUtil.detachFlutterFromEngine(flutterView, flutterEngine);
         }

@@ -15,10 +15,10 @@ import androidx.annotation.Nullable;
 
 import java.lang.reflect.Field;
 
-import io.flutter.view.FixAccessibilityBridge;
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.view.AccessibilityBridge;
+import io.flutter.view.FixAccessibilityBridge;
 
 /**
  * Displays a Flutter UI on an Android device.
@@ -99,4 +99,22 @@ public class FixFlutterView extends FlutterView {
         return view != null && super.checkInputConnectionProxy(view);
     }
 
+    //fixme 1.17 低版本手机 在页面destroy的时候 surface 的onSurfaceTextureDestroyed被调用了两次
+    // 第二次被调用的时候为null,暂时先兼容下，，
+    @Override
+    public void detachFromFlutterEngine() {
+        try {
+            super.detachFromFlutterEngine();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            Class<FlutterView> flutterViewClass = FlutterView.class;
+            try {
+                Field field = flutterViewClass.getDeclaredField("flutterEngine");
+                field.setAccessible(true);
+                field.set(this,null);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
 }
