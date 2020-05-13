@@ -100,7 +100,8 @@ public class FixFlutterView extends FlutterView {
     }
 
     //fixme 1.17 低版本手机 在页面destroy的时候 surface 的onSurfaceTextureDestroyed被调用了两次
-    // 第二次被调用的时候为null,暂时先兼容下，，
+    // 第二次被调用的时候为null,暂时先兼容下
+    // 还是走系统方法，触发null异常后，需要把engine置为空，不然会内存泄漏
     @Override
     public void detachFromFlutterEngine() {
         try {
