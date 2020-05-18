@@ -70,6 +70,7 @@ public interface IFlutterNativePage {
 
     /**
      * request attach to flutter
+     * 1.12.13开始 把attach放到了resume,因为官方的bug ，导致engine.isResume 之前attachEngine会引起无法渲染的bug
      */
     void attachFlutter();
 
@@ -174,6 +175,7 @@ public interface IFlutterNativePage {
 
     /**
      * 当前页面是否是一个 tab 页面
+     * 这里要注意下 fragment默认写死的true
      */
     boolean isTab();
 

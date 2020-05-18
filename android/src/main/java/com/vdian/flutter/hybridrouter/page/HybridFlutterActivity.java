@@ -38,6 +38,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Lifecycle;
 
 import java.util.Map;
 
@@ -74,7 +75,7 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
     /**
      * 获取 flutter 返回的页面结果
      */
-    public static Object getFlutterResule(@NonNull Intent data) {
+    public static Object getFlutterResult(@NonNull Intent data) {
         return FlutterNativePageDelegate.getFlutterResult(data);
     }
 

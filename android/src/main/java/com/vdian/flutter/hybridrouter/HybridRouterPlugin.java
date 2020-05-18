@@ -167,6 +167,7 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
     @Override
     protected void onSafeMethodCall(MethodCall call, SafeResult result) {
         switch (call.method) {
+            //返回当前页面的初始路由
             case "getInitRoute": {
                 IFlutterNativePage nativePage = FlutterManager.getInstance().getCurNativePage();
                 if (nativePage != null) {
@@ -177,6 +178,7 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
                 FlutterManager.getInstance().setFlutterRouteStart(true);
                 break;
             }
+            //打开Native页面
             case "openNativePage": {
                 HashMap<String, Object> args = call.arguments();
                 String url = (String) args.get("url");
@@ -193,6 +195,7 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
                 }
                 break;
             }
+            //打开flutter页面,载体是Native
             case "openFlutterPage": {
                 HashMap<String, Object> args = call.arguments();
                 String pageName = (String) args.get("pageName");
@@ -211,6 +214,7 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
                 }
                 break;
             }
+            //Native页面的生命周期变化，当前主要是beforeDestroy、onDestroy
             case "onNativeRouteEvent": {
                 HashMap<String, Object> args = call.arguments();
                 int eventId = (int) args.get("eventId");
@@ -233,6 +237,7 @@ public class HybridRouterPlugin extends SafeMethodCallHandler {
                 }
                 break;
             }
+            //flutter的生命事件通知
             case "onFlutterRouteEvent": {
                 HashMap<String, Object> args = call.arguments();
                 String nativePageId = (String) args.get("nativePageId");

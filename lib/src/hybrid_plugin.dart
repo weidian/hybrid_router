@@ -209,11 +209,13 @@ class HybridPlugin {
     return await _channel.invokeMethod("getInitRoute");
   }
 
+  /// native通知到flutter
   _setupChannelHandler() {
     _channel.setMethodCallHandler((MethodCall call) async {
       /// method name
       String methodName = call.method;
       switch (methodName) {
+        /// android是在 resume attach引擎之后调用
         case "pushFlutterPage":
           Map args = call.arguments;
           assert(args != null);
@@ -227,7 +229,7 @@ class HybridPlugin {
         case "requestUpdateTheme":
 
           /// 请求更新主题色到 native 端，这里使用了一个测试接口，以后要注意
-          /// 目前 android 才有
+          /// 目前 android 才有，但android目前也没用
           var preTheme = SystemChrome.latestStyle;
           if (preTheme != null) {
             SystemChannels.platform.invokeMethod(
@@ -239,6 +241,8 @@ class HybridPlugin {
           /// 这里重写了 onBackPressed 是防止出现黑屏无法返回退出的情况
           /// ios 右滑返回处理willpop 也走这里
           return await NativeContainerManager.onBackPressed();
+
+          ///  Android是在Destroy
         case "onNativePageFinished":
           Map args = call.arguments;
           assert(args != null);
@@ -246,6 +250,7 @@ class HybridPlugin {
           NativeContainerManager.removeNamed(
               nativePageId: args["nativePageId"]);
           break;
+          /// Android 对应resume
         case "onNativePageResumed":
           Map args = call.arguments;
           assert(args != null);

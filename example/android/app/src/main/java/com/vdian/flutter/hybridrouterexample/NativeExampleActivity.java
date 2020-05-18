@@ -116,7 +116,7 @@ public class NativeExampleActivity extends AppCompatActivity {
             case REQUEST_FLUTTER: {
                 String message = null;
                 if (data != null) {
-                    message = (String) FlutterExampleActivity.getFlutterResule(data);
+                    message = (String) FlutterExampleActivity.getFlutterResult(data);
                 }
                 message = message == null ? "No message from flutter example" : message;
                 txtRet.setText(message);
