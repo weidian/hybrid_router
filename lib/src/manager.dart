@@ -307,6 +307,10 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
       FlutterError.dumpErrorToConsole(
           FlutterErrorDetails(exception: e, stack: stack));
     }
+    /// This is similar to [new Future.value], except that the value is available in
+    /// the same event-loop iteration.
+    ///  where you normally want to have everything execute synchronously, but where on
+    /// rare occasions you want the ability to switch to an asynchronous model
     return SynchronousFuture<bool>(false);
   }
 
@@ -387,6 +391,7 @@ class NativeContainerManagerState extends State<NativeContainerManager> {
   final Map<String, Route<dynamic>> _localRoutePending = {};
 
   /// 别问我这个数字为啥是 11037
+  /// ...
   int _localRouteIndex = 11037;
 
   void _didPush(NativeContainer container, NativeContainer preContainer) {
@@ -545,7 +550,7 @@ class NativeContainer extends StatefulWidget {
 
   /// 私有非 final 属性
   NativeContainerManagerState _manager;
-  OverlayEntry _overlayEntry;
+  OverlayEntry   _overlayEntry;
   dynamic _result;
   NativeContainerState _state;
 
@@ -553,7 +558,11 @@ class NativeContainer extends StatefulWidget {
   bool pop<T extends Object>({T result}) {
     assert(
         navKey.currentState != null, "The key of Navigator return null state");
-    return navKey.currentState.pop(result);
+    bool canPop = navKey.currentState.canPop();
+    if (canPop){
+      navKey.currentState.pop(result);
+    }
+    return canPop;
   }
 
   /// call maybe pop

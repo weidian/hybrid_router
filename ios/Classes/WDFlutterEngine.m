@@ -10,9 +10,9 @@
 #import "WDFlutterViewContainer.h"
 #import "WDFlutterPluginRigstrant.h"
 
-@interface WDFlutterEngine ()
-@property(nonatomic, strong) FlutterViewController *dummy;
-@end
+//@interface WDFlutterEngine ()
+//@property(nonatomic, strong) FlutterViewController *dummy;
+//@end
 
 @implementation WDFlutterEngine
 
@@ -36,9 +36,9 @@
         
         _engine = engine;
         
-        _dummy = [[WDFlutterViewContainer alloc] initWithEngine:_engine
-                                                        nibName:nil
-                                                         bundle:nil];
+//        _dummy = [[WDFlutterViewContainer alloc] initWithEngine:_engine
+//                                                        nibName:nil
+//                                                         bundle:nil];
         
         Class clazz = NSClassFromString(@"GeneratedPluginRegistrant");
         if (clazz) {
@@ -66,10 +66,12 @@
 }
 
 - (void)prepare {
-    WDFlutterViewContainer *fvc = (WDFlutterViewContainer *) _engine.viewController;
-    if(fvc) {
-        [fvc surfaceUpdated:NO];
-    }
+    _engine.viewController = nil;
+    
+//    WDFlutterViewContainer *fvc = (WDFlutterViewContainer *) _engine.viewController;
+//    if(fvc) {
+//        [fvc surfaceUpdated:NO];
+//    }
 }
 
 - (void)attach:(FlutterViewController *)vc {
@@ -80,8 +82,8 @@
 }
 
 - (void)detach {
-    if(_engine.viewController != _dummy){
-        _engine.viewController = _dummy;
+    if(_engine.viewController != nil) {
+        _engine.viewController = nil;
     }
 }
 

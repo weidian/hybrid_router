@@ -38,6 +38,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Lifecycle;
 
 import java.util.Map;
 
@@ -74,7 +75,7 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
     /**
      * 获取 flutter 返回的页面结果
      */
-    public static Object getFlutterResule(@NonNull Intent data) {
+    public static Object getFlutterResult(@NonNull Intent data) {
         return FlutterNativePageDelegate.getFlutterResult(data);
     }
 
@@ -419,6 +420,7 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
 
     @Override
     public void onNewIntent(@NonNull Intent intent) {
+        super.onNewIntent(intent);
         pageDelegate.onNewIntent(intent);
     }
 
@@ -429,6 +431,7 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
 
     @Override
     public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
         pageDelegate.onTrimMemory(level);
     }
 
@@ -449,7 +452,7 @@ public class HybridFlutterActivity extends AppCompatActivity implements IFlutter
     @Nullable
     private Drawable getLaunchScreenDrawableFromActivityTheme() {
         Context context = getContext();
-        if (context == null) return null;
+        if (context == null) {return null;}
         TypedValue typedValue = new TypedValue();
         if (!context.getTheme().resolveAttribute(
                 android.R.attr.windowBackground,

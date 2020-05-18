@@ -103,6 +103,10 @@ public class FlutterNativePageDelegate {
     private static final int MAX_REQUEST_CODE = 200;
 
     private static final String TAG = "FlutterDelegate";
+
+    /**
+     * 从flutter页返回的数据 带有这个key，其他正常页面没有这个key
+     */
     private static final String ARG_RESULT_KEY = "arg_flutter_result";
     private static final String ARG_SAVED_START_ROUTE_OPTIONS = "arg_flutter_saved_start_route_options";
 
@@ -120,8 +124,17 @@ public class FlutterNativePageDelegate {
     private boolean isFlutterViewAttachToEngine;
     private FlutterSplashView flutterSplashView;
     private PlatformPlugin platformPlugin;
+
+    /**
+     * 通过channel的result直接回调，解析数据需要在dart层处理
+     */
     private SparseArray<MethodChannel.Result> resultChannelMap = new SparseArray<>();
+
+    /**
+     * 同resultChannelMap，只不过给业务方开了接口，解析数据，解析数据在java层
+     */
     private SparseArray<IPageResultCallback> pageCallbackMap = new SparseArray<>();
+
     // 当前 flutter attach 的状态
     private int attachFlag;
     // 当前 delegate 生命周期 flag
@@ -340,7 +353,7 @@ public class FlutterNativePageDelegate {
         addToResumeList();
         if (hasFlag(attachFlag, FLAG_ENGINE_INIT)) {
 
-            // 通知 flutter native page resume 了
+            // 通知 flutter , native page resume 了
             if (HybridRouterPlugin.isRegistered()) {
                 HybridRouterPlugin.getInstance().onNativePageResumed(page);
             }
@@ -793,21 +806,33 @@ public class FlutterNativePageDelegate {
         }
     }
 
+    /**
+     * 部分场景下 生成不重复的code,并存储
+     *   1. 正常打开页面。每次打开新的Native页面或者flutter页面都会生成
+     *      在flutter页面或者native页面 finish的时候会回调清除
+     *   2. 需要通过回调打开 startActivityForResult，会生成存储1个code，并在回调的时候清除
+     *   所以这里resultChannelMap应该不会有多个的情况？
+     * @return
+     */
     private int generateRequestCode() {
         if (resultChannelMap.size() == 0) {
+            Log.v(TAG, "generateRequestCode: resultChannelMap is null");
             return 1;
         }
         int count = 0;
         int start = resultChannelMap.keyAt(resultChannelMap.size() - 1) + 1;
+        //没看懂这个while循环有什么意义，打几个日志看下先
         while (count < MAX_REQUEST_CODE) {
             start = (start > MAX_REQUEST_CODE) ? (start - MAX_REQUEST_CODE) : start;
             if (resultChannelMap.get(start) == null) {
                 // found request code
+                Log.v(TAG, "generateRequestCode:found in while start is "+start);
                 return start;
             }
             count++;
         }
         // failure to generate
+        Log.v(TAG, "generateRequestCode:failure to generates ");
         return -1;
     }
 
@@ -945,6 +970,7 @@ public class FlutterNativePageDelegate {
             if (page instanceof IFlutterHook) {
                 ((IFlutterHook) page).beforeFlutterViewDetachFromEngine(flutterView, flutterEngine);
             }
+            Log.v(TAG, "isAttachToFlutter: " + isAttachToFlutter());
             flutterView.detachFromFlutterEngine();
             // 修复内存泄漏
             FlutterStackManagerUtil.detachFlutterFromEngine(flutterView, flutterEngine);

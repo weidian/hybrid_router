@@ -22,6 +22,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
+import 'dart:async';
+
 ///
 /// ┏┛ ┻━━━━━┛ ┻┓
 /// ┃　　　　　　 ┃
@@ -44,11 +46,12 @@
 /// @since 2019-02-26 14:29
 ///
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'manager.dart';
-import 'observer.dart';
-import 'model.dart';
 
+import 'manager.dart';
+import 'model.dart';
+import 'observer.dart';
+
+//v1.17适配 https://flutter.dev/docs/release/breaking-changes/route-navigator-refactoring
 class HybridNavigator extends Navigator {
   /// 获取页面默认打开方式
   static HybridPushType get defaultPushType {
@@ -161,7 +164,7 @@ class HybridNavigator extends Navigator {
   static RouteFactory _builderMapFactory(HybridRouteFactory builder,
       Object initRouteArgs, Route<dynamic> initRoute) {
     return (settings) {
-      if (settings.isInitialRoute) {
+      if (settings != null) {
         if (initRoute != null) {
           return initRoute;
         } else {
@@ -239,7 +242,7 @@ class HybridNavigatorState extends NavigatorState {
   /// 如果想指定 Route 打开页面的方式，传递 [HybridPageRoute]
   @override
   Future<T> push<T extends Object>(Route<T> route) {
-    if (route.settings.isInitialRoute && _initialRoute == null) {
+    if (_initialRoute == null) {
       _initialRoute = route;
     }
     HybridPushType pushType;
@@ -247,7 +250,7 @@ class HybridNavigatorState extends NavigatorState {
     if (route is HybridPageRoute<T>) {
       pushType = route.pushType;
       transitionType = route.transitionType;
-    } else if (route == widget.initRoute || route.settings.isInitialRoute) {
+    } else if (route == widget.initRoute) {
       // 如果是初始路由，必须使用 Flutter 打开方式，防止出现循环打开 native
       pushType = HybridPushType.Flutter;
     } else {
@@ -264,8 +267,9 @@ class HybridNavigatorState extends NavigatorState {
     return super.push(route);
   }
 
+  //v1.17 pop的回参由bool改成void ,迁移详细见 https://flutter.dev/docs/release/breaking-changes/route-navigator-refactoring
   @override
-  bool pop<T extends Object>([T result]) {
+  void pop<T extends Object>([T result]) {
     if (canPop()) {
       return super.pop<T>(result);
     }
@@ -278,7 +282,7 @@ class HybridNavigatorState extends NavigatorState {
       NativeContainerManager.removeNamed(
           nativePageId: widget.nativePageId, result: result);
     }
-    return canExit;
+    return;
   }
 
   @override
@@ -323,12 +327,12 @@ class HybridNavigatorState extends NavigatorState {
     Object args,
     bool allowNull = false,
   }) {
-    Route<T> route = widget.generateBuilder<T>(
-        RouteSettings(name: routeName, isInitialRoute: false, arguments: args));
+    Route<T> route = widget
+        .generateBuilder<T>(RouteSettings(name: routeName, arguments: args));
 
     if (route == null && widget.unknownBuilder != null) {
-      route = widget.unknownBuilder(RouteSettings(
-          name: routeName, isInitialRoute: false, arguments: args));
+      route = widget
+          .unknownBuilder(RouteSettings(name: routeName, arguments: args));
     }
 
     if (route == null && !allowNull) {

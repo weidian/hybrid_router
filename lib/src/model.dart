@@ -98,14 +98,16 @@ class HybridPageRoute<T> extends MaterialPageRoute<T> {
             settings: _parseSetting(pushType, settings),
             builder: builder);
 
+  //v1.17 https://flutter.dev/docs/release/breaking-changes/route-navigator-refactoring
   static RouteSettings _parseSetting(HybridPushType pushType, RouteSettings defaultSetting) {
     pushType = pushType ?? HybridNavigator.defaultPushType;
     if (pushType == HybridPushType.Native) {
       if (defaultSetting == null) {
-        return RouteSettings(isInitialRoute: true);
-      } else if (!defaultSetting.isInitialRoute){
-        return defaultSetting.copyWith(isInitialRoute: true);
+        return RouteSettings();
       }
+//      else if (!defaultSetting.isInitialRoute){
+//        return defaultSetting.copyWith(isInitialRoute: true);
+//      }
     }
     return defaultSetting;
   }
