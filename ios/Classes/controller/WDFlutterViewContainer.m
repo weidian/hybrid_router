@@ -81,19 +81,16 @@ static long long fTag = 0;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    [WD_FLUTTER_ENGINE attach:self];
+    [self.view setNeedsLayout];
+
     if (self.viewWillAppearBlock) {
         self.viewWillAppearBlock();
         self.viewWillAppearBlock = nil;
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
     } else {
-        [WD_FLUTTER_ENGINE attach:self];
-        [self.view setNeedsLayout];
         [[HybridRouterPlugin sharedInstance] invokeFlutterMethod:@"onNativePageResumed"
-                                                       arguments:@{@"nativePageId": self.options.nativePageId}
-                                                          result:^(id result) {
-            //[self surfaceUpdated:YES];
-        }];
-        [self surfaceUpdated:YES];
+                                                       arguments:@{@"nativePageId": self.options.nativePageId}];
     }
     [super viewWillAppear:animated];
 }
